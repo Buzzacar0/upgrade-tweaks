@@ -1,0 +1,13 @@
+# Saida da compilacao
+dist/
+upgradetweaks.ps1
+
+# Resultados de testes
+tests/results/
+*.TestResults.xml
+
+# Editores / sistema
+.vscode/
+.idea/
+Thumbs.db
+desktop.ini
