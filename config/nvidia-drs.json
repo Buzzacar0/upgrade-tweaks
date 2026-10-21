@@ -1,0 +1,171 @@
+{
+  "versao": 1,
+  "observacao": "Configurações do banco de perfis do driver NVIDIA (DRS). Ids do NvApiDriverSettings.h oficial; os marcados 'naoDocumentado' vêm do NVIDIA Profile Inspector (MIT). 'opcoes' liga cada escolha aos valores de cada id em 'ids'. 'recomendado' pode ser uma opção fixa por escopo ou uma regra calculada pelo programa (vsync, gsync, limiteFps). null = só informativo, o programa não altera.",
+  "nomePerfilNovo": "Upgrade Tweaks - Warzone",
+  "configuracoes": [
+    {
+      "chave": "energia", "nome": "Modo de gerenciamento de energia", "nomeApp": "Modo de gerenciamento de energia",
+      "ids": ["0x1057EB71"],
+      "opcoes": { "adaptavel": { "rotulo": "Ideal / Adaptável", "valores": [0] }, "maximo": { "rotulo": "Preferir desempenho máximo", "valores": [1] }, "normal": { "rotulo": "Normal", "valores": [5] } },
+      "recomendado": { "perfil": "maximo", "global": "maximo" },
+      "explicacao": "Mantém os clocks da placa altos enquanto o jogo roda, evitando quedas momentâneas. No global, a placa também fica com clock alto na área de trabalho e o consumo em repouso sobe."
+    },
+    {
+      "chave": "baixaLatencia", "nome": "Modo de baixa latência", "nomeApp": "Modo de latência baixa",
+      "ids": ["0x0005F543", "0x10835000", "0x007BA09E"], "naoDocumentado": true,
+      "opcoes": { "desligado": { "rotulo": "Desligado", "valores": [0, 0, 0] }, "ligado": { "rotulo": "Ligado", "valores": [1, 0, 1] }, "ultra": { "rotulo": "Ultra", "valores": [2, 1, 1] } },
+      "recomendado": { "perfil": "desligado", "global": "ultra" },
+      "explicacao": "O Warzone tem NVIDIA Reflex, que faz o mesmo trabalho melhor e substitui esta opção: no perfil do jogo fica Desligado (ligue o Reflex + Boost no jogo). No global fica Ultra, para os jogos que não têm Reflex."
+    },
+    {
+      "chave": "vsync", "nome": "Sincronização vertical", "nomeApp": "Sincronização vertical",
+      "ids": ["0x00A879CF"],
+      "opcoes": { "app": { "rotulo": "Usar a configuração do aplicativo", "valores": ["0x60925292"] }, "desligado": { "rotulo": "Desligado", "valores": ["0x08416747"] }, "ligado": { "rotulo": "Ligado", "valores": ["0x47814940"] } },
+      "recomendado": { "perfil": "regra:vsync", "global": "regra:vsync" },
+      "explicacao": "Com G-SYNC/FreeSync: Ligado no driver (e desligado no jogo), junto com o limite de FPS abaixo do Hz, elimina o tearing sem acrescentar latência. Sem G-SYNC: Desligado."
+    },
+    {
+      "chave": "gsync", "nome": "Tecnologia do monitor (G-SYNC)", "nomeApp": "G-SYNC",
+      "ids": ["0x1194F158"],
+      "opcoes": { "desligado": { "rotulo": "Taxa de atualização fixa", "valores": [0] }, "telaCheia": { "rotulo": "G-SYNC só em tela cheia", "valores": [1] }, "telaCheiaJanela": { "rotulo": "G-SYNC em tela cheia e janela", "valores": [2] } },
+      "recomendado": { "global": "regra:gsync" },
+      "explicacao": "Liga o G-SYNC / G-SYNC Compatível quando você informa que o monitor suporta. Configuração global do driver."
+    },
+    {
+      "chave": "limiteFps", "nome": "Taxa máxima de quadros", "nomeApp": "Taxa de quadros máxima",
+      "ids": ["0x10835002"], "tipo": "numero",
+      "recomendado": { "perfil": "regra:limiteFps" },
+      "explicacao": "Com G-SYNC: limite em 3 FPS abaixo da taxa do monitor (ex.: 141 em 144 Hz), para o G-SYNC nunca sair da faixa e o V-Sync não adicionar latência. Sem G-SYNC: desligado (use o limitador do próprio jogo, se quiser)."
+    },
+    {
+      "chave": "taxaPreferencial", "nome": "Taxa de atualização preferida", "nomeApp": "Taxa de atualização preferida",
+      "ids": ["0x0064B541"],
+      "opcoes": { "app": { "rotulo": "Controlada pelo aplicativo", "valores": [0] }, "maxima": { "rotulo": "A mais alta disponível", "valores": [1] } },
+      "recomendado": { "perfil": "maxima", "global": "maxima" },
+      "explicacao": "Garante que o jogo em tela cheia use a maior taxa do monitor."
+    },
+    {
+      "chave": "cacheShader", "nome": "Tamanho do cache de sombreador", "nomeApp": "Tamanho do cache de sombreador",
+      "ids": ["0x00AC8497"],
+      "opcoes": { "padrao": { "rotulo": "Padrão do driver", "valores": [16384] }, "10gb": { "rotulo": "10 GB", "valores": [10240] }, "ilimitado": { "rotulo": "Ilimitado", "valores": ["0xFFFFFFFF"] } },
+      "recomendado": { "global": "ilimitado" },
+      "explicacao": "Um cache maior evita que o driver apague e recompile shaders, que é uma das causas de travadas no Warzone depois de atualizações. Usa espaço em disco conforme o necessário."
+    },
+    {
+      "chave": "filtragemQualidade", "nome": "Filtragem de textura - qualidade", "nomeApp": "Filtragem de textura - qualidade",
+      "ids": ["0x00CE2691"],
+      "opcoes": { "altaQualidade": { "rotulo": "Alta qualidade", "valores": ["0xFFFFFFF6"] }, "qualidade": { "rotulo": "Qualidade", "valores": [0] }, "desempenho": { "rotulo": "Desempenho", "valores": [10] }, "altoDesempenho": { "rotulo": "Alto desempenho", "valores": [20] } },
+      "recomendado": { "perfil": "altoDesempenho", "global": "altoDesempenho" },
+      "explicacao": "Reduz um pouco a qualidade da filtragem de texturas em troca de desempenho. Diferença visual pequena; ganho pequeno."
+    },
+    {
+      "chave": "otimTrilinear", "nome": "Filtragem de textura - otimização trilinear", "nomeApp": "Filtragem de textura - otimização trilinear",
+      "ids": ["0x002ECAF2"],
+      "opcoes": { "desligado": { "rotulo": "Desligado", "valores": [0] }, "ligado": { "rotulo": "Ligado", "valores": [1] } },
+      "recomendado": { "perfil": "ligado", "global": "ligado" },
+      "explicacao": "Otimização de filtragem com impacto visual mínimo."
+    },
+    {
+      "chave": "otimAniso", "nome": "Filtragem de textura - otimização de amostra anisotrópica", "nomeApp": "Filtragem de textura - otimização de amostra anisotrópica",
+      "ids": ["0x00E73211"],
+      "opcoes": { "desligado": { "rotulo": "Desligado", "valores": [0] }, "ligado": { "rotulo": "Ligado", "valores": [1] } },
+      "recomendado": { "perfil": "ligado", "global": "ligado" },
+      "explicacao": "Usa menos amostras na filtragem anisotrópica. Impacto visual mínimo."
+    },
+    {
+      "chave": "lodNegativo", "nome": "Filtragem de textura - desvio LOD negativo", "nomeApp": "Filtragem de textura - polarização de LOD negativa",
+      "ids": ["0x0019BB68"],
+      "opcoes": { "permitir": { "rotulo": "Permitir", "valores": [0] }, "travar": { "rotulo": "Fixar", "valores": [1] } },
+      "recomendado": { "perfil": "permitir", "global": "permitir" },
+      "explicacao": "Permitir é o necessário para DLSS e outros upscalers mostrarem texturas nítidas."
+    },
+    {
+      "chave": "aniso", "nome": "Filtragem anisotrópica", "nomeApp": "Filtragem anisotrópica",
+      "ids": ["0x10D2BB16"],
+      "opcoes": { "app": { "rotulo": "Controlado pelo aplicativo", "valores": [0] }, "usuario": { "rotulo": "Forçar pelo driver", "valores": [1] } },
+      "recomendado": { "perfil": "app", "global": "app" },
+      "explicacao": "O próprio Warzone controla a filtragem anisotrópica."
+    },
+    {
+      "chave": "fxaa", "nome": "Antisserrilhamento - FXAA", "nomeApp": "Antisserrilhamento - FXAA",
+      "ids": ["0x1074C972"],
+      "opcoes": { "desligado": { "rotulo": "Desligado", "valores": [0] }, "ligado": { "rotulo": "Ligado", "valores": [1] } },
+      "recomendado": { "perfil": "desligado", "global": "desligado" },
+      "explicacao": "O jogo já tem o próprio antisserrilhamento; FXAA por cima só borra a imagem."
+    },
+    {
+      "chave": "aaModo", "nome": "Antisserrilhamento - modo", "nomeApp": "Antisserrilhamento - modo",
+      "ids": ["0x107EFC5B"],
+      "opcoes": { "app": { "rotulo": "Controlado pelo aplicativo", "valores": [0] }, "substituir": { "rotulo": "Substituir a configuração do aplicativo", "valores": [1] }, "melhorar": { "rotulo": "Melhorar a configuração do aplicativo", "valores": [2] } },
+      "recomendado": { "perfil": "app", "global": "app" },
+      "explicacao": "O jogo controla o antisserrilhamento."
+    },
+    {
+      "chave": "aaTransparencia", "nome": "Antisserrilhamento - transparência", "nomeApp": "Antisserrilhamento - transparência",
+      "ids": ["0x10D48A85"],
+      "opcoes": { "desligado": { "rotulo": "Desligado", "valores": [0] } },
+      "recomendado": { "perfil": "desligado", "global": "desligado" },
+      "explicacao": "Sem efeito em jogos DirectX 12 modernos; desligado evita custo extra."
+    },
+    {
+      "chave": "escalonamento", "nome": "Dimensionamento de imagem (NIS)", "nomeApp": "Dimensionamento de imagem",
+      "ids": ["0x10444444"],
+      "opcoes": { "desligado": { "rotulo": "Desativado", "valores": [0] }, "ligado": { "rotulo": "Ativado", "valores": [1] } },
+      "recomendado": { "global": "desligado" },
+      "explicacao": "O upscaler do driver só faz sentido em jogos sem DLSS/FSR. O Warzone tem os próprios upscalers."
+    },
+    {
+      "chave": "oclusao", "nome": "Oclusão de ambiente", "nomeApp": "Oclusão de ambiente",
+      "ids": ["0x00667329"],
+      "opcoes": { "desligado": { "rotulo": "Desligado", "valores": [0] } },
+      "recomendado": { "perfil": "desligado", "global": "desligado" },
+      "explicacao": "Efeito forçado pelo driver, pesado e desnecessário no Warzone."
+    },
+    {
+      "chave": "threads", "nome": "Otimização com threads", "nomeApp": "Otimização com threads",
+      "ids": ["0x20C1221E"],
+      "opcoes": { "auto": { "rotulo": "Automático", "valores": [0] }, "ligado": { "rotulo": "Ligado", "valores": [1] }, "desligado": { "rotulo": "Desligado", "valores": [2] } },
+      "recomendado": { "global": "ligado" },
+      "explicacao": "Afeta jogos OpenGL e alguns DirectX 11 antigos; no Warzone (DirectX 12) não muda nada."
+    },
+    {
+      "chave": "vrPrerender", "nome": "Quadros pré-renderizados de realidade virtual", "nomeApp": "Quadros pré-renderizados de realidade virtual",
+      "ids": ["0x10111133"],
+      "opcoes": { "app": { "rotulo": "Controlado pelo aplicativo", "valores": [0] }, "um": { "rotulo": "1", "valores": [1] } },
+      "recomendado": { "global": "um" },
+      "explicacao": "Só afeta realidade virtual."
+    },
+    {
+      "chave": "bufferTriplo", "nome": "Buffering triplo", "nomeApp": "Buffer triplo",
+      "ids": ["0x20FDD1F9"],
+      "opcoes": { "desligado": { "rotulo": "Desligado", "valores": [0] }, "ligado": { "rotulo": "Ligado", "valores": [1] } },
+      "recomendado": { "global": "desligado" },
+      "explicacao": "Só afeta OpenGL: sem efeito no Warzone (DirectX 12)."
+    },
+    {
+      "chave": "apresentacao", "nome": "Método de apresentação Vulkan/OpenGL", "nomeApp": "Método de apresentação Vulkan/OpenGL",
+      "ids": ["0x20D690F8"],
+      "opcoes": { "nativo": { "rotulo": "Preferir nativo", "valores": [0] }, "dxgi": { "rotulo": "Preferir DXGI em camadas", "valores": [1] }, "auto": { "rotulo": "Automático", "valores": [2] } },
+      "recomendado": { "global": "nativo" },
+      "explicacao": "Só afeta jogos Vulkan/OpenGL."
+    },
+    {
+      "chave": "cuda", "nome": "CUDA - GPUs", "nomeApp": "CUDA - GPUs",
+      "ids": [],
+      "recomendado": null,
+      "explicacao": "Sem efeito em jogos. Mantenha o padrão (todas)."
+    },
+    {
+      "chave": "dsr", "nome": "DSR - Fatores", "nomeApp": "DSR - Fatores",
+      "ids": [],
+      "recomendado": null,
+      "explicacao": "Deixe desligado, a não ser que você use DSR/DLDSR de propósito. Não há identificador estável público para o programa alterar."
+    },
+    {
+      "chave": "openglGpu", "nome": "GPU de renderização OpenGL", "nomeApp": "GPU de renderização OpenGL",
+      "ids": [],
+      "recomendado": null,
+      "explicacao": "Em notebooks com Optimus, escolha a placa NVIDIA. No Warzone a preferência de GPU do Windows (aba Warzone) é o que vale."
+    }
+  ]
+}
