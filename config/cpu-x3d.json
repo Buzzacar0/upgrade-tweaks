@@ -1,0 +1,21 @@
+{
+  "versao": 1,
+  "observacao": "Lista dos Ryzen com 3D V-Cache. 'unico' = um CCD (todos os núcleos têm V-Cache). 'duplo' = dois CCDs; o driver de chipset da AMD + Game Bar estacionam o CCD sem V-Cache durante jogos, e isso depende do plano Equilibrado. Modelos novos que não estiverem aqui são classificados pela contagem de núcleos (mais de 8 = dois CCDs). Na dúvida, o programa trata como 'duplo', que é o caminho seguro.",
+  "modelos": [
+    { "modelo": "5500X3D", "ccd": "unico" },
+    { "modelo": "5600X3D", "ccd": "unico" },
+    { "modelo": "5700X3D", "ccd": "unico" },
+    { "modelo": "5800X3D", "ccd": "unico" },
+    { "modelo": "7600X3D", "ccd": "unico" },
+    { "modelo": "7800X3D", "ccd": "unico" },
+    { "modelo": "9800X3D", "ccd": "unico" },
+    { "modelo": "9850X3D", "ccd": "unico" },
+    { "modelo": "7900X3D", "ccd": "duplo" },
+    { "modelo": "7950X3D", "ccd": "duplo" },
+    { "modelo": "9900X3D", "ccd": "duplo" },
+    { "modelo": "9950X3D", "ccd": "duplo" },
+    { "modelo": "9950X3D2", "ccd": "duplo", "vcacheNosDois": true },
+    { "modelo": "7945HX3D", "ccd": "duplo" },
+    { "modelo": "9955HX3D", "ccd": "duplo" }
+  ]
+}

@@ -338,7 +338,8 @@ qualidade de filtragem), marcadas como **experimentais**, com backup. Anti-Lag, 
 | Fase | Verificar |
 |---|---|
 | 3 (feito) | Detectar quando o UAC foi aprovado com **outra conta de administrador** (usuário padrão + senha do admin): nesse caso o HKCU do processo é o do admin, não o de quem vai jogar. O helper de registro já redireciona HKCU para `HKEY_USERS\<SID>` quando `$UTSync.UsuarioAlvoSid` está definido; falta descobrir o SID do usuário logado (dono do `explorer.exe`) |
-| 4 | Como identificar CCD duplo além do nome (ex.: contagem de L3 via `Win32_CacheMemory`) |
+| 4 (feito) | CCD duplo além do nome: modelo fora da lista é classificado pela contagem de núcleos (mais de 8 = dois CCDs; sem informação = dois CCDs, o caminho seguro) |
+| 4 (limitação) | XMP/EXPO: o `Win32_PhysicalMemory.Speed` costuma trazer a velocidade JEDEC, não a do XMP. Se o XMP estiver desligado, `Speed` e `ConfiguredClockSpeed` ficam iguais. Por isso o diagnóstico também lê a velocidade do part number (ex.: `F5-6000J3038F16G` = 6000) e avisa quando a DDR5 está a 4800 / DDR4 a 2666 |
 | 6 | Variante de MPO com `EnableOverlay`; máscara `UserPreferencesMask` que mantém fontes e miniaturas; chave do Storage Sense no 25H2 |
 | 6 | Id winget do O&O ShutUp10++ |
 | 7 | NVIDIA App × gravação direta no DRS (só leitura sem autorização); `NvAPI_Disp_ColorControl` para faixa dinâmica; se "dimensionamento na tela" é viável via `DISP_SetDisplayConfig` |

@@ -23,3 +23,7 @@ O formato segue o [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) e 
 - Esquema do `tweaks.json` documentado em `docs/esquema-tweaks.md` e validado em teste (inclui `ausenteEquivale` para padrões do Windows).
 - Detecção do usuário que vai jogar quando o UAC é aprovado com outra conta de administrador.
 - Primeiros ajustes: Game DVR desligado, Modo de Jogo ligado e aceleração do mouse desligada.
+- Diagnóstico de hardware (aba Início): CPU com detecção de Ryzen X3D de um ou dois CCDs (`config/cpu-x3d.json`), GPUs com idade do driver e VRAM real, RAM (XMP/EXPO, pentes diferentes, dual channel), discos (NVMe/SSD/HD, TRIM, espaço), monitores com taxa atual e máxima (nome real pelo EDID), Secure Boot, TPM, VBS/HVCI, HAGS, Modo de Jogo, Game DVR, plano de energia, arquivo de paginação e notebook/desktop.
+- Detecção do Call of Duty na Steam, Battle.net e Xbox App/Game Pass, com executáveis e disco do jogo.
+- "Nota de Otimização" de 0 a 100 com pendências ordenadas por gravidade e a aba que resolve cada uma.
+- Relatório de diagnóstico em TXT ou HTML para o atendimento.
