@@ -19,3 +19,7 @@ O formato segue o [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) e 
 - Ponto de restauração antes da primeira alteração (liga a Proteção do Sistema se estiver desligada e contorna o limite de 24 h).
 - Funções da aba Restaurar: desfazer tudo pelo estado salvo, listar e restaurar backups, restaurar planos de energia padrão e abrir a Restauração do Sistema.
 - Mensagens de erro amigáveis em PT-BR (detalhe técnico só no log).
+- Motor de tweaks (`Invoke-UTTweak`, `Undo-UTTweak`, `Get-UTTweakState`, `Undo-UTAllTweak`): checagem de admin a cada aplicação, compatibilidade com o hardware, confirmação de risco alto, simulação com lista de ações, desfazer automático quando um ajuste falha no meio, grupos exclusivos e resumo final em PT-BR.
+- Esquema do `tweaks.json` documentado em `docs/esquema-tweaks.md` e validado em teste (inclui `ausenteEquivale` para padrões do Windows).
+- Detecção do usuário que vai jogar quando o UAC é aprovado com outra conta de administrador.
+- Primeiros ajustes: Game DVR desligado, Modo de Jogo ligado e aceleração do mouse desligada.

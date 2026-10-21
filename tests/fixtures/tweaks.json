@@ -1,0 +1,190 @@
+{
+  "versao": 1,
+  "tweaks": [
+    {
+      "id": "UT_Test_Ausente",
+      "nome": "Teste de padrão ausente",
+      "descricao": "O padrão do Windows (ausente) já equivale ao alvo.",
+      "ganhoEsperado": "Nenhum (teste)",
+      "categoria": "Gaming",
+      "risco": "baixo",
+      "requerReinicio": false,
+      "controverso": false,
+      "compatibilidade": {},
+      "registro": [
+        { "caminho": "HKCU:\\Software\\UpgradeTweaksTest\\Ausente", "nome": "Ligado", "tipo": "DWord", "valor": 1, "valorOriginal": null, "ausenteEquivale": true }
+      ],
+      "deteccao": "registro"
+    },
+    {
+      "id": "UT_Test_Reg",
+      "nome": "Teste de registro",
+      "descricao": "Muda um valor existente e cria outro numa chave nova.",
+      "ganhoEsperado": "Nenhum (teste)",
+      "categoria": "Gaming",
+      "risco": "baixo",
+      "requerReinicio": false,
+      "controverso": false,
+      "compatibilidade": { "windows": ["10", "11"] },
+      "registro": [
+        { "caminho": "HKCU:\\Software\\UpgradeTweaksTest\\Existente", "nome": "Valor", "tipo": "DWord", "valor": 0, "valorOriginal": 1 },
+        { "caminho": "HKCU:\\Software\\UpgradeTweaksTest\\Nova\\Sub", "nome": "Texto", "tipo": "String", "valor": "ligado", "valorOriginal": null }
+      ],
+      "deteccao": "registro"
+    },
+    {
+      "id": "UT_Test_Remover",
+      "nome": "Teste de remoção",
+      "descricao": "Apaga um valor.",
+      "ganhoEsperado": "Nenhum (teste)",
+      "categoria": "Gaming",
+      "risco": "baixo",
+      "requerReinicio": true,
+      "controverso": false,
+      "compatibilidade": {},
+      "registro": [
+        { "caminho": "HKCU:\\Software\\UpgradeTweaksTest\\Existente", "nome": "Apagar", "tipo": "String", "acao": "remover", "valorOriginal": "padrao" }
+      ],
+      "deteccao": "registro"
+    },
+    {
+      "id": "UT_Test_Servico",
+      "nome": "Teste de serviço",
+      "descricao": "Desativa um serviço falso (mock).",
+      "ganhoEsperado": "Nenhum (teste)",
+      "categoria": "ServicosApps",
+      "risco": "médio",
+      "requerReinicio": false,
+      "controverso": false,
+      "compatibilidade": {},
+      "servicos": [
+        { "nome": "UTFakeSvc", "inicio": "Disabled", "inicioOriginal": "Manual", "parar": true }
+      ],
+      "deteccao": "servicos"
+    },
+    {
+      "id": "UT_Test_Script",
+      "nome": "Teste de script",
+      "descricao": "Usa script para aplicar, detectar e desfazer, guardando o original como item genérico.",
+      "ganhoEsperado": "Nenhum (teste)",
+      "categoria": "Latencia",
+      "risco": "médio",
+      "requerReinicio": true,
+      "controverso": true,
+      "compatibilidade": {},
+      "scriptAplicar": [
+        "$atual = Get-UTRegistryValue -Path 'HKCU:\\Software\\UpgradeTweaksTest\\Script' -Name 'Modo'",
+        "[void](Save-UTOriginalItem -Chave 'teste|modo' -Dados ([ordered]@{ existia = $atual.ValorExiste; valor = $atual.Valor }) -TweakId $TweakId)",
+        "Set-UTRegistryValue -Path 'HKCU:\\Software\\UpgradeTweaksTest\\Script' -Name 'Modo' -Type String -Value 'rapido'"
+      ],
+      "scriptDesfazer": [
+        "$d = Pop-UTOriginalItem -Chave 'teste|modo' -TweakId $TweakId",
+        "if ($d -is [System.Collections.IDictionary]) {",
+        "  if ($d.existia) { Set-UTRegistryValue -Path 'HKCU:\\Software\\UpgradeTweaksTest\\Script' -Name 'Modo' -Type String -Value $d.valor }",
+        "  else { [void](Remove-UTRegistryValue -Path 'HKCU:\\Software\\UpgradeTweaksTest\\Script' -Name 'Modo') }",
+        "}"
+      ],
+      "scriptDetectar": [
+        "(Get-UTRegistryValue -Path 'HKCU:\\Software\\UpgradeTweaksTest\\Script' -Name 'Modo').Valor -eq 'rapido'"
+      ],
+      "deteccao": "script"
+    },
+    {
+      "id": "UT_Test_Quebra",
+      "nome": "Teste de falha no meio",
+      "descricao": "Muda o registro e depois o script falha: tudo tem que voltar.",
+      "ganhoEsperado": "Nenhum (teste)",
+      "categoria": "Gaming",
+      "risco": "baixo",
+      "requerReinicio": false,
+      "controverso": false,
+      "compatibilidade": {},
+      "registro": [
+        { "caminho": "HKCU:\\Software\\UpgradeTweaksTest\\Existente", "nome": "Valor", "tipo": "DWord", "valor": 7, "valorOriginal": 1 }
+      ],
+      "scriptAplicar": [ "throw 'falha simulada'" ],
+      "scriptDesfazer": [ "$null = 1" ],
+      "scriptDetectar": [ "$true" ],
+      "deteccao": "combinada"
+    },
+    {
+      "id": "UT_Test_Alto",
+      "nome": "Teste de risco alto",
+      "descricao": "Precisa de confirmação.",
+      "ganhoEsperado": "Nenhum (teste)",
+      "categoria": "Latencia",
+      "risco": "alto",
+      "confirmacao": "Isto é perigoso. Confirma?",
+      "requerReinicio": false,
+      "controverso": false,
+      "compatibilidade": {},
+      "registro": [
+        { "caminho": "HKCU:\\Software\\UpgradeTweaksTest\\Alto", "nome": "Ligado", "tipo": "DWord", "valor": 1, "valorOriginal": null }
+      ],
+      "deteccao": "registro"
+    },
+    {
+      "id": "UT_Test_Win10",
+      "nome": "Teste só Windows 10",
+      "descricao": "Incompatível com o contexto de teste (Windows 11).",
+      "ganhoEsperado": "Nenhum (teste)",
+      "categoria": "Visual",
+      "risco": "baixo",
+      "requerReinicio": false,
+      "controverso": false,
+      "compatibilidade": { "windows": ["10"] },
+      "registro": [
+        { "caminho": "HKCU:\\Software\\UpgradeTweaksTest\\W10", "nome": "x", "tipo": "DWord", "valor": 1, "valorOriginal": null }
+      ],
+      "deteccao": "registro"
+    },
+    {
+      "id": "UT_Test_Xbox",
+      "nome": "Teste bloqueado no Xbox App",
+      "descricao": "Bloqueado quando o launcher é Xbox.",
+      "ganhoEsperado": "Nenhum (teste)",
+      "categoria": "Rede",
+      "risco": "baixo",
+      "requerReinicio": false,
+      "controverso": false,
+      "compatibilidade": { "launchersBloqueados": ["xbox"] },
+      "registro": [
+        { "caminho": "HKCU:\\Software\\UpgradeTweaksTest\\Xbox", "nome": "x", "tipo": "DWord", "valor": 1, "valorOriginal": null }
+      ],
+      "deteccao": "registro"
+    },
+    {
+      "id": "UT_Test_GrupoA",
+      "nome": "Teste grupo A",
+      "descricao": "Alternativa A.",
+      "ganhoEsperado": "Nenhum (teste)",
+      "categoria": "Gaming",
+      "risco": "baixo",
+      "requerReinicio": false,
+      "controverso": false,
+      "grupoExclusivo": "modo",
+      "compatibilidade": {},
+      "registro": [
+        { "caminho": "HKCU:\\Software\\UpgradeTweaksTest\\Grupo", "nome": "Modo", "tipo": "DWord", "valor": 1, "valorOriginal": null }
+      ],
+      "deteccao": "registro"
+    },
+    {
+      "id": "UT_Test_GrupoB",
+      "nome": "Teste grupo B",
+      "descricao": "Alternativa B.",
+      "ganhoEsperado": "Nenhum (teste)",
+      "categoria": "Gaming",
+      "risco": "baixo",
+      "requerReinicio": false,
+      "controverso": false,
+      "grupoExclusivo": "modo",
+      "compatibilidade": {},
+      "registro": [
+        { "caminho": "HKCU:\\Software\\UpgradeTweaksTest\\Grupo", "nome": "Modo", "tipo": "DWord", "valor": 2, "valorOriginal": null },
+        { "caminho": "HKCU:\\Software\\UpgradeTweaksTest\\Grupo", "nome": "Extra", "tipo": "DWord", "valor": 1, "valorOriginal": null }
+      ],
+      "deteccao": "registro"
+    }
+  ]
+}

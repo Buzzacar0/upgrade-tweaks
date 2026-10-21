@@ -337,7 +337,7 @@ qualidade de filtragem), marcadas como **experimentais**, com backup. Anti-Lag, 
 
 | Fase | Verificar |
 |---|---|
-| 3 | Detectar quando o UAC foi aprovado com **outra conta de administrador** (usuário padrão + senha do admin): nesse caso o HKCU do processo é o do admin, não o de quem vai jogar. O helper de registro já redireciona HKCU para `HKEY_USERS\<SID>` quando `$UTSync.UsuarioAlvoSid` está definido; falta descobrir o SID do usuário logado (dono do `explorer.exe`) |
+| 3 (feito) | Detectar quando o UAC foi aprovado com **outra conta de administrador** (usuário padrão + senha do admin): nesse caso o HKCU do processo é o do admin, não o de quem vai jogar. O helper de registro já redireciona HKCU para `HKEY_USERS\<SID>` quando `$UTSync.UsuarioAlvoSid` está definido; falta descobrir o SID do usuário logado (dono do `explorer.exe`) |
 | 4 | Como identificar CCD duplo além do nome (ex.: contagem de L3 via `Win32_CacheMemory`) |
 | 6 | Variante de MPO com `EnableOverlay`; máscara `UserPreferencesMask` que mantém fontes e miniaturas; chave do Storage Sense no 25H2 |
 | 6 | Id winget do O&O ShutUp10++ |

@@ -129,6 +129,8 @@ switch ($UTSupport.Status) {
     'NaoSuportado' { Write-UTLog -Level Aviso -Message $UTSupport.Mensagem }
 }
 
+[void](Initialize-UTTargetUser)
+
 $UTParamSummary = ConvertTo-UTArgumentString -Parameters $PSBoundParameters
 if (-not $UTParamSummary) { $UTParamSummary = '(nenhum)' }
 Write-UTLog -Level Info -Message "Sessão iniciada. Versão $UTVersion. Parâmetros: $UTParamSummary"
