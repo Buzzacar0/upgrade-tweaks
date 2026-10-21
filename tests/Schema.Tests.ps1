@@ -84,6 +84,8 @@ Describe 'Test-UTTweakDefinition (regras)' {
         $base.deteccao = 'combinada'
         $base.scriptDetectar = @('$true')
         Test-UTTweakDefinition -Tweak $base | Should -Contain 'scriptAplicar sem scriptDesfazer'
+        $base.scriptDetectar = @()
+        (Test-UTTweakDefinition -Tweak $base) -join ' | ' | Should -Match "'combinada' com script exige scriptDetectar"
     }
 
     It 'acusa registro sem valorOriginal e com tipo errado' {

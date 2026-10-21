@@ -50,7 +50,9 @@
 
     if ($registry.Count -eq 0 -and $services.Count -eq 0 -and $apply.Count -eq 0) { $problems.Add('nenhuma ação (registro, servicos ou scriptAplicar)') }
     if ($apply.Count -gt 0 -and $undo.Count -eq 0) { $problems.Add('scriptAplicar sem scriptDesfazer') }
-    if ($Tweak.deteccao -in 'script', 'combinada' -and $detect.Count -eq 0) { $problems.Add("deteccao '$($Tweak.deteccao)' exige scriptDetectar") }
+    if ($Tweak.deteccao -eq 'script' -and $detect.Count -eq 0) { $problems.Add("deteccao 'script' exige scriptDetectar") }
+    if ($Tweak.deteccao -eq 'combinada' -and $apply.Count -gt 0 -and $detect.Count -eq 0) { $problems.Add("deteccao 'combinada' com script exige scriptDetectar") }
+    if ($Tweak.deteccao -eq 'combinada' -and $apply.Count -eq 0 -and ($registry.Count -eq 0 -or $services.Count -eq 0)) { $problems.Add("deteccao 'combinada' sem script precisa de registro e serviços") }
     if ($Tweak.deteccao -eq 'registro' -and $registry.Count -eq 0) { $problems.Add("deteccao 'registro' sem entradas de registro") }
     if ($Tweak.deteccao -eq 'servicos' -and $services.Count -eq 0) { $problems.Add("deteccao 'servicos' sem serviços") }
     if ($Tweak.deteccao -eq 'registro' -and $apply.Count -gt 0 -and $detect.Count -eq 0) {

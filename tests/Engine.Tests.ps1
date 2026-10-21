@@ -237,6 +237,26 @@ Describe 'Motor de tweaks: serviços' {
         Should -Invoke Invoke-UTNative -Times 0
     }
 
+    It 'dois ajustes com os mesmos valores: desfazer um não desfaz o outro' {
+        Set-UTRegistryValue -Path "$UTTestKey\Shared" -Name 'outro' -Type DWord -Value 1
+        (Invoke-UTTweak -Id 'UT_Test_ShareA').Status | Should -Be 'Aplicado'
+        (Invoke-UTTweak -Id 'UT_Test_ShareB').Status | Should -Be 'JaAplicado'
+        (Get-UTAppliedRecord).tweakId | Should -Be @('UT_Test_ShareA', 'UT_Test_ShareB')
+        Undo-UTTweak -Id 'UT_Test_ShareA' | Out-Null
+        (Get-UTTweakState -Id 'UT_Test_ShareB').Estado | Should -Be 'Aplicado'
+        $script:fakeType | Should -Be 'Disabled'
+        Undo-UTTweak -Id 'UT_Test_ShareB' | Out-Null
+        (Get-UTRegistryValue "$UTTestKey\Shared" 'V').ValorExiste | Should -BeFalse
+        $script:fakeType | Should -Be 'Manual'
+    }
+
+    It 'valor que o usuário já tinha (nada salvo) continua "já aplicado" sem entrar no registro' {
+        Set-UTRegistryValue -Path "$UTTestKey\Shared" -Name 'V' -Type DWord -Value 1
+        $script:fakeType = 'Disabled'
+        (Invoke-UTTweak -Id 'UT_Test_ShareB').Status | Should -Be 'JaAplicado'
+        @(Get-UTAppliedRecord).Count | Should -Be 0
+    }
+
     It 'serviço protegido falha com a mensagem amigável' {
         Mock Invoke-UTNative { [pscustomobject]@{ CodigoSaida = 5; Saida = 'Acesso negado'; Erro = '' } }
         $r = Invoke-UTTweak -Id 'UT_Test_Servico'

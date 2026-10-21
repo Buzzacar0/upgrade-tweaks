@@ -1,0 +1,62 @@
+{
+  "versao": 1,
+  "tweaks": [
+    {
+      "id": "UT_Visual_BestPerformance",
+      "nome": "Efeitos visuais: melhor desempenho (mantendo fontes e miniaturas)",
+      "descricao": "Equivale a \"Ajustar para obter um melhor desempenho\" nas Opções de Desempenho do Windows, mas mantendo as fontes suavizadas e as miniaturas de imagens, que fazem falta no uso diário e quase não pesam. Desliga animações de janelas e da barra de tarefas, sombras, conteúdo da janela ao arrastar e o \"Espiar\" da área de trabalho.",
+      "ganhoEsperado": "Pequeno no jogo; o Windows fica mais ágil em PCs mais fracos",
+      "categoria": "Visual",
+      "risco": "baixo",
+      "requerReinicio": true,
+      "controverso": false,
+      "observacao": "Vale depois de sair e entrar na conta do Windows.",
+      "compatibilidade": { "windows": ["10", "11"] },
+      "registro": [
+        { "caminho": "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\VisualEffects", "nome": "VisualFXSetting", "tipo": "DWord", "valor": 3, "valorOriginal": null },
+        { "caminho": "HKCU:\\Control Panel\\Desktop", "nome": "UserPreferencesMask", "tipo": "Binary", "valor": "9012038010000000", "valorOriginal": "9E1E078012000000" },
+        { "caminho": "HKCU:\\Control Panel\\Desktop", "nome": "DragFullWindows", "tipo": "String", "valor": "0", "valorOriginal": "1" },
+        { "caminho": "HKCU:\\Control Panel\\Desktop", "nome": "FontSmoothing", "tipo": "String", "valor": "2", "valorOriginal": "2" },
+        { "caminho": "HKCU:\\Control Panel\\Desktop\\WindowMetrics", "nome": "MinAnimate", "tipo": "String", "valor": "0", "valorOriginal": "1" },
+        { "caminho": "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced", "nome": "ListviewAlphaSelect", "tipo": "DWord", "valor": 0, "valorOriginal": 1 },
+        { "caminho": "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced", "nome": "ListviewShadow", "tipo": "DWord", "valor": 0, "valorOriginal": 1 },
+        { "caminho": "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced", "nome": "TaskbarAnimations", "tipo": "DWord", "valor": 0, "valorOriginal": 1 },
+        { "caminho": "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced", "nome": "IconsOnly", "tipo": "DWord", "valor": 0, "valorOriginal": 0 },
+        { "caminho": "HKCU:\\Software\\Microsoft\\Windows\\DWM", "nome": "EnableAeroPeek", "tipo": "DWord", "valor": 0, "valorOriginal": 1 }
+      ],
+      "deteccao": "registro"
+    },
+    {
+      "id": "UT_Visual_Transparency_Off",
+      "nome": "Desativar a transparência",
+      "descricao": "Desliga o efeito de vidro (acrílico/mica) do Iniciar, da barra de tarefas e das janelas. Alivia um pouco a GPU integrada e PCs mais fracos; em placas dedicadas a diferença no jogo é nula.",
+      "ganhoEsperado": "Nenhum no jogo com GPU dedicada; pequeno em vídeo integrado",
+      "categoria": "Visual",
+      "risco": "baixo",
+      "requerReinicio": false,
+      "controverso": false,
+      "compatibilidade": { "windows": ["10", "11"] },
+      "registro": [
+        { "caminho": "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize", "nome": "EnableTransparency", "tipo": "DWord", "valor": 0, "valorOriginal": 1 }
+      ],
+      "deteccao": "registro"
+    },
+    {
+      "id": "UT_Visual_Animations_Off",
+      "nome": "Desativar animações do Windows",
+      "descricao": "Desliga só as animações de minimizar/maximizar janelas e da barra de tarefas, para quem quer o Windows mais \"seco\" sem mexer no resto dos efeitos visuais.",
+      "ganhoEsperado": "Nenhum no jogo; o Windows parece mais rápido",
+      "categoria": "Visual",
+      "risco": "baixo",
+      "requerReinicio": true,
+      "controverso": false,
+      "observacao": "Vale depois de sair e entrar na conta do Windows.",
+      "compatibilidade": { "windows": ["10", "11"] },
+      "registro": [
+        { "caminho": "HKCU:\\Control Panel\\Desktop\\WindowMetrics", "nome": "MinAnimate", "tipo": "String", "valor": "0", "valorOriginal": "1" },
+        { "caminho": "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced", "nome": "TaskbarAnimations", "tipo": "DWord", "valor": 0, "valorOriginal": 1 }
+      ],
+      "deteccao": "registro"
+    }
+  ]
+}

@@ -51,7 +51,7 @@ Legenda da decisão: **Portar** (entra no nosso catálogo), **Adaptar** (entra c
 | Hibernation - Disable | Portar | `UT_Power_Hibernation_Off` | Energia | Explicar Inicialização Rápida |
 | Widgets - Remove | Adaptar | `UT_Win11_Widgets_Off` | Privacidade | Política `AllowNewsAndInterests=0` (reversível); remoção do pacote só no Modo Lite |
 | Start Menu Previous Layout | Não portar | — | — | Não funciona em builds novas; não é desempenho |
-| Store Recommended Search - Disable | Portar | `UT_Custom_StoreSearch_Off` | Personalizar | Usa `icacls` no `store.db` |
+| Store Recommended Search - Disable | Não portar | — | — | Mexe na permissão do banco da Store (`store.db`), que a Store recria; efeito instável |
 | Location Tracking - Disable | Portar | `UT_Privacy_Location_Off` | Privacidade | Inclui serviço `lfsvc` |
 | Services - Set to Manual | Adaptar | `UT_Services_*` (via `services.json`) | Serviços e Apps | `SvcHostSplitThresholdInKB` entra separado, marcado controverso (menos processos svchost, ganho de FPS ~nulo) |
 | Brave - Debloat | Portar | `UT_Privacy_BraveDebloat` | Privacidade | Opcional |
@@ -64,7 +64,7 @@ Legenda da decisão: **Portar** (entra no nosso catálogo), **Adaptar** (entra c
 | BitLocker - Disable | Adaptar | `UT_Sys_BitLocker_Off` | Latência e Sistema | Risco alto; desfazer correto exige protetor TPM |
 | Date & Time UTC | Não portar | — | — | Só para dual boot |
 | OneDrive - Remove | Portar | `UT_Lite_RemoveOneDrive` | Serviços e Apps (Modo Lite) | Desfazer via winget `Microsoft.OneDrive` |
-| Explorer Home/Gallery - Disable | Portar | `UT_Custom_ExplorerHomeGallery_Off` | Personalizar | |
+| Explorer Home/Gallery - Disable | Portar | `UT_Custom_ExplorerThisPC` | Personalizar | |
 | Visual Effects - Best Performance | Adaptar | `UT_Visual_BestPerformance` | Visual | Manter fontes suavizadas e miniaturas; tirar os itens de barra de tarefas que o WinUtil mistura |
 | Reserved Storage - Disable | Portar | `UT_Sys_ReservedStorage_Off` | Latência e Sistema | Avisar para reativar antes de atualização grande |
 | Restore Point - Create | Adaptar | (módulo de backup) | Restaurar | Parte do fluxo obrigatório, não é tweak |
@@ -75,7 +75,7 @@ Legenda da decisão: **Portar** (entra no nosso catálogo), **Adaptar** (entra c
 | Prevent Device Companion Apps | Portar | `UT_Apps_DeviceMetadata_Off` | Serviços e Apps | |
 | Razer Auto-Install - Disable | Adaptar | `UT_Apps_RazerBlock` | Serviços e Apps | `SearchOrderConfig=0` também impede o Windows Update de baixar drivers de dispositivos novos → risco médio, avisar |
 | Logitech Download Assistant | Portar | `UT_Apps_LogiBlock` | Serviços e Apps | |
-| Notifications & Calendar - Disable | Portar | `UT_Custom_Notifications_Off` | Personalizar | Opcional |
+| Notifications & Calendar - Disable | Portar | `UT_Custom_Notifications_Off` | Personalizar | Também no Modo Lite |
 | Adobe URL Block | Não portar | — | — | Lista de hosts de terceiros, fora do escopo |
 | Right-Click Menu Previous Layout | Portar | `UT_Custom_ClassicContextMenu` | Personalizar | |
 | Disk Cleanup - Run | Adaptar | ação da aba Ferramentas | Ferramentas | `/ResetBase` impede desinstalar updates → opção separada com aviso |
@@ -84,7 +84,7 @@ Legenda da decisão: **Portar** (entra no nosso catálogo), **Adaptar** (entra c
 | Teredo - Disable | Adaptar | `UT_Net_Teredo_Off` | Rede | **Bloqueado quando o launcher é Xbox App** (Teredo é usado pela rede Xbox) |
 | IPv6 - Disable | Adaptar | `UT_Net_IPv6_Off` | Rede | Risco alto, desmarcado; a Microsoft não recomenda |
 | Background Apps - Disable | Portar | `UT_Privacy_BackgroundApps_Off` | Privacidade | |
-| Explorer Folder Auto Discovery | Portar | `UT_Custom_FolderDiscovery_Off` | Personalizar | |
+| Explorer Folder Auto Discovery | Não portar | — | — | Apaga as preferências de visualização de todas as pastas, sem como desfazer |
 | BSoD verbose, Logon verbose | Portar | `UT_Custom_VerboseBSoD`, `UT_Custom_VerboseLogon` | Personalizar | |
 | Battery %, Dark Theme, File Ext., Hidden Files, Scrollbars, Num Lock, Snapping, Settings Home, Login Blur, Lock Screen, Taskbar alignment/search/task view, Long Paths | Portar | `UT_Custom_*` | Personalizar | |
 | New Outlook | Não portar | — | — | Não é desempenho |

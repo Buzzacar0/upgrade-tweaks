@@ -34,3 +34,7 @@ O formato segue o [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) e 
 - Ferramentas da aba Energia: voltar ao plano anterior, exportar e importar `.pow`.
 - Simulação de ajustes feitos por script agora mostra cada valor atual -> novo (`scriptSimular`).
 - Ajuste que não se aplica ao PC aparece como "não se aplica", mesmo quando o sistema por acaso coincide.
+- Catálogo completo (145 ajustes) dividido em `config/tweaks-*.json`: Gaming, Warzone, Latência e sistema, Rede, Serviços e Apps, Privacidade, Visual e Personalizar, mais os gerados de `services.json`, `apps-debloat.json` e `dns.json`.
+- Modo Lite (`config/modo-lite.json`): debloat agressivo mostrado como lista antes de aplicar, sem serviços do Xbox, Spooler, Store, Game Bar, Defender ou Windows Update.
+- Gerenciador de inicialização, ferramentas de rede (teste de latência/jitter/perda, DNS, reset de rede) e dispositivos opcionais.
+- Ajustes que compartilham valores agora se seguram mutuamente: desfazer um não desfaz o outro.

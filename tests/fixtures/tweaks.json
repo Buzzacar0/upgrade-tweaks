@@ -185,6 +185,42 @@
         { "caminho": "HKCU:\\Software\\UpgradeTweaksTest\\Grupo", "nome": "Extra", "tipo": "DWord", "valor": 1, "valorOriginal": null }
       ],
       "deteccao": "registro"
+    },
+    {
+      "id": "UT_Test_ShareA",
+      "nome": "Teste compartilhado A",
+      "descricao": "Usa o mesmo valor e serviço que o B.",
+      "ganhoEsperado": "Nenhum (teste)",
+      "categoria": "Gaming",
+      "risco": "baixo",
+      "requerReinicio": false,
+      "controverso": false,
+      "compatibilidade": {},
+      "registro": [
+        { "caminho": "HKCU:\\Software\\UpgradeTweaksTest\\Shared", "nome": "V", "tipo": "DWord", "valor": 1, "valorOriginal": null }
+      ],
+      "servicos": [
+        { "nome": "UTFakeSvc", "inicio": "Disabled", "inicioOriginal": "Manual" }
+      ],
+      "deteccao": "combinada"
+    },
+    {
+      "id": "UT_Test_ShareB",
+      "nome": "Teste compartilhado B",
+      "descricao": "Mesmos valores do A.",
+      "ganhoEsperado": "Nenhum (teste)",
+      "categoria": "Gaming",
+      "risco": "baixo",
+      "requerReinicio": false,
+      "controverso": false,
+      "compatibilidade": {},
+      "registro": [
+        { "caminho": "HKCU:\\Software\\UpgradeTweaksTest\\Shared", "nome": "V", "tipo": "DWord", "valor": 1, "valorOriginal": null }
+      ],
+      "servicos": [
+        { "nome": "UTFakeSvc", "inicio": "Disabled", "inicioOriginal": "Manual" }
+      ],
+      "deteccao": "combinada"
     }
   ]
 }

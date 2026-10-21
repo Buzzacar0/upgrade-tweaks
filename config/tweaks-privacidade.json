@@ -1,0 +1,310 @@
+{
+  "versao": 1,
+  "tweaks": [
+    {
+      "id": "UT_Privacy_Telemetry_Min",
+      "nome": "Telemetria no nível mínimo",
+      "descricao": "Reduz o envio de dados de uso para a Microsoft: política de telemetria no mínimo, serviço de telemetria desligado, sem experiências personalizadas com dados de diagnóstico, sem pedidos de avaliação, sem coleta de escrita/tinta e sem rastrear os programas que você abre. Sendo honesto: no Windows Home e Pro a Microsoft trata o \"mínimo\" como \"Obrigatório\" (nível 1); só Enterprise e Education chegam a zero.",
+      "ganhoEsperado": "Pequeno (menos atividade em segundo plano); ganho principal é privacidade",
+      "categoria": "Privacidade",
+      "risco": "baixo",
+      "requerReinicio": false,
+      "controverso": false,
+      "observacao": "Desliga também o reconhecimento de fala online (a digitação por voz pode parar de funcionar).",
+      "compatibilidade": { "windows": ["10", "11"] },
+      "registro": [
+        { "caminho": "HKLM:\\SOFTWARE\\Policies\\Microsoft\\Windows\\DataCollection", "nome": "AllowTelemetry", "tipo": "DWord", "valor": 0, "valorOriginal": null },
+        { "caminho": "HKLM:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Policies\\DataCollection", "nome": "AllowTelemetry", "tipo": "DWord", "valor": 0, "valorOriginal": null },
+        { "caminho": "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Privacy", "nome": "TailoredExperiencesWithDiagnosticDataEnabled", "tipo": "DWord", "valor": 0, "valorOriginal": null },
+        { "caminho": "HKCU:\\Software\\Microsoft\\Siuf\\Rules", "nome": "NumberOfSIUFInPeriod", "tipo": "DWord", "valor": 0, "valorOriginal": null },
+        { "caminho": "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced", "nome": "Start_TrackProgs", "tipo": "DWord", "valor": 0, "valorOriginal": null },
+        { "caminho": "HKCU:\\Software\\Microsoft\\InputPersonalization", "nome": "RestrictImplicitInkCollection", "tipo": "DWord", "valor": 1, "valorOriginal": null },
+        { "caminho": "HKCU:\\Software\\Microsoft\\InputPersonalization", "nome": "RestrictImplicitTextCollection", "tipo": "DWord", "valor": 1, "valorOriginal": null },
+        { "caminho": "HKCU:\\Software\\Microsoft\\InputPersonalization\\TrainedDataStore", "nome": "HarvestContacts", "tipo": "DWord", "valor": 0, "valorOriginal": null },
+        { "caminho": "HKCU:\\Software\\Microsoft\\Personalization\\Settings", "nome": "AcceptedPrivacyPolicy", "tipo": "DWord", "valor": 0, "valorOriginal": null },
+        { "caminho": "HKCU:\\Software\\Microsoft\\Input\\TIPC", "nome": "Enabled", "tipo": "DWord", "valor": 0, "valorOriginal": null },
+        { "caminho": "HKCU:\\Software\\Microsoft\\Speech_OneCore\\Settings\\OnlineSpeechPrivacy", "nome": "HasAccepted", "tipo": "DWord", "valor": 0, "valorOriginal": null }
+      ],
+      "servicos": [
+        { "nome": "DiagTrack", "inicio": "Disabled", "inicioOriginal": "Automatic", "parar": true },
+        { "nome": "dmwappushservice", "inicio": "Disabled", "inicioOriginal": "Manual", "parar": true }
+      ],
+      "deteccao": "combinada"
+    },
+    {
+      "id": "UT_Privacy_AdvertisingId_Off",
+      "nome": "Desativar o ID de anúncio",
+      "descricao": "Desliga o identificador que os apps usam para mostrar anúncios personalizados com base no seu uso.",
+      "ganhoEsperado": "Nenhum em FPS; privacidade",
+      "categoria": "Privacidade",
+      "risco": "baixo",
+      "requerReinicio": false,
+      "controverso": false,
+      "compatibilidade": { "windows": ["10", "11"] },
+      "registro": [
+        { "caminho": "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\AdvertisingInfo", "nome": "Enabled", "tipo": "DWord", "valor": 0, "valorOriginal": null },
+        { "caminho": "HKLM:\\SOFTWARE\\Policies\\Microsoft\\Windows\\AdvertisingInfo", "nome": "DisabledByGroupPolicy", "tipo": "DWord", "valor": 1, "valorOriginal": null }
+      ],
+      "deteccao": "registro"
+    },
+    {
+      "id": "UT_Privacy_ActivityHistory_Off",
+      "nome": "Desativar o histórico de atividades",
+      "descricao": "Impede o Windows de registrar e enviar para a nuvem o histórico do que você faz (arquivos, sites, apps). O histórico da Área de Transferência continua funcionando.",
+      "ganhoEsperado": "Nenhum em FPS; privacidade",
+      "categoria": "Privacidade",
+      "risco": "baixo",
+      "requerReinicio": false,
+      "controverso": false,
+      "compatibilidade": { "windows": ["10", "11"] },
+      "registro": [
+        { "caminho": "HKLM:\\SOFTWARE\\Policies\\Microsoft\\Windows\\System", "nome": "PublishUserActivities", "tipo": "DWord", "valor": 0, "valorOriginal": null },
+        { "caminho": "HKLM:\\SOFTWARE\\Policies\\Microsoft\\Windows\\System", "nome": "UploadUserActivities", "tipo": "DWord", "valor": 0, "valorOriginal": null }
+      ],
+      "deteccao": "registro"
+    },
+    {
+      "id": "UT_Privacy_StartSuggestions_Off",
+      "nome": "Desativar sugestões, dicas e apps instalados sem pedir",
+      "descricao": "Desliga as sugestões e anúncios do Iniciar e das Configurações, as dicas do Windows, a tela de \"boas-vindas\" depois de atualizações, as propagandas do OneDrive no Explorador e, principalmente, a instalação silenciosa de apps \"sugeridos\" (Candy Crush e afins).",
+      "ganhoEsperado": "Nenhum em FPS; menos apps e notificações indesejadas",
+      "categoria": "Privacidade",
+      "risco": "baixo",
+      "requerReinicio": false,
+      "controverso": false,
+      "compatibilidade": { "windows": ["10", "11"] },
+      "registro": [
+        { "caminho": "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\ContentDeliveryManager", "nome": "SilentInstalledAppsEnabled", "tipo": "DWord", "valor": 0, "valorOriginal": 1 },
+        { "caminho": "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\ContentDeliveryManager", "nome": "SystemPaneSuggestionsEnabled", "tipo": "DWord", "valor": 0, "valorOriginal": 1 },
+        { "caminho": "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\ContentDeliveryManager", "nome": "SoftLandingEnabled", "tipo": "DWord", "valor": 0, "valorOriginal": 1 },
+        { "caminho": "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\ContentDeliveryManager", "nome": "SubscribedContent-338388Enabled", "tipo": "DWord", "valor": 0, "valorOriginal": 1 },
+        { "caminho": "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\ContentDeliveryManager", "nome": "SubscribedContent-338389Enabled", "tipo": "DWord", "valor": 0, "valorOriginal": 1 },
+        { "caminho": "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\ContentDeliveryManager", "nome": "SubscribedContent-310093Enabled", "tipo": "DWord", "valor": 0, "valorOriginal": 1 },
+        { "caminho": "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\ContentDeliveryManager", "nome": "SubscribedContent-353694Enabled", "tipo": "DWord", "valor": 0, "valorOriginal": 1 },
+        { "caminho": "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\ContentDeliveryManager", "nome": "SubscribedContent-353696Enabled", "tipo": "DWord", "valor": 0, "valorOriginal": 1 },
+        { "caminho": "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced", "nome": "Start_IrisRecommendations", "tipo": "DWord", "valor": 0, "valorOriginal": null },
+        { "caminho": "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced", "nome": "ShowSyncProviderNotifications", "tipo": "DWord", "valor": 0, "valorOriginal": null }
+      ],
+      "deteccao": "registro"
+    },
+    {
+      "id": "UT_Privacy_ConsumerFeatures_Off",
+      "nome": "Desativar os \"recursos de consumidor\" (apps promovidos)",
+      "descricao": "Política que impede o Windows de instalar apps e jogos promovidos pela Microsoft. Honestidade: essa política só é respeitada no Enterprise e Education; no Home e Pro o ajuste \"Desativar sugestões, dicas e apps instalados sem pedir\" é o que resolve.",
+      "ganhoEsperado": "Nenhum em FPS; menos apps instalados sem pedir",
+      "categoria": "Privacidade",
+      "risco": "baixo",
+      "requerReinicio": false,
+      "controverso": false,
+      "compatibilidade": { "windows": ["10", "11"] },
+      "registro": [
+        { "caminho": "HKLM:\\SOFTWARE\\Policies\\Microsoft\\Windows\\CloudContent", "nome": "DisableWindowsConsumerFeatures", "tipo": "DWord", "valor": 1, "valorOriginal": null }
+      ],
+      "deteccao": "registro"
+    },
+    {
+      "id": "UT_Privacy_Copilot_Off",
+      "nome": "Desativar o Copilot",
+      "descricao": "Liga as políticas que desligam o Copilot do Windows e esconde o botão dele. Atenção: a Microsoft marcou essa política como obsoleta e ela não vale para o Copilot novo, que é um app; para remover o app use \"Remover o app Copilot\" na aba Serviços e Apps.",
+      "ganhoEsperado": "Nenhum em FPS; menos um app de IA em segundo plano",
+      "categoria": "Privacidade",
+      "risco": "baixo",
+      "requerReinicio": false,
+      "controverso": false,
+      "compatibilidade": { "windows": ["10", "11"] },
+      "registro": [
+        { "caminho": "HKCU:\\Software\\Policies\\Microsoft\\Windows\\WindowsCopilot", "nome": "TurnOffWindowsCopilot", "tipo": "DWord", "valor": 1, "valorOriginal": null },
+        { "caminho": "HKLM:\\SOFTWARE\\Policies\\Microsoft\\Windows\\WindowsCopilot", "nome": "TurnOffWindowsCopilot", "tipo": "DWord", "valor": 1, "valorOriginal": null },
+        { "caminho": "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced", "nome": "ShowCopilotButton", "tipo": "DWord", "valor": 0, "valorOriginal": null }
+      ],
+      "deteccao": "registro"
+    },
+    {
+      "id": "UT_Privacy_Recall_Off",
+      "nome": "Desativar o Recall",
+      "descricao": "O Recall (Copilot+ PCs, Windows 11 24H2) tira capturas da tela o tempo todo para você pesquisar depois. As políticas oficiais da Microsoft desligam o recurso, apagam as capturas salvas e removem os componentes dele no próximo reinício.",
+      "ganhoEsperado": "Pequeno (sem capturas de tela em segundo plano); privacidade",
+      "categoria": "Privacidade",
+      "risco": "baixo",
+      "requerReinicio": true,
+      "controverso": false,
+      "observacao": "Políticas oficiais suportadas no Pro, Enterprise e Education.",
+      "compatibilidade": { "windows": ["11"], "buildMinimo": 26100 },
+      "registro": [
+        { "caminho": "HKLM:\\SOFTWARE\\Policies\\Microsoft\\Windows\\WindowsAI", "nome": "AllowRecallEnablement", "tipo": "DWord", "valor": 0, "valorOriginal": null },
+        { "caminho": "HKLM:\\SOFTWARE\\Policies\\Microsoft\\Windows\\WindowsAI", "nome": "DisableAIDataAnalysis", "tipo": "DWord", "valor": 1, "valorOriginal": null },
+        { "caminho": "HKCU:\\Software\\Policies\\Microsoft\\Windows\\WindowsAI", "nome": "DisableAIDataAnalysis", "tipo": "DWord", "valor": 1, "valorOriginal": null }
+      ],
+      "deteccao": "registro"
+    },
+    {
+      "id": "UT_Privacy_ClickToDo_Off",
+      "nome": "Desativar o \"Clicar para Fazer\"",
+      "descricao": "Desliga o Clicar para Fazer (análise de IA do que está na tela, nos Copilot+ PCs).",
+      "ganhoEsperado": "Nenhum em FPS; privacidade",
+      "categoria": "Privacidade",
+      "risco": "baixo",
+      "requerReinicio": false,
+      "controverso": false,
+      "compatibilidade": { "windows": ["11"], "buildMinimo": 26100 },
+      "registro": [
+        { "caminho": "HKLM:\\SOFTWARE\\Policies\\Microsoft\\Windows\\WindowsAI", "nome": "DisableClickToDo", "tipo": "DWord", "valor": 1, "valorOriginal": null },
+        { "caminho": "HKCU:\\Software\\Policies\\Microsoft\\Windows\\WindowsAI", "nome": "DisableClickToDo", "tipo": "DWord", "valor": 1, "valorOriginal": null }
+      ],
+      "deteccao": "registro"
+    },
+    {
+      "id": "UT_Privacy_Widgets_Off",
+      "nome": "Esconder os Widgets / Notícias e Interesses",
+      "descricao": "Desliga o painel de Widgets (Windows 11) e Notícias e Interesses (Windows 10) pela política oficial, sem desinstalar nada. Para remover o pacote, use \"Remover os Widgets\" na aba Serviços e Apps.",
+      "ganhoEsperado": "Pequeno (um processo a menos em segundo plano)",
+      "categoria": "Privacidade",
+      "risco": "baixo",
+      "requerReinicio": false,
+      "controverso": false,
+      "compatibilidade": { "windows": ["10", "11"] },
+      "registro": [
+        { "caminho": "HKLM:\\SOFTWARE\\Policies\\Microsoft\\Dsh", "nome": "AllowNewsAndInterests", "tipo": "DWord", "valor": 0, "valorOriginal": null },
+        { "caminho": "HKLM:\\SOFTWARE\\Policies\\Microsoft\\Windows\\Windows Feeds", "nome": "EnableFeeds", "tipo": "DWord", "valor": 0, "valorOriginal": null }
+      ],
+      "deteccao": "registro"
+    },
+    {
+      "id": "UT_Privacy_Spotlight_Off",
+      "nome": "Desativar o conteúdo em destaque (Windows Spotlight)",
+      "descricao": "Para de baixar imagens, \"curiosidades\" e propagandas da Microsoft para a tela de bloqueio. A tela de bloqueio passa a usar uma imagem fixa.",
+      "ganhoEsperado": "Nenhum em FPS; menos downloads em segundo plano",
+      "categoria": "Privacidade",
+      "risco": "baixo",
+      "requerReinicio": false,
+      "controverso": false,
+      "compatibilidade": { "windows": ["10", "11"] },
+      "registro": [
+        { "caminho": "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\ContentDeliveryManager", "nome": "RotatingLockScreenEnabled", "tipo": "DWord", "valor": 0, "valorOriginal": 1 },
+        { "caminho": "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\ContentDeliveryManager", "nome": "RotatingLockScreenOverlayEnabled", "tipo": "DWord", "valor": 0, "valorOriginal": 1 },
+        { "caminho": "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\ContentDeliveryManager", "nome": "SubscribedContent-338387Enabled", "tipo": "DWord", "valor": 0, "valorOriginal": 1 },
+        { "caminho": "HKCU:\\Software\\Policies\\Microsoft\\Windows\\CloudContent", "nome": "DisableWindowsSpotlightFeatures", "tipo": "DWord", "valor": 1, "valorOriginal": null }
+      ],
+      "deteccao": "registro"
+    },
+    {
+      "id": "UT_Privacy_BackgroundApps_Off",
+      "nome": "Desativar apps em segundo plano",
+      "descricao": "Impede que os apps da Microsoft Store rodem em segundo plano quando não estão abertos. Programas comuns (Steam, Discord instalado pelo site, Battle.net) não são afetados.",
+      "ganhoEsperado": "Pequeno (menos processos em segundo plano)",
+      "categoria": "Privacidade",
+      "risco": "baixo",
+      "requerReinicio": false,
+      "controverso": false,
+      "observacao": "Apps da Store de mensagens (como o WhatsApp da Microsoft Store) deixam de notificar com a janela fechada.",
+      "compatibilidade": { "windows": ["10", "11"] },
+      "registro": [
+        { "caminho": "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\BackgroundAccessApplications", "nome": "GlobalUserDisabled", "tipo": "DWord", "valor": 1, "valorOriginal": null },
+        { "caminho": "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Search", "nome": "BackgroundAppGlobalToggle", "tipo": "DWord", "valor": 0, "valorOriginal": null },
+        { "caminho": "HKLM:\\SOFTWARE\\Policies\\Microsoft\\Windows\\AppPrivacy", "nome": "LetAppsRunInBackground", "tipo": "DWord", "valor": 2, "valorOriginal": null }
+      ],
+      "deteccao": "registro"
+    },
+    {
+      "id": "UT_Privacy_Location_Off",
+      "nome": "Desativar a localização",
+      "descricao": "Desliga o acesso à localização para todos os apps e o serviço de geolocalização.",
+      "ganhoEsperado": "Nenhum em FPS; privacidade",
+      "categoria": "Privacidade",
+      "risco": "baixo",
+      "requerReinicio": false,
+      "controverso": false,
+      "observacao": "O fuso horário automático e o \"Encontrar meu dispositivo\" deixam de usar a localização.",
+      "compatibilidade": { "windows": ["10", "11"] },
+      "registro": [
+        { "caminho": "HKLM:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\CapabilityAccessManager\\ConsentStore\\location", "nome": "Value", "tipo": "String", "valor": "Deny", "valorOriginal": "Allow" },
+        { "caminho": "HKLM:\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Sensor\\Overrides\\{BFA794E4-F964-4FDB-90F6-51056BFE4B44}", "nome": "SensorPermissionState", "tipo": "DWord", "valor": 0, "valorOriginal": 1 }
+      ],
+      "servicos": [
+        { "nome": "lfsvc", "inicio": "Disabled", "inicioOriginal": "Manual", "parar": true }
+      ],
+      "deteccao": "combinada"
+    },
+    {
+      "id": "UT_Privacy_WPBT_Off",
+      "nome": "Desativar o WPBT (programas do fabricante no boot)",
+      "descricao": "O WPBT deixa o firmware da placa-mãe ou do notebook injetar um programa no Windows a cada boot (é assim que utilitários de fabricante e \"anti-roubo\" voltam mesmo depois de formatar). Desligar impede essa instalação automática.",
+      "ganhoEsperado": "Nenhum em FPS; evita software do fabricante instalado à força",
+      "categoria": "Privacidade",
+      "risco": "baixo",
+      "requerReinicio": true,
+      "controverso": false,
+      "observacao": "Se você usa um anti-roubo do fabricante (Computrace/Absolute, Lenovo, Dell), ele para de se reinstalar.",
+      "compatibilidade": { "windows": ["10", "11"] },
+      "registro": [
+        { "caminho": "HKLM:\\SYSTEM\\CurrentControlSet\\Control\\Session Manager", "nome": "DisableWpbtExecution", "tipo": "DWord", "valor": 1, "valorOriginal": null }
+      ],
+      "deteccao": "registro"
+    },
+    {
+      "id": "UT_Privacy_BingSearch_Off",
+      "nome": "Tirar a pesquisa do Bing do Iniciar",
+      "descricao": "A pesquisa do Iniciar deixa de mandar o que você digita para o Bing e de mostrar resultados da web; fica só com apps, configurações e arquivos do PC. Também fica mais rápida.",
+      "ganhoEsperado": "Nenhum em FPS; pesquisa do Iniciar mais rápida e privada",
+      "categoria": "Privacidade",
+      "risco": "baixo",
+      "requerReinicio": false,
+      "controverso": false,
+      "compatibilidade": { "windows": ["10", "11"] },
+      "registro": [
+        { "caminho": "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Search", "nome": "BingSearchEnabled", "tipo": "DWord", "valor": 0, "valorOriginal": null },
+        { "caminho": "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Search", "nome": "CortanaConsent", "tipo": "DWord", "valor": 0, "valorOriginal": null },
+        { "caminho": "HKCU:\\Software\\Policies\\Microsoft\\Windows\\Explorer", "nome": "DisableSearchBoxSuggestions", "tipo": "DWord", "valor": 1, "valorOriginal": null }
+      ],
+      "deteccao": "registro"
+    },
+    {
+      "id": "UT_Privacy_EdgeDebloat",
+      "nome": "Limpar o Microsoft Edge (telemetria e propagandas)",
+      "descricao": "Políticas que desligam a telemetria, as compras, recompensas, sugestões, a tela de boas-vindas e as campanhas para virar navegador padrão do Edge. Não remove o Edge.",
+      "ganhoEsperado": "Nenhum em FPS; Edge mais limpo e privado",
+      "categoria": "Privacidade",
+      "risco": "baixo",
+      "requerReinicio": false,
+      "controverso": false,
+      "compatibilidade": { "windows": ["10", "11"] },
+      "registro": [
+        { "caminho": "HKLM:\\SOFTWARE\\Policies\\Microsoft\\EdgeUpdate", "nome": "CreateDesktopShortcutDefault", "tipo": "DWord", "valor": 0, "valorOriginal": null },
+        { "caminho": "HKLM:\\SOFTWARE\\Policies\\Microsoft\\Edge", "nome": "PersonalizationReportingEnabled", "tipo": "DWord", "valor": 0, "valorOriginal": null },
+        { "caminho": "HKLM:\\SOFTWARE\\Policies\\Microsoft\\Edge", "nome": "ShowRecommendationsEnabled", "tipo": "DWord", "valor": 0, "valorOriginal": null },
+        { "caminho": "HKLM:\\SOFTWARE\\Policies\\Microsoft\\Edge", "nome": "HideFirstRunExperience", "tipo": "DWord", "valor": 1, "valorOriginal": null },
+        { "caminho": "HKLM:\\SOFTWARE\\Policies\\Microsoft\\Edge", "nome": "UserFeedbackAllowed", "tipo": "DWord", "valor": 0, "valorOriginal": null },
+        { "caminho": "HKLM:\\SOFTWARE\\Policies\\Microsoft\\Edge", "nome": "ConfigureDoNotTrack", "tipo": "DWord", "valor": 1, "valorOriginal": null },
+        { "caminho": "HKLM:\\SOFTWARE\\Policies\\Microsoft\\Edge", "nome": "EdgeShoppingAssistantEnabled", "tipo": "DWord", "valor": 0, "valorOriginal": null },
+        { "caminho": "HKLM:\\SOFTWARE\\Policies\\Microsoft\\Edge", "nome": "ShowMicrosoftRewards", "tipo": "DWord", "valor": 0, "valorOriginal": null },
+        { "caminho": "HKLM:\\SOFTWARE\\Policies\\Microsoft\\Edge", "nome": "DiagnosticData", "tipo": "DWord", "valor": 0, "valorOriginal": null },
+        { "caminho": "HKLM:\\SOFTWARE\\Policies\\Microsoft\\Edge", "nome": "EdgeAssetDeliveryServiceEnabled", "tipo": "DWord", "valor": 0, "valorOriginal": null },
+        { "caminho": "HKLM:\\SOFTWARE\\Policies\\Microsoft\\Edge", "nome": "DefaultBrowserSettingsCampaignEnabled", "tipo": "DWord", "valor": 0, "valorOriginal": null },
+        { "caminho": "HKLM:\\SOFTWARE\\Policies\\Microsoft\\Edge", "nome": "StartupBoostEnabled", "tipo": "DWord", "valor": 0, "valorOriginal": null },
+        { "caminho": "HKLM:\\SOFTWARE\\Policies\\Microsoft\\Edge", "nome": "BackgroundModeEnabled", "tipo": "DWord", "valor": 0, "valorOriginal": null }
+      ],
+      "deteccao": "registro"
+    },
+    {
+      "id": "UT_Privacy_BraveDebloat",
+      "nome": "Limpar o Brave (recompensas, carteira, VPN, IA)",
+      "descricao": "Políticas que desligam no Brave as recompensas, a carteira de cripto, a VPN, o assistente de IA (Leo), as notícias e os relatórios de uso. Só tem efeito se você usa o Brave.",
+      "ganhoEsperado": "Nenhum em FPS; navegador mais leve",
+      "categoria": "Privacidade",
+      "risco": "baixo",
+      "requerReinicio": false,
+      "controverso": false,
+      "compatibilidade": { "windows": ["10", "11"] },
+      "registro": [
+        { "caminho": "HKLM:\\SOFTWARE\\Policies\\BraveSoftware\\Brave", "nome": "BraveRewardsDisabled", "tipo": "DWord", "valor": 1, "valorOriginal": null },
+        { "caminho": "HKLM:\\SOFTWARE\\Policies\\BraveSoftware\\Brave", "nome": "BraveWalletDisabled", "tipo": "DWord", "valor": 1, "valorOriginal": null },
+        { "caminho": "HKLM:\\SOFTWARE\\Policies\\BraveSoftware\\Brave", "nome": "BraveVPNDisabled", "tipo": "DWord", "valor": 1, "valorOriginal": null },
+        { "caminho": "HKLM:\\SOFTWARE\\Policies\\BraveSoftware\\Brave", "nome": "BraveAIChatEnabled", "tipo": "DWord", "valor": 0, "valorOriginal": null },
+        { "caminho": "HKLM:\\SOFTWARE\\Policies\\BraveSoftware\\Brave", "nome": "BraveNewsDisabled", "tipo": "DWord", "valor": 1, "valorOriginal": null },
+        { "caminho": "HKLM:\\SOFTWARE\\Policies\\BraveSoftware\\Brave", "nome": "BraveStatsPingEnabled", "tipo": "DWord", "valor": 0, "valorOriginal": null },
+        { "caminho": "HKLM:\\SOFTWARE\\Policies\\BraveSoftware\\Brave", "nome": "BraveP3AEnabled", "tipo": "DWord", "valor": 0, "valorOriginal": null }
+      ],
+      "deteccao": "registro"
+    }
+  ]
+}

@@ -73,6 +73,14 @@ function Invoke-UTTweak {
 
             $state = Get-UTTweakStateCore -Tweak $tweak -Contexto $context
             if ($state.Estado -eq 'Aplicado') {
+                # Already applied because another Upgrade Tweaks tweak set the same values: hold a
+                # reference too, so undoing that other tweak does not undo this one.
+                if (-not $WhatIfPreference -and (Register-UTSharedReference -Tweak $tweak)) {
+                    Add-UTAppliedRecord -TweakId $tid
+                    Write-UTLog -Level Info -TweakId $tid -Message 'Já estava aplicado por outro ajuste; este também passa a mantê-lo.'
+                    ConvertTo-UTTweakResult -Tweak $tweak -Acao Aplicar -Status JaAplicado -Mensagem 'Já estava aplicado.'
+                    continue
+                }
                 Write-UTLog -Level Info -TweakId $tid -Message 'Já estava aplicado.'
                 ConvertTo-UTTweakResult -Tweak $tweak -Acao Aplicar -Status JaAplicado -Mensagem 'Já estava aplicado.'
                 continue

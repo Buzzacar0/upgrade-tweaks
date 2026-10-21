@@ -58,7 +58,7 @@ campos abaixo; um tweak inválido não entra no programa.
 | `scriptAplicar[]`, `scriptDesfazer[]` | não | Linhas de PowerShell 5.1. Se houver `scriptAplicar`, `scriptDesfazer` é obrigatório. Recebem `$TweakId` e podem usar os helpers (`Save-UTOriginalItem`, `Pop-UTOriginalItem`, `Invoke-UTNative`...). |
 | `scriptDetectar[]` | depende | Devolve `$true` quando o tweak está aplicado. Obrigatório quando `deteccao` é `script` ou `combinada`. |
 | `scriptSimular[]`, `scriptSimularDesfazer[]` | não | Só leitura. Devolvem as linhas que a simulação mostra (ex.: "Estado mínimo do processador: 5 -> 100"). Sem eles, a simulação diz apenas "Executa o script do ajuste". |
-| `deteccao` | sim | `registro`, `servicos`, `script` ou `combinada` (registro + serviços + script). |
+| `deteccao` | sim | `registro`, `servicos`, `script` ou `combinada` (tudo o que o ajuste tiver: registro + serviços + `scriptDetectar`, se houver script). |
 
 Todo tweak precisa ter pelo menos uma ação (`registro`, `servicos` ou `scriptAplicar`) e, para cada ação, o caminho de volta.
 

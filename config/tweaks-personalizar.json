@@ -1,0 +1,315 @@
+{
+  "versao": 1,
+  "tweaks": [
+    {
+      "id": "UT_Custom_DarkMode",
+      "nome": "Tema escuro no Windows e nos apps",
+      "descricao": "Liga o modo escuro do sistema (barra de tarefas, Iniciar) e dos apps.",
+      "ganhoEsperado": "Nenhum (personalização)",
+      "categoria": "Personalizar",
+      "risco": "baixo",
+      "requerReinicio": false,
+      "controverso": false,
+      "compatibilidade": { "windows": ["10", "11"] },
+      "registro": [
+        { "caminho": "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize", "nome": "AppsUseLightTheme", "tipo": "DWord", "valor": 0, "valorOriginal": 1 },
+        { "caminho": "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize", "nome": "SystemUsesLightTheme", "tipo": "DWord", "valor": 0, "valorOriginal": 1 }
+      ],
+      "deteccao": "registro"
+    },
+    {
+      "id": "UT_Custom_ShowExtensions",
+      "nome": "Mostrar as extensões dos arquivos",
+      "descricao": "Mostra .exe, .jpg, .txt etc. no Explorador de Arquivos. Ajuda a perceber arquivos disfarçados (como \"foto.jpg.exe\").",
+      "ganhoEsperado": "Nenhum (personalização e segurança)",
+      "categoria": "Personalizar",
+      "risco": "baixo",
+      "requerReinicio": false,
+      "controverso": false,
+      "compatibilidade": { "windows": ["10", "11"] },
+      "registro": [
+        { "caminho": "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced", "nome": "HideFileExt", "tipo": "DWord", "valor": 0, "valorOriginal": 1 }
+      ],
+      "deteccao": "registro"
+    },
+    {
+      "id": "UT_Custom_ShowHidden",
+      "nome": "Mostrar arquivos ocultos",
+      "descricao": "Mostra arquivos e pastas ocultos no Explorador (como a pasta AppData, onde ficam caches de jogos e shaders).",
+      "ganhoEsperado": "Nenhum (personalização)",
+      "categoria": "Personalizar",
+      "risco": "baixo",
+      "requerReinicio": false,
+      "controverso": false,
+      "compatibilidade": { "windows": ["10", "11"] },
+      "registro": [
+        { "caminho": "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced", "nome": "Hidden", "tipo": "DWord", "valor": 1, "valorOriginal": 2 }
+      ],
+      "deteccao": "registro"
+    },
+    {
+      "id": "UT_Custom_TaskbarLeft",
+      "nome": "Barra de tarefas alinhada à esquerda",
+      "descricao": "Coloca o botão Iniciar e os ícones da barra de tarefas à esquerda, como no Windows 10.",
+      "ganhoEsperado": "Nenhum (personalização)",
+      "categoria": "Personalizar",
+      "risco": "baixo",
+      "requerReinicio": false,
+      "controverso": false,
+      "compatibilidade": { "windows": ["11"] },
+      "registro": [
+        { "caminho": "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced", "nome": "TaskbarAl", "tipo": "DWord", "valor": 0, "valorOriginal": null }
+      ],
+      "deteccao": "registro"
+    },
+    {
+      "id": "UT_Custom_TaskbarSearch_Hide",
+      "nome": "Esconder a pesquisa da barra de tarefas",
+      "descricao": "Remove a caixa/ícone de pesquisa da barra de tarefas. A pesquisa continua funcionando: aperte a tecla Windows e comece a digitar.",
+      "ganhoEsperado": "Nenhum (personalização)",
+      "categoria": "Personalizar",
+      "risco": "baixo",
+      "requerReinicio": false,
+      "controverso": false,
+      "compatibilidade": { "windows": ["10", "11"] },
+      "registro": [
+        { "caminho": "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Search", "nome": "SearchboxTaskbarMode", "tipo": "DWord", "valor": 0, "valorOriginal": null }
+      ],
+      "deteccao": "registro"
+    },
+    {
+      "id": "UT_Custom_TaskView_Hide",
+      "nome": "Esconder o botão Visão de Tarefas",
+      "descricao": "Remove o botão de Visão de Tarefas (áreas de trabalho virtuais) da barra de tarefas. O atalho Win+Tab continua funcionando.",
+      "ganhoEsperado": "Nenhum (personalização)",
+      "categoria": "Personalizar",
+      "risco": "baixo",
+      "requerReinicio": false,
+      "controverso": false,
+      "compatibilidade": { "windows": ["10", "11"] },
+      "registro": [
+        { "caminho": "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced", "nome": "ShowTaskViewButton", "tipo": "DWord", "valor": 0, "valorOriginal": null }
+      ],
+      "deteccao": "registro"
+    },
+    {
+      "id": "UT_Custom_ClassicContextMenu",
+      "nome": "Menu do botão direito clássico",
+      "descricao": "Volta o menu completo do botão direito do Windows 10 no Explorador do Windows 11, sem precisar clicar em \"Mostrar mais opções\".",
+      "ganhoEsperado": "Nenhum (personalização)",
+      "categoria": "Personalizar",
+      "risco": "baixo",
+      "requerReinicio": true,
+      "controverso": false,
+      "observacao": "Vale depois de reiniciar o Explorador (ou sair e entrar na conta).",
+      "compatibilidade": { "windows": ["11"] },
+      "registro": [
+        { "caminho": "HKCU:\\Software\\Classes\\CLSID\\{86ca1aa0-34aa-4e8b-a509-50c905bae2a2}\\InprocServer32", "nome": "", "tipo": "String", "valor": "", "valorOriginal": null }
+      ],
+      "deteccao": "registro"
+    },
+    {
+      "id": "UT_Custom_EndTaskTaskbar",
+      "nome": "\"Finalizar tarefa\" no botão direito da barra de tarefas",
+      "descricao": "Adiciona a opção \"Finalizar tarefa\" ao clicar com o botão direito num programa na barra de tarefas. Útil quando um jogo trava e não fecha.",
+      "ganhoEsperado": "Nenhum (praticidade)",
+      "categoria": "Personalizar",
+      "risco": "baixo",
+      "requerReinicio": false,
+      "controverso": false,
+      "compatibilidade": { "windows": ["11"], "buildMinimo": 22631 },
+      "registro": [
+        { "caminho": "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced\\TaskbarDeveloperSettings", "nome": "TaskbarEndTask", "tipo": "DWord", "valor": 1, "valorOriginal": null }
+      ],
+      "deteccao": "registro"
+    },
+    {
+      "id": "UT_Custom_NumLock",
+      "nome": "Num Lock ligado ao iniciar",
+      "descricao": "Deixa o Num Lock ligado na tela de login e ao entrar no Windows.",
+      "ganhoEsperado": "Nenhum (praticidade)",
+      "categoria": "Personalizar",
+      "risco": "baixo",
+      "requerReinicio": false,
+      "controverso": false,
+      "compatibilidade": { "windows": ["10", "11"] },
+      "registro": [
+        { "caminho": "HKU:\\.DEFAULT\\Control Panel\\Keyboard", "nome": "InitialKeyboardIndicators", "tipo": "String", "valor": "2", "valorOriginal": "2147483648" },
+        { "caminho": "HKCU:\\Control Panel\\Keyboard", "nome": "InitialKeyboardIndicators", "tipo": "String", "valor": "2", "valorOriginal": "0" }
+      ],
+      "deteccao": "registro"
+    },
+    {
+      "id": "UT_Custom_VerboseBSoD",
+      "nome": "Tela azul com detalhes técnicos",
+      "descricao": "Mostra o código de erro detalhado na tela azul em vez do rosto triste. Ajuda a descobrir qual driver causou o travamento (útil no atendimento técnico).",
+      "ganhoEsperado": "Nenhum (diagnóstico)",
+      "categoria": "Personalizar",
+      "risco": "baixo",
+      "requerReinicio": false,
+      "controverso": false,
+      "compatibilidade": { "windows": ["10", "11"] },
+      "registro": [
+        { "caminho": "HKLM:\\SYSTEM\\CurrentControlSet\\Control\\CrashControl", "nome": "DisplayParameters", "tipo": "DWord", "valor": 1, "valorOriginal": null },
+        { "caminho": "HKLM:\\SYSTEM\\CurrentControlSet\\Control\\CrashControl", "nome": "DisableEmoticon", "tipo": "DWord", "valor": 1, "valorOriginal": null }
+      ],
+      "deteccao": "registro"
+    },
+    {
+      "id": "UT_Custom_VerboseLogon",
+      "nome": "Mensagens detalhadas ao ligar e desligar",
+      "descricao": "Mostra o que o Windows está fazendo durante o boot, login e desligamento (\"Aplicando configurações...\"). Ajuda a descobrir o que deixa o boot lento.",
+      "ganhoEsperado": "Nenhum (diagnóstico)",
+      "categoria": "Personalizar",
+      "risco": "baixo",
+      "requerReinicio": false,
+      "controverso": false,
+      "compatibilidade": { "windows": ["10", "11"] },
+      "registro": [
+        { "caminho": "HKLM:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Policies\\System", "nome": "VerboseStatus", "tipo": "DWord", "valor": 1, "valorOriginal": null }
+      ],
+      "deteccao": "registro"
+    },
+    {
+      "id": "UT_Custom_LockScreen_Off",
+      "nome": "Pular a tela de bloqueio",
+      "descricao": "Vai direto para a tela de senha/PIN, sem a tela de bloqueio com relógio e imagem. Honestidade: a Microsoft só respeita esta política no Windows Enterprise e Education; no Home e Pro pode não ter efeito.",
+      "ganhoEsperado": "Nenhum (praticidade)",
+      "categoria": "Personalizar",
+      "risco": "baixo",
+      "requerReinicio": false,
+      "controverso": false,
+      "compatibilidade": { "windows": ["10", "11"] },
+      "registro": [
+        { "caminho": "HKLM:\\SOFTWARE\\Policies\\Microsoft\\Windows\\Personalization", "nome": "NoLockScreen", "tipo": "DWord", "valor": 1, "valorOriginal": null }
+      ],
+      "deteccao": "registro"
+    },
+    {
+      "id": "UT_Custom_ExplorerThisPC",
+      "nome": "Explorador abrindo em \"Este Computador\" (sem Início e Galeria)",
+      "descricao": "Faz o Explorador de Arquivos abrir em \"Este Computador\" e tira os itens Início e Galeria da lateral.",
+      "ganhoEsperado": "Nenhum (personalização)",
+      "categoria": "Personalizar",
+      "risco": "baixo",
+      "requerReinicio": false,
+      "controverso": false,
+      "compatibilidade": { "windows": ["10", "11"] },
+      "registro": [
+        { "caminho": "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced", "nome": "LaunchTo", "tipo": "DWord", "valor": 1, "valorOriginal": null },
+        { "caminho": "HKCU:\\Software\\Classes\\CLSID\\{f874310e-b6b7-47dc-bc84-b9e6b38f5903}", "nome": "System.IsPinnedToNameSpaceTree", "tipo": "DWord", "valor": 0, "valorOriginal": null },
+        { "caminho": "HKCU:\\Software\\Classes\\CLSID\\{e88865ea-0e1c-4e20-9aa6-edcd0212c87c}", "nome": "System.IsPinnedToNameSpaceTree", "tipo": "DWord", "valor": 0, "valorOriginal": null }
+      ],
+      "deteccao": "registro"
+    },
+    {
+      "id": "UT_Custom_LongPaths",
+      "nome": "Permitir caminhos de arquivo longos",
+      "descricao": "Libera caminhos com mais de 260 caracteres. Evita erros ao extrair mods e pastas muito aninhadas.",
+      "ganhoEsperado": "Nenhum (compatibilidade)",
+      "categoria": "Personalizar",
+      "risco": "baixo",
+      "requerReinicio": false,
+      "controverso": false,
+      "compatibilidade": { "windows": ["10", "11"] },
+      "registro": [
+        { "caminho": "HKLM:\\SYSTEM\\CurrentControlSet\\Control\\FileSystem", "nome": "LongPathsEnabled", "tipo": "DWord", "valor": 1, "valorOriginal": 0 }
+      ],
+      "deteccao": "registro"
+    },
+    {
+      "id": "UT_Custom_BatteryPercent",
+      "nome": "Porcentagem da bateria na barra de tarefas",
+      "descricao": "Mostra o número da carga da bateria ao lado do ícone.",
+      "ganhoEsperado": "Nenhum (praticidade)",
+      "categoria": "Personalizar",
+      "risco": "baixo",
+      "requerReinicio": false,
+      "controverso": false,
+      "compatibilidade": { "windows": ["11"], "notebook": true, "desktop": false },
+      "registro": [
+        { "caminho": "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced", "nome": "IsBatteryPercentageEnabled", "tipo": "DWord", "valor": 1, "valorOriginal": null }
+      ],
+      "deteccao": "registro"
+    },
+    {
+      "id": "UT_Custom_ScrollbarsVisible",
+      "nome": "Barras de rolagem sempre visíveis",
+      "descricao": "Mantém as barras de rolagem do Windows 11 sempre aparentes, em vez de sumirem quando o mouse sai de cima.",
+      "ganhoEsperado": "Nenhum (personalização)",
+      "categoria": "Personalizar",
+      "risco": "baixo",
+      "requerReinicio": false,
+      "controverso": false,
+      "compatibilidade": { "windows": ["11"] },
+      "registro": [
+        { "caminho": "HKCU:\\Control Panel\\Accessibility", "nome": "DynamicScrollbars", "tipo": "DWord", "valor": 0, "valorOriginal": 1 }
+      ],
+      "deteccao": "registro"
+    },
+    {
+      "id": "UT_Custom_Notifications_Off",
+      "nome": "Desativar notificações e a central de notificações",
+      "descricao": "Desliga as notificações do Windows e dos apps e a central de notificações (incluindo o calendário dela). Nenhum pop-up aparece no meio da partida.",
+      "ganhoEsperado": "Nenhum em FPS; nenhuma notificação atrapalhando o jogo",
+      "categoria": "Personalizar",
+      "risco": "baixo",
+      "requerReinicio": true,
+      "controverso": false,
+      "observacao": "Você para de ver notificações do Discord, WhatsApp, e-mail e do próprio Windows. O Modo Não Incomodar é uma alternativa mais leve.",
+      "compatibilidade": { "windows": ["10", "11"] },
+      "registro": [
+        { "caminho": "HKCU:\\Software\\Policies\\Microsoft\\Windows\\Explorer", "nome": "DisableNotificationCenter", "tipo": "DWord", "valor": 1, "valorOriginal": null },
+        { "caminho": "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\PushNotifications", "nome": "ToastEnabled", "tipo": "DWord", "valor": 0, "valorOriginal": 1 }
+      ],
+      "deteccao": "registro"
+    },
+    {
+      "id": "UT_Custom_StartRecommendations_Off",
+      "nome": "Esconder a seção \"Recomendados\" do Iniciar",
+      "descricao": "Tira do Iniciar a lista de arquivos recentes e apps recomendados. No Home e Pro isso usa uma política de \"ambiente educacional\", que como efeito colateral também desliga o Windows Spotlight na tela de bloqueio.",
+      "ganhoEsperado": "Nenhum (personalização)",
+      "categoria": "Personalizar",
+      "risco": "médio",
+      "requerReinicio": true,
+      "controverso": true,
+      "compatibilidade": { "windows": ["11"] },
+      "registro": [
+        { "caminho": "HKLM:\\SOFTWARE\\Microsoft\\PolicyManager\\current\\device\\Start", "nome": "HideRecommendedSection", "tipo": "DWord", "valor": 1, "valorOriginal": null },
+        { "caminho": "HKLM:\\SOFTWARE\\Microsoft\\PolicyManager\\current\\device\\Education", "nome": "IsEducationEnvironment", "tipo": "DWord", "valor": 1, "valorOriginal": null },
+        { "caminho": "HKLM:\\SOFTWARE\\Policies\\Microsoft\\Windows\\Explorer", "nome": "HideRecommendedSection", "tipo": "DWord", "valor": 1, "valorOriginal": null }
+      ],
+      "deteccao": "registro"
+    },
+    {
+      "id": "UT_Custom_SettingsHome_Hide",
+      "nome": "Esconder a página Início das Configurações",
+      "descricao": "As Configurações abrem direto em Sistema, sem a página inicial com cartões e propagandas da Microsoft.",
+      "ganhoEsperado": "Nenhum (personalização)",
+      "categoria": "Personalizar",
+      "risco": "baixo",
+      "requerReinicio": false,
+      "controverso": false,
+      "compatibilidade": { "windows": ["11"] },
+      "registro": [
+        { "caminho": "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Policies\\Explorer", "nome": "SettingsPageVisibility", "tipo": "String", "valor": "hide:home", "valorOriginal": null }
+      ],
+      "deteccao": "registro"
+    },
+    {
+      "id": "UT_Custom_Snapping_Off",
+      "nome": "Desativar o encaixe automático de janelas",
+      "descricao": "Para de encaixar janelas nas bordas da tela quando você arrasta. Útil para quem tem dois monitores e arrasta o jogo ou o Discord de um para o outro.",
+      "ganhoEsperado": "Nenhum (praticidade)",
+      "categoria": "Personalizar",
+      "risco": "baixo",
+      "requerReinicio": true,
+      "controverso": false,
+      "compatibilidade": { "windows": ["10", "11"] },
+      "registro": [
+        { "caminho": "HKCU:\\Control Panel\\Desktop", "nome": "WindowArrangementActive", "tipo": "String", "valor": "0", "valorOriginal": "1" }
+      ],
+      "deteccao": "registro"
+    }
+  ]
+}

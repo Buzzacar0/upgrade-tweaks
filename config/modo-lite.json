@@ -1,0 +1,41 @@
+{
+  "versao": 1,
+  "descricao": "Debloat agressivo de uma vez só, inspirado nos Windows \"superlite\" (como o Ghost Spectre), mas aplicado no seu Windows original e com tudo reversível. A lista completa aparece antes de aplicar e cada item pode ser desmarcado. Nunca entram: serviços do Xbox/Game Pass, Microsoft Store, Game Bar, Windows Defender e Windows Update.",
+  "incluir": [
+    "UT_Privacy_Telemetry_Min",
+    "UT_Privacy_AdvertisingId_Off",
+    "UT_Privacy_ActivityHistory_Off",
+    "UT_Privacy_StartSuggestions_Off",
+    "UT_Privacy_ConsumerFeatures_Off",
+    "UT_Privacy_Copilot_Off",
+    "UT_Privacy_Recall_Off",
+    "UT_Privacy_ClickToDo_Off",
+    "UT_Privacy_Widgets_Off",
+    "UT_Privacy_Spotlight_Off",
+    "UT_Privacy_BackgroundApps_Off",
+    "UT_Privacy_WPBT_Off",
+    "UT_Privacy_BingSearch_Off",
+    "UT_Custom_Notifications_Off",
+    "UT_Net_DeliveryOptimization_Off",
+    "UT_Apps_DeviceMetadata_Off",
+    "UT_Lite_RemoveWidgets",
+    "UT_Lite_RemoveOneDrive",
+    "UT_Lite_RemoveEdge",
+    "UT_Svc_ModoLiteManual",
+    "UT_Svc_DiagTrack",
+    "UT_Svc_dmwappushservice",
+    "UT_Svc_WerSvc",
+    "UT_Svc_Fax",
+    "UT_Svc_RemoteRegistry",
+    "UT_Svc_MapsBroker",
+    "UT_Svc_RetailDemo",
+    "UT_Svc_WMPNetworkSvc",
+    "UT_Svc_wisvc",
+    "UT_Svc_diagnosticshub_standardcollector_service"
+  ],
+  "incluirApps": "todos",
+  "excluir": [
+    "UT_App_MicrosoftCorporationII_QuickAssist"
+  ],
+  "nuncaIncluirGrupos": ["xbox", "impressora"]
+}

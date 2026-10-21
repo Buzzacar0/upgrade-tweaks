@@ -118,7 +118,7 @@ function Get-UTTweakStateCore {
             $details.Add(('serviço {0}: {1}' -f $entry.nome, $now))
         }
     }
-    if ($mode -in 'script', 'combinada') {
+    if ($mode -eq 'script' -or ($mode -eq 'combinada' -and @($Tweak.scriptDetectar | Where-Object { $_ }).Count -gt 0)) {
         $result = $false
         try {
             $result = [bool](@(Invoke-UTTweakScript -Lines @($Tweak.scriptDetectar) -TweakId $Tweak.id -Contexto $Contexto) | Select-Object -Last 1)
@@ -188,6 +188,36 @@ function Get-UTTweakAction {
         }
     }
     return $actions.ToArray()
+}
+
+function Register-UTSharedReference {
+    <#
+    .SYNOPSIS
+        For a tweak that is already applied: adds its reference to the saved originals that other
+        tweaks recorded for the same registry values/services. Returns $true when every value
+        of the tweak is held that way (it then counts as applied by the program). Values the user
+        set by hand (nothing saved) are left alone.
+    #>
+    [CmdletBinding()]
+    [OutputType([bool])]
+    param([Parameter(Mandatory)][System.Collections.IDictionary]$Tweak)
+
+    $registry = @($Tweak.registro | Where-Object { $_ })
+    $services = @($Tweak.servicos | Where-Object { $_ })
+    if (@($Tweak.scriptAplicar | Where-Object { $_ }).Count -gt 0 -or ($registry.Count + $services.Count) -eq 0) { return $false }
+
+    $registryKeys = @($registry | ForEach-Object { Get-UTRegistryStateKey -Path $_.caminho -Name ([string]$_.nome) })
+    $serviceKeys = @($services | ForEach-Object { Get-UTServiceStateKey -Name $_.nome })
+    $missing = @(@($registryKeys + $serviceKeys) | Where-Object { $null -eq (Get-UTOriginalItem -Chave $_) })
+    # Services that do not exist on this PC count as held.
+    $missing = @($missing | Where-Object { $_ -notlike 'servico|*' -or (Get-UTServiceState -Name $_.Substring(8)).Existe })
+    if ($missing.Count -gt 0) { return $false }
+
+    foreach ($e in $registry) { [void](Save-UTOriginalRegistryValue -Path $e.caminho -Name ([string]$e.nome) -TweakId ([string]$Tweak.id)) }
+    foreach ($e in $services) {
+        if ($null -ne (Get-UTOriginalItem -Chave (Get-UTServiceStateKey -Name $e.nome))) { [void](Save-UTOriginalServiceState -Name $e.nome -TweakId ([string]$Tweak.id)) }
+    }
+    return $true
 }
 
 function Add-UTScriptedAction {
