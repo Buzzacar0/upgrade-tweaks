@@ -38,8 +38,8 @@ irm https://github.com/Buzzacar0/upgrade-tweaks/releases/latest/download/upgrade
 | **Rede** | Teste de latência, jitter e perda (roteador e internet), comparação de DNS, QoS para o Call of Duty, economia de energia da placa de rede, Nagle, IPv4 preferido, limpar DNS e resetar a rede. |
 | **Serviços e Apps** | Serviços em Manual, remoção de apps que não são de jogo, **Modo Lite** (debloat agressivo mostrado em lista antes) e gerenciador de inicialização. |
 | **Privacidade** | Telemetria, ID de anúncios, histórico de atividades, Copilot, Recall, widgets, pesquisa do Bing e afins. |
-| **GPU** | NVIDIA: perfil do Call of Duty e global gravados direto no driver (atual × recomendado, com backup), faixa de cor Completa, taxa máxima do monitor, power limit. Cache de shaders, drivers oficiais, guias de AMD/Intel/DDU e "só o driver de vídeo" da NVIDIA. |
-| **Warzone** | **Modo Partida** (fecha o que pesa e ativa o plano Upgrade Warzone; ao sair, volta tudo), arquivo de configuração do jogo com backup, guia de gráficos para a sua placa e VRAM, exclusão no Defender. |
+| **GPU** | Configurações do driver gravadas direto, com atual × recomendado e desfazer: **NVIDIA** (perfil do Call of Duty e global, pela NVAPI), **AMD** (Anti-Lag, Chill, Boost, AFMF, Super Resolution, Enhanced Sync, V-Sync, FreeSync, filtragem de textura, pela ADLX oficial da AMD) e **Intel Arc** (baixa latência, V-Sync, Endurance Gaming, limitador, shaders pré-compilados, pela Control Library oficial da Intel). Faixa de cor Completa, taxa máxima do monitor, power limit, cache de shaders, "só o driver de vídeo" da NVIDIA e **DDU automático** em Modo de Segurança. |
+| **Warzone** | **Modo Partida** (fecha o que pesa e ativa o plano Upgrade Warzone; ao sair, volta tudo), **configurações de gráficos gravadas direto no arquivo do jogo** (para a sua placa e VRAM, só valores que o próprio jogo aceita, com backup), exclusão no Defender. |
 | **Ferramentas** | Limpeza de temporários, Limpeza de Disco, `sfc`/`DISM`, TRIM (nunca desfragmenta SSD), arquivo de paginação, pausar o Windows Update por até 35 dias, atalhos do sistema e **guia de BIOS** personalizado para o seu processador e placa-mãe. |
 | **Programas** | MSI Afterburner, RTSS, HWiNFO64, OCCT, CPU-Z, GPU-Z, NVIDIA Profile Inspector, DDU, NVCleanstall, Autoruns, Process Lasso, O&O ShutUp10, 7-Zip, Everything, CrystalDiskInfo/Mark e outros: instalar, abrir (como administrador), atualizar e desinstalar pelo winget ou pela versão oficial no GitHub. |
 | **Personalizar** | Tema escuro, barra de tarefas, extensões de arquivo, menu de contexto clássico, efeitos visuais. |
@@ -94,7 +94,7 @@ Código de saída: `0` ok, `1` algum ajuste falhou, `2` parâmetros inválidos, 
 ## Todos os ajustes
 
 <!-- TABELA-AJUSTES:INICIO -->
-Total: **152 ajustes**, todos com desfazer e detecção do estado atual. A coluna Preset mostra o primeiro preset que inclui o ajuste (Seguro está dentro do Competitivo, que está dentro do Extremo).
+Total: **154 ajustes**, todos com desfazer e detecção do estado atual. A coluna Preset mostra o primeiro preset que inclui o ajuste (Seguro está dentro do Competitivo, que está dentro do Extremo).
 
 <details><summary><b>Energia</b> (5 ajustes)</summary>
 
@@ -257,10 +257,12 @@ Total: **152 ajustes**, todos com desfazer e detecção do estado atual. A colun
 
 </details>
 
-<details><summary><b>GPU</b> (5 ajustes)</summary>
+<details><summary><b>GPU</b> (7 ajustes)</summary>
 
 | Ajuste | Risco | Ganho esperado | Reinício | Preset |
 |---|---|---|---|---|
+| Configurações AMD recomendadas (Adrenalin) | baixo | Pequeno a médio (latência menor e nada do driver interferindo no jogo) | não | Seguro |
+| Configurações Intel Arc recomendadas | baixo | Pequeno a médio (latência menor, menos travadas no primeiro carregamento) | não | Seguro |
 | Configurações NVIDIA recomendadas no perfil do Call of Duty | baixo | Pequeno a médio (clocks estáveis, menos variação de frametime) | não | Seguro |
 | Faixa dinâmica de saída Completa (0-255) | baixo | Nenhum em FPS; cores e contraste corretos | não | Seguro |
 | Colocar cada monitor na taxa de atualização máxima | médio | Alto se o monitor estava abaixo da taxa máxima | não | Competitivo |

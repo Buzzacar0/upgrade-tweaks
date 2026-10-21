@@ -77,6 +77,81 @@ Describe 'Pasta players do jogo' {
     }
 }
 
+Describe 'Guia aplicado no arquivo do jogo' {
+    BeforeEach {
+        Reset-UTTestEnvironment
+        $players = Join-Path $TestDrive ('wz' + [guid]::NewGuid().ToString('N'))
+        New-Item -ItemType Directory -Path $players | Out-Null
+        # Lines copied from the real Black Ops 7 file format.
+        $lines = @(
+            'DisplayMode@0;22564;43096 = Fullscreen borderless window // one of Windowed, Fullscreen, Fullscreen borderless window, Fullscreen borderless extended window'
+            'ResolutionMultiplier@0;64786;30730 = 75 // 0 to 200'
+            'NvidiaReflex@0;33761;11445 = Enabled // one of Disabled, Enabled, Enabled + boost'
+            'CapFps@0;57752;20945 = false'
+            'MaxFpsInGame@0;13305;58861 = 250 // 30 to 300'
+            'TextureQuality@0;61129;7764 = 3 // 0 to 3'
+            'ShadowQuality@0;3981;58629 = Medium // one of Very_Low, Low, Medium, High, Very_High'
+            'EnableVelocityBasedBlur@0;57752;20945 = true'
+            'DepthOfField@0;57752;20945 = true'
+            'DepthOfField@1;29449;43096 = Script // one of Off, On, Script'
+            'VideoMemoryScaleMP@0;59710;7707 = 0.800000 // 0.000000 to 2.000000'
+        )
+        foreach ($n in 's.1.0.cod25.txt0', 's.1.0.cod25.txt1') { [IO.File]::WriteAllLines((Join-Path $players $n), [string[]]$lines, (New-Object System.Text.UTF8Encoding($false))) }
+        Mock Get-UTCodPlayersFolder { $players }
+        Mock Test-UTCodGameRunning { $false }
+        Mock Get-UTGpuOption { [pscustomobject]@{ ComGsync = $true; HzMonitor = 165 } }
+        $UTSync.Hardware = [pscustomobject]@{ GpuFabricantes = @('nvidia'); Gpus = @([pscustomobject]@{ Integrada = $false; VramGB = 12 }) }
+    }
+
+    It 'lê as opções válidas do próprio comentário da linha' {
+        $f = Join-Path $players 's.1.0.cod25.txt0'
+        (Get-UTCodConfigOption -Arquivo $f -Chave 'NvidiaReflex').Opcoes | Should -Contain 'Enabled + boost'
+        (Get-UTCodConfigOption -Arquivo $f -Chave 'ResolutionMultiplier').Maximo | Should -Be 200
+        (Get-UTCodConfigOption -Arquivo $f -Chave 'CapFps').Tipo | Should -Be 'bool'
+        Get-UTCodConfigOption -Arquivo $f -Chave 'NaoExiste' | Should -BeNullOrEmpty
+    }
+
+    It 'grava o competitivo nas duas cópias, com backup, e só valores aceitos' {
+        $r = @(Set-UTCodRecommendedSetting -Perfil competitivo -Confirm:$false)
+        foreach ($n in 's.1.0.cod25.txt0', 's.1.0.cod25.txt1') {
+            $f = Join-Path $players $n
+            Get-UTCodConfigValue -Arquivo $f -Chave 'DisplayMode' | Should -Be 'Fullscreen'
+            Get-UTCodConfigValue -Arquivo $f -Chave 'ResolutionMultiplier' | Should -Be '100'
+            Get-UTCodConfigValue -Arquivo $f -Chave 'NvidiaReflex' | Should -Be 'Enabled + boost'
+            Get-UTCodConfigValue -Arquivo $f -Chave 'CapFps' | Should -Be 'true'
+            Get-UTCodConfigValue -Arquivo $f -Chave 'MaxFpsInGame' | Should -Be '162'
+            Get-UTCodConfigValue -Arquivo $f -Chave 'TextureQuality' | Should -Be '0'
+            Get-UTCodConfigValue -Arquivo $f -Chave 'ShadowQuality' | Should -Be 'Very_Low'
+            Get-UTCodConfigValue -Arquivo $f -Chave 'EnableVelocityBasedBlur' | Should -Be 'false'
+            Get-UTCodConfigValue -Arquivo $f -Chave 'DepthOfField' | Should -Be 'false'
+            Get-UTCodConfigValue -Arquivo $f -Chave 'VideoMemoryScaleMP' | Should -Be '0.850000'
+            [IO.File]::ReadAllText($f) | Should -Match 'DepthOfField@1;29449;43096 = Script'
+            [IO.File]::ReadAllText($f) | Should -Match 'NvidiaReflex@0;33761;11445 = Enabled \+ boost // one of Disabled, Enabled, Enabled \+ boost'
+        }
+        @(Get-UTCodConfigBackup).Count | Should -Be 2
+        @($r | Where-Object { $_.Chave -eq 'SSRQuality' } | Select-Object -First 1).Motivo | Should -Match 'não tem essa chave'
+        @($r | Where-Object { -not $_.Chave }).Count | Should -BeGreaterThan 0
+    }
+
+    It 'valor que o jogo não aceita fica como está' {
+        $f = Join-Path $players 's.1.0.cod25.txt0'
+        $o = Get-UTCodConfigOption -Arquivo $f -Chave 'ShadowQuality'
+        Test-UTCodConfigValueValid -Opcao $o -Valor 'Ultra' | Should -BeNullOrEmpty
+        Test-UTCodConfigValueValid -Opcao (Get-UTCodConfigOption -Arquivo $f -Chave 'ResolutionMultiplier') -Valor '250' | Should -BeNullOrEmpty
+    }
+
+    It 'com o jogo aberto, recusa' {
+        Mock Test-UTCodGameRunning { $true }
+        { Set-UTCodRecommendedSetting -Perfil competitivo -Confirm:$false } | Should -Throw '*Feche o Call of Duty*'
+    }
+
+    It 'sem G-SYNC/FreeSync o competitivo tira o limite de FPS' {
+        Mock Get-UTGpuOption { [pscustomobject]@{ ComGsync = $false; HzMonitor = 165 } }
+        Set-UTCodRecommendedSetting -Perfil competitivo -Confirm:$false | Out-Null
+        Get-UTCodConfigValue -Arquivo (Join-Path $players 's.1.0.cod25.txt0') -Chave 'CapFps' | Should -Be 'false'
+    }
+}
+
 Describe 'Guia de configurações do jogo' {
     BeforeEach { Reset-UTTestEnvironment }
 

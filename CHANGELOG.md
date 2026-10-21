@@ -65,7 +65,14 @@ O formato segue o [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) e 
 - Ícone da janela em vetor (XAML).
 - Roteiro de teste manual em VM antes da primeira Release (`docs/teste-manual.md`) e teste de ponta a ponta do arquivo compilado no CI (diagnóstico e simulação dos três presets).
 
+- **AMD:** as configurações do AMD Software (Anti-Lag, Chill, Boost, AFMF, Radeon Super Resolution, Enhanced Sync, V-Sync, FRTC, anti-aliasing, filtragem anisotrópica, tesselação e FreeSync) são gravadas direto no driver pela ADLX, a biblioteca oficial da AMD; a filtragem de textura vai para o registro do driver (`UMD\TFQ`). Ajuste "Configurações AMD recomendadas", no preset Seguro.
+- **Intel Arc:** baixa latência, V-Sync, Endurance Gaming, limitador de FPS e download de shaders pré-compilados gravados pela Intel Graphics Control Library (oficial). Ajuste "Configurações Intel Arc recomendadas", no preset Seguro.
+- **DDU automático:** escolhe o instalador do driver novo e o programa bloqueia o Windows Update de instalar driver, reinicia em Modo de Segurança sem internet, roda o DDU sozinho, volta ao Windows normal, abre o instalador e desfaz o bloqueio. A flag do Modo de Segurança é retirada antes de qualquer outra coisa, para o PC nunca ficar preso nele.
+- **Gráficos do jogo:** o guia (competitivo ou equilíbrio) é gravado direto no arquivo de configuração do Call of Duty, nas duas cópias que o jogo mantém, com backup e só com valores que o próprio arquivo lista como válidos. O que não tem chave segura é mostrado para ajustar no menu.
+- Os guias passo a passo de AMD, Intel, NVIDIA App, DDU e "só o driver" foram trocados por essas ações automáticas.
+
 ### Corrigido
+- A leitura de estado não roda mais a detecção de ajustes que não se aplicam ao PC (evita avisos de hardware que não existe).
 - "Desfazer TUDO" sem nada aplicado agora só avisa, em vez de mostrar um resumo vazio.
 - O modo de desenvolvimento (`Set-StrictMode -Version Latest`) quebrava ao ler campos opcionais dos JSON, ao pegar o primeiro item de listas vazias e ao somar tamanhos de pastas vazias. Os campos opcionais agora recebem valores padrão ao carregar cada configuração, e a suíte de testes roda sempre em modo estrito.
 - O arquivo de configuração do Call of Duty não era encontrado quando a pasta Documentos foi movida para o OneDrive (o jogo continua gravando em `%USERPROFILE%\Documents`).

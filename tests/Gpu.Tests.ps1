@@ -257,8 +257,9 @@ Describe 'Ferramentas da aba GPU' {
         { Optimize-UTNvidiaDriverPackage -Pasta $TestDrive } | Should -Throw '*não parece um driver NVIDIA*'
     }
 
-    It 'guias de AMD, Intel e DDU existem com passos' {
-        foreach ($g in 'amd', 'intel', 'nvidiaApp', 'ddu', 'driverSoVideo') { @((Get-UTGpuGuide -Guia $g).passos).Count | Should -BeGreaterThan 2 }
+    It 'links oficiais de driver dos três fabricantes' {
+        $links = (Get-UTConfig -Name 'gpu-guia').links
+        foreach ($v in 'nvidia', 'amd', 'intel') { $links[$v] | Should -Match '^https://' }
     }
 }
 

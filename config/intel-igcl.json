@@ -1,0 +1,20 @@
+{
+  "_comentario": "Configurações globais do Intel Graphics Software gravadas pela Intel Graphics Control Library (ControlLib.dll, oficial da Intel). 'recurso' é o ctl_3d_feature_t e 'tipo' o ctl_property_value_type_t do igcl_api.h.",
+  "configuracoes": [
+    { "chave": "lowLatency", "nome": "Modo de baixa latência", "recurso": 16, "tipo": 4, "recomendado": 1,
+      "rotulos": { "0": "Desligado", "1": "Ligado", "2": "Ligado + Boost" },
+      "explicacao": "Reduz a fila de quadros entre o processador e a placa de vídeo, diminuindo o atraso do clique." },
+    { "chave": "flipMode", "nome": "Sincronização vertical", "recurso": 9, "tipo": 4, "recomendado": 1,
+      "rotulos": { "1": "Escolha do aplicativo", "2": "Desligado", "4": "Ligado", "8": "Smooth Sync", "16": "Speed Frame", "32": "FPS limitado" },
+      "explicacao": "Deixa o jogo decidir (no Call of Duty o V-Sync fica desligado no menu do jogo)." },
+    { "chave": "enduranceGaming", "nome": "Endurance Gaming", "recurso": 1, "tipo": 5, "recomendado": 0,
+      "rotulos": { "0": "Desligado", "1": "Ligado", "2": "Automático" },
+      "explicacao": "Limita o FPS para economizar bateria; em jogo competitivo atrapalha." },
+    { "chave": "frameLimit", "nome": "Limitador de FPS do driver", "recurso": 2, "tipo": 2, "recomendado": 0,
+      "rotulos": { "0": "Desligado", "1": "Ligado" },
+      "explicacao": "O limitador do próprio jogo tem menos latência." },
+    { "chave": "prebuiltShaders", "nome": "Baixar shaders pré-compilados", "recurso": 18, "tipo": 0, "recomendado": 1,
+      "rotulos": { "0": "Desligado", "1": "Ligado" },
+      "explicacao": "O driver baixa shaders já compilados para jogos conhecidos: menos travadas no primeiro carregamento." }
+  ]
+}

@@ -492,28 +492,69 @@ function New-UTUiPageGPU {
     $cacheData.Painel = $cache
     $tools.Add((New-UTUiCard -Titulo 'Cache de shaders' -Icone 'E74D' -Conteudo @($cache)))
 
+    foreach ($v in @(@('amd', 'AMD Radeon', 'Get-UTAmdSettingStatus', 'Configurações AMD recomendadas (Adrenalin)'), @('intel', 'Intel Arc', 'Get-UTIntelSettingStatus', 'Configurações Intel Arc recomendadas'))) {
+        if (-not (Test-UTUiVendor -Gpu $v[0])) { continue }
+        $panel = New-UTUiAsyncPanel -Nome $v[1] -Argumentos @{ Funcao = $v[2] } -Script { param($Funcao) & $Funcao } -Montar {
+            param($R, $D) $null = $D
+            $rows = @($R | ForEach-Object { [pscustomobject]@{ Nome = $_.Nome; Placa = $_.Placa; Atual = $_.Atual; Recomendado = $_.Recomendado; Ok = $(if ($_.Igual) { 'OK' } elseif ($_.Suportado) { 'Mudar' } else { '' }) } })
+            New-UTUiTable -Colunas @(@{ Titulo = 'Configuração'; Campo = 'Nome'; Largura = '*' }, @{ Titulo = 'Placa'; Campo = 'Placa'; Largura = 150 }, @{ Titulo = 'Atual'; Campo = 'Atual'; Largura = 170 }, @{ Titulo = 'Recomendado'; Campo = 'Recomendado'; Largura = 170 }, @{ Titulo = ''; Campo = 'Ok'; Largura = 60 }) -Itens $rows
+        }
+        $tools.Add((New-UTUiCard -Titulo "$($v[1]): configurações do driver" -Icone 'E7F4' -Subtitulo "Lido direto do driver pela biblioteca oficial do fabricante. Para gravar, marque '$($v[3])' na lista abaixo." -Conteudo @($panel)))
+    }
+
     $driverBtns = New-UTUiWrap
     foreach ($v in 'nvidia', 'amd', 'intel') {
-        [void]$driverBtns.Children.Add((New-UTUiButton ("Driver " + @{ nvidia = 'NVIDIA'; amd = 'AMD'; intel = 'Intel' }[$v]) -Icone 'E896' -Dados $v -AoClicar { param($b, $d) $null = $b; Open-UTDriverDownload -Fabricante $d }))
+        [void]$driverBtns.Children.Add((New-UTUiButton ("Baixar driver " + @{ nvidia = 'NVIDIA'; amd = 'AMD'; intel = 'Intel' }[$v]) -Icone 'E896' -Dados $v -AoClicar { param($b, $d) $null = $b; Open-UTDriverDownload -Fabricante $d }))
     }
-    $guides = New-UTUiWrap
-    foreach ($g in @(@('amd', 'Guia AMD Adrenalin'), @('intel', 'Guia Intel'), @('nvidiaApp', 'Guia NVIDIA App'), @('ddu', 'Guia do DDU'), @('driverSoVideo', 'Guia: só o driver NVIDIA'))) {
-        [void]$guides.Children.Add((New-UTUiButton $g[1] -Icone 'E82D' -Dados $g[0] -AoClicar { param($b, $d) $null = $b; Show-UTUiGpuGuide -Guia $d }))
-    }
-    $content = @($driverBtns, $guides)
+    $actions = New-UTUiWrap -Margem '0,4,0,0'
     if (Test-UTUiVendor -Gpu nvidia) {
-        $content += New-UTUiButton 'Instalar só o driver de vídeo da NVIDIA...' -Estilo Primario -Icone 'E7F4' -AoClicar { param($b, $d) $null = $b, $d; Invoke-UTUiDriverOnlyFlow }
+        [void]$actions.Children.Add((New-UTUiButton 'Instalar só o driver de vídeo da NVIDIA...' -Estilo Primario -Icone 'E7F4' -AoClicar { param($b, $d) $null = $b, $d; Invoke-UTUiDriverOnlyFlow }))
     }
-    $tools.Add((New-UTUiCard -Titulo 'Drivers e guias' -Icone 'E896' -Subtitulo 'Baixe drivers só dos sites oficiais. Os guias trazem o passo a passo do que não dá para fazer por script.' -Conteudo $content))
-    return (New-UTUiTweakPage -Aba GPU -Descricao 'Placa de vídeo: perfil NVIDIA do jogo, faixa de cor, taxa do monitor, cache de shaders, drivers e guias de AMD e Intel.' -Ferramentas $tools.ToArray())
+    [void]$actions.Children.Add((New-UTUiButton 'Limpar o driver com o DDU (automático)...' -Estilo Perigo -Icone 'E74D' -AoClicar { param($b, $d) $null = $b, $d; Invoke-UTUiDduFlow }))
+    $tools.Add((New-UTUiCard -Titulo 'Drivers' -Icone 'E896' -Subtitulo 'Baixe o driver só do site oficial. O DDU remove o driver antigo por completo em Modo de Segurança, sozinho, e depois abre o instalador do driver novo.' -Conteudo @($driverBtns, $actions)))
+    return (New-UTUiTweakPage -Aba GPU -Descricao 'Placa de vídeo: configurações do driver NVIDIA, AMD e Intel gravadas direto no driver, faixa de cor, taxa do monitor, cache de shaders e drivers.' -Ferramentas $tools.ToArray())
 }
 
-function Show-UTUiGpuGuide {
+function Invoke-UTUiDduFlow {
+    <#
+    .SYNOPSIS
+        Automatic DDU: pick the vendor and the new driver installer, confirm, and the program
+        restarts into Safe Mode, cleans the driver and comes back by itself.
+    #>
     [CmdletBinding()]
-    param([Parameter(Mandatory)][string]$Guia)
-    $g = Get-UTGpuGuide -Guia $Guia
-    $lines = @($g.passos | ForEach-Object { "$($_.item): $($_.valor) — $($_.motivo)" })
-    [void](Show-UTUiDialog -Titulo ([string]$g.titulo) -Mensagem ([string]$g.observacao) -Itens $lines -Largura 720)
+    param()
+    $hw = Get-UTSyncValue -Key 'Hardware'
+    $detected = $(if ($hw) { @($hw.GpuFabricantes) } else { @() })
+    $items = @(
+        [pscustomobject]@{ Id = 'nvidia'; Texto = 'Driver NVIDIA'; Marcado = ($detected -contains 'nvidia') }
+        [pscustomobject]@{ Id = 'amd'; Texto = 'Driver AMD'; Marcado = ($detected -contains 'amd' -and $detected -notcontains 'nvidia') }
+        [pscustomobject]@{ Id = 'intel'; Texto = 'Driver Intel'; Marcado = ($detected -contains 'intel' -and $detected.Count -eq 1) }
+    )
+    $pick = Show-UTUiChecklistDialog -Titulo 'Qual driver limpar?' -Mensagem 'Marque um. Na próxima tela, escolha o instalador do driver NOVO (baixe antes pelo site oficial).' -Itens $items -BotaoOk 'Escolher o instalador'
+    if ($null -eq $pick -or @($pick).Count -ne 1) { return }
+    $vendor = [string]@($pick)[0]
+    $exe = Get-UTUiFileDialog -Modo Abrir -Filtro 'Instalador do driver (*.exe)|*.exe'
+    if (-not $exe) { return }
+    $steps = @(
+        'Cria um ponto de restauração.'
+        'Impede o Windows Update de instalar driver de vídeo até o fim (é desfeito no final).'
+        'Reinicia em Modo de Segurança, sem internet. Entre com a sua senha normalmente.'
+        "Roda o DDU sozinho e remove o driver $vendor."
+        'Reinicia de volta no Windows normal e abre o instalador do driver novo.'
+    )
+    $ans = Show-UTUiDialog -Titulo 'Limpar o driver de vídeo com o DDU' -Tipo aviso -Largura 620 -Itens $steps -TextoConfirmacao 'EU ENTENDO' `
+        -Mensagem 'Salve tudo e feche os programas: o PC reinicia em 15 segundos e fica alguns minutos sem o driver de vídeo (tela em baixa resolução).' -Botoes @('Preparar e reiniciar', 'Cancelar')
+    if ($ans -ne 'Preparar e reiniciar') { return }
+    Invoke-UTUiAction -Nome 'Preparando o DDU' -Exclusivo -Argumentos @{ Fabricante = $vendor; Instalador = $exe } -Script {
+        param($Fabricante, $Instalador)
+        Start-UTDduClean -Fabricante $Fabricante -Instalador $Instalador -Confirm:$false
+    } -Depois {
+        param($r, $dd) $null = $r, $dd
+        $cancel = Show-UTUiDialog -Titulo 'Reiniciando em 15 segundos' -Tipo info -Mensagem 'Tudo pronto. Se precisar, ainda dá para cancelar.' -Botoes @('OK', 'Cancelar a limpeza')
+        if ($cancel -eq 'Cancelar a limpeza') {
+            Invoke-UTUiAction -Nome 'Cancelando o DDU' -Script { Stop-UTDduClean -Confirm:$false } -Sucesso 'Limpeza cancelada; nada foi removido.'
+        }
+    }
 }
 
 function Invoke-UTUiDriverOnlyFlow {
@@ -653,10 +694,23 @@ function New-UTUiPageWarzone {
             $cbx.Tag.Child = New-UTUiTable -Colunas @(@{ Titulo = 'Grupo'; Campo = 'Grupo'; Largura = 120 }, @{ Titulo = 'Opção'; Campo = 'Opcao'; Largura = 200 }, @{ Titulo = 'Valor'; Campo = 'Valor'; Largura = 160 }, @{ Titulo = 'Por quê'; Campo = 'Motivo'; Largura = '*' }) -Itens $rows
         })
     $combo.SelectedIndex = 0
+    $applyGuide = New-UTUiButton 'Aplicar no arquivo do jogo' -Estilo Primario -Icone 'E73E' -Margem '0,8,0,0' -Dados $combo -AoClicar {
+        param($b, $cb) $null = $b
+        $perfil = $(if ($cb.SelectedIndex -eq 1) { 'equilibrio' } else { 'competitivo' })
+        if ((Show-UTUiDialog -Titulo 'Aplicar as configurações no jogo?' -Tipo pergunta -Mensagem 'Feche o Call of Duty antes. O arquivo de configuração ganha um backup e só as chaves que o jogo aceita são mudadas; o resto fica para o menu do jogo.' -Botoes @('Aplicar', 'Cancelar')) -ne 'Aplicar') { return }
+        Invoke-UTUiAction -Nome 'Configurações do jogo' -Argumentos @{ Perfil = $perfil } -Script { param($Perfil) Set-UTCodRecommendedSetting -Perfil $Perfil -Confirm:$false } -Depois {
+            param($r, $dd) $null = $dd
+            $rows = @($r)
+            $done = @($rows | Where-Object { $_.Aplicavel -and -not $_.Motivo } | ForEach-Object { "$($_.Opcao) ($($_.Chave)): $($_.Atual) -> $($_.Novo)" } | Sort-Object -Unique)
+            $menu = @($rows | Where-Object { -not $_.Aplicavel } | ForEach-Object { "No menu do jogo: $($_.Opcao) = $($_.Novo)" } | Sort-Object -Unique)
+            $msg = $(if ($done.Count -gt 0) { "$($done.Count) configuração(ões) gravada(s). Abra o jogo para conferir." } else { 'Nada a mudar: o arquivo já estava no recomendado.' })
+            [void](Show-UTUiDialog -Titulo 'Configurações do jogo' -Tipo sucesso -Largura 680 -Mensagem $msg -Itens (@($done) + @($menu)))
+        }
+    }
     $tools = @(
         (New-UTUiCard -Titulo 'Modo Partida' -Icone 'E7FC' -Subtitulo 'Antes de jogar: fecha programas pesados e ativa o plano Upgrade Warzone. Ao sair, volta o plano anterior e reabre o que foi fechado.' -Conteudo @($match))
         (New-UTUiCard -Titulo 'Arquivo de configuração do jogo' -Icone 'E713' -Subtitulo 'O programa só altera chaves que já existem e sempre faz backup antes. Feche o jogo antes de mexer.' -Conteudo @($cfg))
-        (New-UTUiCard -Titulo 'Configurações recomendadas dentro do jogo' -Icone 'E7FC' -Subtitulo 'Ajustadas para a sua placa de vídeo e VRAM. Configure no menu do jogo.' -Conteudo @($combo, $guideHost))
+        (New-UTUiCard -Titulo 'Configurações recomendadas dentro do jogo' -Icone 'E7FC' -Subtitulo 'Ajustadas para a sua placa de vídeo e VRAM. O botão grava direto no arquivo de configuração do jogo (com backup).' -Conteudo @($combo, $applyGuide, $guideHost))
     )
     return (New-UTUiTweakPage -Aba Warzone -Descricao 'Tudo específico do Call of Duty: Modo Partida, arquivo de configuração, guia de gráficos e ajustes do Windows para o jogo.' -Ferramentas $tools)
 }

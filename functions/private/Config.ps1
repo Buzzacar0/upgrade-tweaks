@@ -33,7 +33,7 @@ function Add-UTConfigDefault {
         'modo-partida' { $lists += , @(@($Config['processos']), @{ marcado = $false; reabrir = $false; grupo = '' }) }
         'warzone-guia' {
             if ($Config['perfis'] -is [System.Collections.IDictionary]) {
-                foreach ($k in @($Config['perfis'].Keys)) { $lists += , @(@($Config['perfis'][$k]['itens']), @{ porGpu = $null; porVram = $null; motivo = '' }) }
+                foreach ($k in @($Config['perfis'].Keys)) { $lists += , @(@($Config['perfis'][$k]['itens']), @{ porGpu = $null; porVram = $null; motivo = ''; arquivo = @(); arquivoPorGpu = $null; arquivoPorVram = $null; regra = '' }) }
             }
         }
     }

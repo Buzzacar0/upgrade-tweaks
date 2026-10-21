@@ -25,11 +25,11 @@ function Suspend-UTBitLockerForBoot {
         at the next boot. Suspending protection for one restart avoids that.
     #>
     [CmdletBinding(SupportsShouldProcess)]
-    param()
+    param([ValidateRange(1, 15)][int]$Reinicios = 1)
     if (-not (Get-Command -Name Get-BitLockerVolume -ErrorAction SilentlyContinue)) { return }
     $v = Get-BitLockerVolume -MountPoint $env:SystemDrive -ErrorAction SilentlyContinue
-    if ($v -and [string]$v.ProtectionStatus -eq 'On' -and $PSCmdlet.ShouldProcess($env:SystemDrive, 'Suspender o BitLocker por 1 reinício')) {
-        Suspend-BitLocker -MountPoint $env:SystemDrive -RebootCount 1 | Out-Null
+    if ($v -and [string]$v.ProtectionStatus -eq 'On' -and $PSCmdlet.ShouldProcess($env:SystemDrive, "Suspender o BitLocker por $Reinicios reinício(s)")) {
+        Suspend-BitLocker -MountPoint $env:SystemDrive -RebootCount $Reinicios | Out-Null
         Write-UTLog -Level Info -Message 'BitLocker suspenso por um reinício para a alteração de boot não pedir a chave de recuperação.'
     }
 }

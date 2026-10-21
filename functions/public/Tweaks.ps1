@@ -15,10 +15,14 @@ function Get-UTTweakState {
     foreach ($tweak in (Get-UTTweak -Id $Id)) {
         $compat = Test-UTTweakCompatibility -Tweak $tweak -Contexto $context
         $state = [pscustomobject]@{ Estado = 'Desconhecido'; Detalhes = @() }
-        try {
-            $state = Get-UTTweakStateCore -Tweak $tweak -Contexto $context
-        } catch {
-            Write-UTLog -Level Aviso -TweakId $tweak.id -Message 'Não foi possível ler o estado deste ajuste.' -Detalhe $_.Exception.Message
+        $applied = $journal -contains [string]$tweak.id
+        # A tweak that does not apply to this PC is not even read (it may need hardware that is not there).
+        if ($compat.Compativel -or $applied) {
+            try {
+                $state = Get-UTTweakStateCore -Tweak $tweak -Contexto $context
+            } catch {
+                Write-UTLog -Level Aviso -TweakId $tweak.id -Message 'Não foi possível ler o estado deste ajuste.' -Detalhe $_.Exception.Message
+            }
         }
         $estado = $state.Estado
         # An incompatible tweak shows as such even when the system happens to match it; only one

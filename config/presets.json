@@ -15,6 +15,8 @@
         "UT_Gaming_WindowedOptimizations",
         "UT_GPU_NvidiaPerfil",
         "UT_GPU_NvidiaFullRange",
+        "UT_GPU_AmdRecomendado",
+        "UT_GPU_IntelRecomendado",
         "UT_Warzone_GpuPreference",
         "UT_Net_QoS_CoD",
         "UT_Net_RSS_On",

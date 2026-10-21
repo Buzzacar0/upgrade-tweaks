@@ -97,7 +97,7 @@
       "descricao": "Remove por completo o driver de vídeo (NVIDIA, AMD ou Intel) antes de instalar outro. Use quando trocar de placa ou se o driver estiver com problema.",
       "site": "https://www.wagnardsoft.com/display-driver-uninstaller-ddu",
       "winget": "Wagnardsoft.DisplayDriverUninstaller",
-      "aviso": "Use em Modo de Segurança, com a internet desconectada, e tenha o instalador do driver novo já baixado. Veja o guia do DDU na aba GPU.",
+      "aviso": "O jeito certo é em Modo de Segurança e sem internet: use o botão \"Limpar o driver com o DDU (automático)\" da aba GPU, que faz isso sozinho.",
       "executaveis": [ "Display Driver Uninstaller.exe" ],
       "pastas": [ "%ProgramFiles(x86)%\\Display Driver Uninstaller", "%ProgramFiles%\\Display Driver Uninstaller" ]
     },

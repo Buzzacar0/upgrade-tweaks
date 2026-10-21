@@ -1,5 +1,5 @@
-﻿# GPU tab tools for every vendor: shader cache cleanup, official driver pages, the AMD/Intel
-# checklists (config\gpu-guia.json) and the guided "NVIDIA driver only" install.
+﻿# GPU tab tools for every vendor: shader cache cleanup, official driver pages
+# (config\gpu-guia.json) and the guided "NVIDIA driver only" install.
 
 #region Shader cache
 function Get-UTShaderCacheLocation {
@@ -59,15 +59,6 @@ function Open-UTDriverDownload {
     if ($PSCmdlet.ShouldProcess($url, 'Abrir a página oficial de drivers')) { Start-Process $url }
 }
 
-function Get-UTGpuGuide {
-    <#
-    .SYNOPSIS
-        Checklist for a vendor (amd, intel, nvidiaApp, ddu, driverSoVideo) from gpu-guia.json.
-    #>
-    [CmdletBinding()]
-    param([Parameter(Mandatory)][ValidateSet('amd', 'intel', 'nvidiaApp', 'ddu', 'driverSoVideo')][string]$Guia)
-    return (Get-UTConfig -Name 'gpu-guia').guias[$Guia]
-}
 #endregion
 
 #region NVIDIA driver only (no NVIDIA App, telemetry, HD Audio...)

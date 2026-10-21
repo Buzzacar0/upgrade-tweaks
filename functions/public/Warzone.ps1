@@ -139,7 +139,9 @@ function Set-UTCodConfigValue {
     param(
         [Parameter(Mandatory)][string]$Arquivo,
         [Parameter(Mandatory)][string]$Chave,
-        [Parameter(Mandatory)][string]$Valor
+        [Parameter(Mandatory)][string]$Valor,
+        # The caller already backed up the file (several keys in one go).
+        [switch]$SemBackup
     )
     $bytes = [IO.File]::ReadAllBytes($Arquivo)
     $hasBom = ($bytes.Length -ge 3 -and $bytes[0] -eq 0xEF -and $bytes[1] -eq 0xBB -and $bytes[2] -eq 0xBF)
@@ -150,7 +152,7 @@ function Set-UTCodConfigValue {
     $before = $m.Groups['value'].Value.Trim()
     if ($before -eq $Valor) { return $before }
     if (-not $PSCmdlet.ShouldProcess("$Arquivo ($Chave)", "$before -> $Valor")) { return $before }
-    [void](Backup-UTCodConfig -Arquivo $Arquivo)
+    if (-not $SemBackup) { [void](Backup-UTCodConfig -Arquivo $Arquivo) }
     $regex = New-Object System.Text.RegularExpressions.Regex($pattern)
     $new = $regex.Replace($text, { param($x) $x.Groups['prefix'].Value + $x.Groups['q'].Value + $Valor + $x.Groups['q2'].Value + $x.Groups['suffix'].Value }, 1)
     [IO.File]::WriteAllText($Arquivo, $new, (New-Object System.Text.UTF8Encoding($hasBom)))
@@ -171,6 +173,154 @@ function Set-UTCodRendererWorker {
     $hw = Get-UTSyncValue -Key 'Hardware'
     $cores = $(if ($hw -and $hw.Cpu) { [int]$hw.Cpu.Nucleos } else { [int]((@(Get-CimInstance -ClassName Win32_Processor) | Select-Object -First 1).NumberOfCores) })
     return (Set-UTCodConfigValue -Arquivo $Arquivo -Chave 'RendererWorkerCount' -Valor ([string]$cores) -WhatIf:$WhatIfPreference)
+}
+#endregion
+
+#region Recommended settings written to the config file
+function Get-UTCodConfigOption {
+    <#
+    .SYNOPSIS
+        What a key accepts, read from the comment the game writes on the same line:
+        "// one of A, B, C" (list), "// 0 to 200" (range) or a true/false value.
+    #>
+    [CmdletBinding()]
+    param([Parameter(Mandatory)][string]$Arquivo, [Parameter(Mandatory)][string]$Chave)
+    $text = [IO.File]::ReadAllText($Arquivo)
+    $m = [regex]::Match($text, (Get-UTCodKeyPattern -Chave $Chave))
+    if (-not $m.Success) { return $null }
+    $current = $m.Groups['value'].Value.Trim()
+    $comment = $m.Groups['suffix'].Value
+    $list = [regex]::Match($comment, '//\s*one of\s+(?<l>.+)$')
+    if ($list.Success) { return [pscustomobject]@{ Tipo = 'lista'; Opcoes = @($list.Groups['l'].Value -split ',\s*' | ForEach-Object { $_.Trim() }); Atual = $current } }
+    $range = [regex]::Match($comment, '//\s*(?<a>-?[\d.]+)\s+to\s+(?<b>-?[\d.]+)')
+    if ($range.Success) {
+        $inv = [Globalization.CultureInfo]::InvariantCulture
+        return [pscustomobject]@{ Tipo = 'faixa'; Minimo = [double]::Parse($range.Groups['a'].Value, $inv); Maximo = [double]::Parse($range.Groups['b'].Value, $inv); Atual = $current }
+    }
+    if ($current -in 'true', 'false') { return [pscustomobject]@{ Tipo = 'bool'; Opcoes = @('true', 'false'); Atual = $current } }
+    return [pscustomobject]@{ Tipo = 'livre'; Atual = $current }
+}
+
+function Test-UTCodConfigValueValid {
+    # Returns the value with the exact spelling the game uses, or $null when it is not accepted.
+    param([Parameter(Mandatory)][psobject]$Opcao, [Parameter(Mandatory)][string]$Valor)
+    switch ($Opcao.Tipo) {
+        'lista' { return (@($Opcao.Opcoes | Where-Object { $_ -eq $Valor }) | Select-Object -First 1) }
+        'bool' { if ($Valor -in 'true', 'false') { return $Valor.ToLowerInvariant() }; return $null }
+        'faixa' {
+            $n = 0.0
+            if (-not [double]::TryParse($Valor, [Globalization.NumberStyles]::Float, [Globalization.CultureInfo]::InvariantCulture, [ref]$n)) { return $null }
+            if ($n -lt $Opcao.Minimo -or $n -gt $Opcao.Maximo) { return $null }
+            return $Valor
+        }
+        default { return $null }
+    }
+}
+
+function Get-UTCodRecommendedChange {
+    <#
+    .SYNOPSIS
+        Key-by-key plan of the in-game guide for one config file: current value, new value and
+        whether it can be written. Read only.
+    #>
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][ValidateSet('competitivo', 'equilibrio')][string]$Perfil,
+        [Parameter(Mandatory)][string]$Arquivo
+    )
+    $cfg = Get-UTConfig -Name 'warzone-guia'
+    $hw = Get-UTSyncValue -Key 'Hardware'
+    $vendor = $null
+    $vram = $null
+    if ($hw) {
+        $vendor = (@($hw.GpuFabricantes) | Select-Object -First 1)
+        $g = (@($hw.Gpus | Where-Object { $_ -and -not $_.Integrada }) | Select-Object -First 1)
+        if ($g) { $vram = $g.VramGB }
+    }
+    $opts = Get-UTGpuOption
+    foreach ($item in @($cfg.perfis[$Perfil].itens)) {
+        $pairs = New-Object System.Collections.Generic.List[object]
+        foreach ($p in @($item.arquivo)) { if ($p) { $pairs.Add($p) } }
+        if ($vendor -and $item.arquivoPorGpu -and $item.arquivoPorGpu.Contains($vendor)) { foreach ($p in @($item.arquivoPorGpu[$vendor])) { $pairs.Add($p) } }
+        if ($vram -and $item.arquivoPorVram) {
+            $best = $null
+            foreach ($k in @($item.arquivoPorVram.Keys | Sort-Object { [int]$_ })) { if ([double]$vram -ge [int]$k) { $best = $k } }
+            if ($best) {
+                $byVram = @($item.arquivoPorVram[$best])
+                $keys = @($byVram | ForEach-Object { $_.chave })
+                foreach ($old in @($pairs.ToArray() | Where-Object { $keys -contains $_.chave })) { [void]$pairs.Remove($old) }
+                foreach ($p in $byVram) { $pairs.Add($p) }
+            }
+        }
+        if ($item.regra -in 'limiteFps', 'limiteFpsSempre') {
+            $limit = ($item.regra -eq 'limiteFpsSempre' -or $opts.ComGsync) -and [int]$opts.HzMonitor -gt 30
+            if ($limit) {
+                $pairs.Add([ordered]@{ chave = 'CapFps'; valor = 'true' })
+                $pairs.Add([ordered]@{ chave = 'MaxFpsInGame'; valor = [string]([int]$opts.HzMonitor - 3) })
+            } else {
+                $pairs.Add([ordered]@{ chave = 'CapFps'; valor = 'false' })
+            }
+        }
+        if ($pairs.Count -eq 0) {
+            [pscustomobject]@{ Opcao = [string]$item.opcao; Chave = $null; Atual = $null; Novo = [string]$item.valor; Aplicavel = $false; Motivo = 'Configure no menu do jogo (não há uma chave segura no arquivo).' }
+            continue
+        }
+        foreach ($p in $pairs) {
+            $o = Get-UTCodConfigOption -Arquivo $Arquivo -Chave ([string]$p.chave)
+            if ($null -eq $o) {
+                [pscustomobject]@{ Opcao = [string]$item.opcao; Chave = [string]$p.chave; Atual = $null; Novo = [string]$p.valor; Aplicavel = $false; Motivo = 'Esta versão do jogo não tem essa chave.' }
+                continue
+            }
+            $valid = Test-UTCodConfigValueValid -Opcao $o -Valor ([string]$p.valor)
+            $reason = ''
+            if (-not $valid) { $reason = 'Valor não aceito por esta versão do jogo; ficou como está.' } elseif ($o.Atual -eq $valid) { $reason = 'Já está assim.' }
+            [pscustomobject]@{
+                Opcao     = [string]$item.opcao
+                Chave     = [string]$p.chave
+                Atual     = $o.Atual
+                Novo      = $(if ($valid) { $valid } else { [string]$p.valor })
+                Aplicavel = [bool]$valid
+                Motivo    = $reason
+            }
+        }
+    }
+}
+
+function Test-UTCodGameRunning {
+    [CmdletBinding()]
+    [OutputType([bool])]
+    param()
+    $names = @(Get-UTGameExecutable | ForEach-Object { [IO.Path]::GetFileNameWithoutExtension($_) })
+    if ($names.Count -eq 0) { $names = @('cod', 'cod25-cod', 'cod26-cod', 'sp26-cod') }
+    return (@(Get-Process -Name $names -ErrorAction SilentlyContinue).Count -gt 0)
+}
+
+function Set-UTCodRecommendedSetting {
+    <#
+    .SYNOPSIS
+        Writes the in-game guide into the config files of the newest Call of Duty title (the
+        game keeps two copies, txt0 and txt1). One backup per file before anything changes.
+        Returns the plan with what was written.
+    #>
+    [CmdletBinding(SupportsShouldProcess)]
+    param([Parameter(Mandatory)][ValidateSet('competitivo', 'equilibrio')][string]$Perfil)
+    if (Test-UTCodGameRunning) { throw 'Feche o Call of Duty antes: com o jogo aberto ele grava o arquivo de novo por cima.' }
+    $files = @(Get-UTCodConfigFile)
+    if ($files.Count -eq 0) { throw 'Nenhum arquivo de configuração do Call of Duty encontrado. Abra o jogo uma vez e feche.' }
+    $title = [regex]::Match([string]$files[0].Nome, 'cod\d+').Value
+    $targets = @($files | Where-Object { [regex]::Match([string]$_.Nome, 'cod\d+').Value -eq $title -and $_.Nome -match '\.txt\d*$' })
+    $result = New-Object System.Collections.Generic.List[object]
+    foreach ($f in $targets) {
+        $plan = @(Get-UTCodRecommendedChange -Perfil $Perfil -Arquivo $f.Arquivo)
+        $changes = @($plan | Where-Object { $_.Aplicavel -and $_.Atual -ne $_.Novo })
+        if ($changes.Count -gt 0 -and $PSCmdlet.ShouldProcess($f.Arquivo, "Gravar $($changes.Count) configurações ($Perfil)")) {
+            [void](Backup-UTCodConfig -Arquivo $f.Arquivo)
+            foreach ($c in $changes) { [void](Set-UTCodConfigValue -Arquivo $f.Arquivo -Chave $c.Chave -Valor $c.Novo -SemBackup -Confirm:$false) }
+        }
+        foreach ($p in $plan) { $result.Add(($p | Add-Member -NotePropertyName Arquivo -NotePropertyValue $f.Nome -PassThru)) }
+    }
+    Write-UTLog -Level Sucesso -Message ("Configurações do jogo ({0}) gravadas em {1} arquivo(s)." -f $Perfil, $targets.Count)
+    return $result.ToArray()
 }
 #endregion
 

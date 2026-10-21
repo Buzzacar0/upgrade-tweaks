@@ -1,0 +1,40 @@
+{
+  "_comentario": "Configurações do AMD Software (Adrenalin) gravadas pela ADLX, a biblioteca oficial da AMD que vem com o driver. 'chave' é o nome usado no código (UpgradeTweaks.Adlx); 'global' = vale para o sistema todo, não por placa. 'recomendado' é o valor gravado; 'rotulos' traduz os valores lidos.",
+  "configuracoes": [
+    { "chave": "antiLag", "nome": "Radeon Anti-Lag", "global": false, "recomendado": 1, "rotulos": { "0": "Desligado", "1": "Ligado" },
+      "explicacao": "Diminui o atraso entre o clique e a imagem quando a placa de vídeo está no limite. Em jogos com Anti-Lag 2 no menu, o do jogo tem prioridade." },
+    { "chave": "chill", "nome": "Radeon Chill", "global": false, "recomendado": 0, "rotulos": { "0": "Desligado", "1": "Ligado" },
+      "explicacao": "O Chill baixa o FPS quando você não está se mexendo, para economizar energia; em jogo competitivo isso só atrapalha." },
+    { "chave": "boost", "nome": "Radeon Boost", "global": false, "recomendado": 0, "rotulos": { "0": "Desligado", "1": "Ligado" },
+      "explicacao": "O Boost reduz a resolução durante movimentos rápidos; a imagem fica borrada justamente quando você mira." },
+    { "chave": "afmf", "nome": "AMD Fluid Motion Frames (AFMF)", "global": true, "recomendado": 0, "rotulos": { "0": "Desligado", "1": "Ligado" },
+      "explicacao": "Gera quadros intermediários: o FPS mostrado sobe, mas a latência também. Desligado para jogo competitivo." },
+    { "chave": "rsr", "nome": "Radeon Super Resolution", "global": true, "recomendado": 0, "rotulos": { "0": "Desligado", "1": "Ligado" },
+      "explicacao": "Upscaling do driver que mexe na resolução da área de trabalho; use o FSR dentro do jogo." },
+    { "chave": "enhancedSync", "nome": "Enhanced Sync", "global": false, "recomendado": 0, "rotulos": { "0": "Desligado", "1": "Ligado" },
+      "explicacao": "Pode causar travadas e oscilação de frametime em alguns jogos; com FreeSync ele não é necessário." },
+    { "chave": "vsync", "nome": "Aguardar atualização vertical", "global": false, "recomendado": 1, "rotulos": { "0": "Sempre desligado", "1": "Desligado, a menos que o aplicativo especifique", "2": "Ligado, a menos que o aplicativo especifique", "3": "Sempre ligado" },
+      "explicacao": "Deixa o jogo decidir (no Call of Duty o V-Sync fica desligado)." },
+    { "chave": "frtc", "nome": "Controle de Taxa de Quadros Alvo (FRTC)", "global": false, "recomendado": 0, "rotulos": { "0": "Desligado", "1": "Ligado" },
+      "explicacao": "Limite de FPS do driver; o limitador do próprio jogo tem menos latência." },
+    { "chave": "antiAliasing", "nome": "Modo de anti-aliasing", "global": false, "recomendado": 0, "rotulos": { "0": "Usar configurações do aplicativo", "1": "Melhorar configurações do aplicativo", "2": "Substituir configurações do aplicativo" },
+      "explicacao": "O anti-aliasing do Call of Duty é feito pelo jogo (DLSS/FSR/SMAA); forçar pelo driver só custa desempenho." },
+    { "chave": "mlaa", "nome": "Anti-aliasing morfológico", "global": false, "recomendado": 0, "rotulos": { "0": "Desligado", "1": "Ligado" },
+      "explicacao": "Filtro de pós-processamento do driver que borra a imagem; desligado." },
+    { "chave": "anisotropic", "nome": "Filtragem anisotrópica (forçada pelo driver)", "global": false, "recomendado": 0, "rotulos": { "0": "Controlado pelo aplicativo", "1": "Forçada pelo driver" },
+      "explicacao": "O jogo já tem a própria filtragem anisotrópica." },
+    { "chave": "tessellation", "nome": "Modo de tesselação", "global": false, "recomendado": 0, "rotulos": { "0": "Otimizado pela AMD", "1": "Usar configurações do aplicativo", "2": "Substituir configurações do aplicativo" },
+      "explicacao": "Padrão da AMD, que evita tesselação exagerada sem perder qualidade visível." }
+  ],
+  "freeSync": {
+    "nome": "AMD FreeSync",
+    "recomendado": 1,
+    "explicacao": "Sincronia variável: elimina o tearing sem a latência do V-Sync. Só é ligado nos monitores que suportam."
+  },
+  "filtragemTextura": {
+    "nome": "Qualidade da filtragem de textura",
+    "valor": "2",
+    "rotulos": { "0": "Alta qualidade", "1": "Padrão", "2": "Desempenho" },
+    "explicacao": "Fica no registro do driver (UMD\\TFQ), igual à opção do Adrenalin. Não é documentado pela AMD: o valor 2 (Desempenho) vem de ferramentas da comunidade e do próprio formato que o driver grava."
+  }
+}

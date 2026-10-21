@@ -11,11 +11,28 @@
       "requerReinicio": false,
       "controverso": false,
       "observacao": "Feche o jogo antes. Desfazer volta cada valor ao que estava; \"Restaurar padrões NVIDIA\" volta o perfil ao padrão da NVIDIA.",
-      "compatibilidade": { "windows": ["10", "11"], "gpu": ["nvidia"], "exigeJogo": true },
-      "scriptAplicar": [ "Invoke-UTNvidiaDrsCore -Escopo perfil -TweakId $TweakId -Contexto $Contexto" ],
-      "scriptDesfazer": [ "Undo-UTNvidiaDrsCore -Escopo perfil -TweakId $TweakId" ],
-      "scriptDetectar": [ "Test-UTNvidiaDrsSetting -Escopo perfil -Contexto $Contexto" ],
-      "scriptSimular": [ "Get-UTNvidiaDrsPlannedAction -Escopo perfil -Contexto $Contexto" ],
+      "compatibilidade": {
+        "windows": [
+          "10",
+          "11"
+        ],
+        "gpu": [
+          "nvidia"
+        ],
+        "exigeJogo": true
+      },
+      "scriptAplicar": [
+        "Invoke-UTNvidiaDrsCore -Escopo perfil -TweakId $TweakId -Contexto $Contexto"
+      ],
+      "scriptDesfazer": [
+        "Undo-UTNvidiaDrsCore -Escopo perfil -TweakId $TweakId"
+      ],
+      "scriptDetectar": [
+        "Test-UTNvidiaDrsSetting -Escopo perfil -Contexto $Contexto"
+      ],
+      "scriptSimular": [
+        "Get-UTNvidiaDrsPlannedAction -Escopo perfil -Contexto $Contexto"
+      ],
       "deteccao": "script"
     },
     {
@@ -28,11 +45,27 @@
       "requerReinicio": false,
       "controverso": false,
       "observacao": "Com \"Preferir desempenho máximo\" no global, a placa também fica com clock alto na área de trabalho e consome mais em repouso.",
-      "compatibilidade": { "windows": ["10", "11"], "gpu": ["nvidia"] },
-      "scriptAplicar": [ "Invoke-UTNvidiaDrsCore -Escopo global -TweakId $TweakId -Contexto $Contexto" ],
-      "scriptDesfazer": [ "Undo-UTNvidiaDrsCore -Escopo global -TweakId $TweakId" ],
-      "scriptDetectar": [ "Test-UTNvidiaDrsSetting -Escopo global -Contexto $Contexto" ],
-      "scriptSimular": [ "Get-UTNvidiaDrsPlannedAction -Escopo global -Contexto $Contexto" ],
+      "compatibilidade": {
+        "windows": [
+          "10",
+          "11"
+        ],
+        "gpu": [
+          "nvidia"
+        ]
+      },
+      "scriptAplicar": [
+        "Invoke-UTNvidiaDrsCore -Escopo global -TweakId $TweakId -Contexto $Contexto"
+      ],
+      "scriptDesfazer": [
+        "Undo-UTNvidiaDrsCore -Escopo global -TweakId $TweakId"
+      ],
+      "scriptDetectar": [
+        "Test-UTNvidiaDrsSetting -Escopo global -Contexto $Contexto"
+      ],
+      "scriptSimular": [
+        "Get-UTNvidiaDrsPlannedAction -Escopo global -Contexto $Contexto"
+      ],
       "deteccao": "script"
     },
     {
@@ -45,11 +78,27 @@
       "requerReinicio": false,
       "controverso": false,
       "observacao": "Se o monitor for uma TV que só aceita faixa Limitada, a imagem pode ficar com preto \"esmagado\"; desfaça nesse caso.",
-      "compatibilidade": { "windows": ["10", "11"], "gpu": ["nvidia"] },
-      "scriptAplicar": [ "Set-UTNvidiaFullRange -TweakId $TweakId" ],
-      "scriptDesfazer": [ "Restore-UTNvidiaFullRange -TweakId $TweakId" ],
-      "scriptDetectar": [ "Test-UTNvidiaFullRange" ],
-      "scriptSimular": [ "Get-UTNvidiaColorRange | Where-Object { -not $_.Completa } | ForEach-Object { \"$($_.Nome): $($_.Rotulo) -> Completa (0-255)\" }" ],
+      "compatibilidade": {
+        "windows": [
+          "10",
+          "11"
+        ],
+        "gpu": [
+          "nvidia"
+        ]
+      },
+      "scriptAplicar": [
+        "Set-UTNvidiaFullRange -TweakId $TweakId"
+      ],
+      "scriptDesfazer": [
+        "Restore-UTNvidiaFullRange -TweakId $TweakId"
+      ],
+      "scriptDetectar": [
+        "Test-UTNvidiaFullRange"
+      ],
+      "scriptSimular": [
+        "Get-UTNvidiaColorRange | Where-Object { -not $_.Completa } | ForEach-Object { \"$($_.Nome): $($_.Rotulo) -> Completa (0-255)\" }"
+      ],
       "deteccao": "script"
     },
     {
@@ -62,11 +111,24 @@
       "requerReinicio": false,
       "controverso": false,
       "observacao": "Se a tela ficar preta, espere 15 segundos sem fazer nada: a interface volta a taxa anterior sozinha. Cabos HDMI antigos podem não aguentar taxas altas; use DisplayPort.",
-      "compatibilidade": { "windows": ["10", "11"] },
-      "scriptAplicar": [ "Set-UTMonitorMaxRefresh -TweakId $TweakId" ],
-      "scriptDesfazer": [ "Restore-UTMonitorMaxRefresh -TweakId $TweakId" ],
-      "scriptDetectar": [ "Test-UTMonitorMaxRefresh" ],
-      "scriptSimular": [ "Get-UTDisplayInfo | Where-Object { $_.HzMaximo -gt $_.HzAtual } | ForEach-Object { \"$($_.Nome): $($_.HzAtual) Hz -> $($_.HzMaximo) Hz\" }" ],
+      "compatibilidade": {
+        "windows": [
+          "10",
+          "11"
+        ]
+      },
+      "scriptAplicar": [
+        "Set-UTMonitorMaxRefresh -TweakId $TweakId"
+      ],
+      "scriptDesfazer": [
+        "Restore-UTMonitorMaxRefresh -TweakId $TweakId"
+      ],
+      "scriptDetectar": [
+        "Test-UTMonitorMaxRefresh"
+      ],
+      "scriptSimular": [
+        "Get-UTDisplayInfo | Where-Object { $_.HzMaximo -gt $_.HzAtual } | ForEach-Object { \"$($_.Nome): $($_.HzAtual) Hz -> $($_.HzMaximo) Hz\" }"
+      ],
       "deteccao": "script"
     },
     {
@@ -80,11 +142,97 @@
       "requerReinicio": false,
       "controverso": false,
       "observacao": "O limite pode voltar ao padrão depois de reiniciar o PC ou atualizar o driver.",
-      "compatibilidade": { "windows": ["10", "11"], "gpu": ["nvidia"], "notebook": false, "desktop": true },
-      "scriptAplicar": [ "Set-UTNvidiaPowerMax -TweakId $TweakId" ],
-      "scriptDesfazer": [ "Restore-UTNvidiaPowerMax -TweakId $TweakId" ],
-      "scriptDetectar": [ "$l = Get-UTNvidiaPowerLimit", "$null -ne $l.Maximo -and $l.Atual -ge $l.Maximo" ],
-      "scriptSimular": [ "$l = Get-UTNvidiaPowerLimit", "\"Limite de energia: $($l.Atual) W -> $($l.Maximo) W (padrão $($l.Padrao) W)\"" ],
+      "compatibilidade": {
+        "windows": [
+          "10",
+          "11"
+        ],
+        "gpu": [
+          "nvidia"
+        ],
+        "notebook": false,
+        "desktop": true
+      },
+      "scriptAplicar": [
+        "Set-UTNvidiaPowerMax -TweakId $TweakId"
+      ],
+      "scriptDesfazer": [
+        "Restore-UTNvidiaPowerMax -TweakId $TweakId"
+      ],
+      "scriptDetectar": [
+        "$l = Get-UTNvidiaPowerLimit",
+        "$null -ne $l.Maximo -and $l.Atual -ge $l.Maximo"
+      ],
+      "scriptSimular": [
+        "$l = Get-UTNvidiaPowerLimit",
+        "\"Limite de energia: $($l.Atual) W -> $($l.Maximo) W (padrão $($l.Padrao) W)\""
+      ],
+      "deteccao": "script"
+    },
+    {
+      "id": "UT_GPU_AmdRecomendado",
+      "nome": "Configurações AMD recomendadas (Adrenalin)",
+      "descricao": "Grava direto no driver da AMD, pela biblioteca oficial ADLX, o mesmo que você faria no AMD Software: Anti-Lag ligado; Chill, Boost, AFMF, Super Resolution e Enhanced Sync desligados; V-Sync a cargo do jogo; anti-aliasing, filtragem anisotrópica e tesselação controlados pelo jogo/AMD; FreeSync ligado nos monitores que suportam; e filtragem de textura em Desempenho. Cada valor alterado é guardado e o desfazer volta exatamente para ele.",
+      "ganhoEsperado": "Pequeno a médio (latência menor e nada do driver interferindo no jogo)",
+      "categoria": "GPU",
+      "risco": "baixo",
+      "requerReinicio": false,
+      "controverso": false,
+      "observacao": "A filtragem de textura fica no registro do driver (não documentado pela AMD); reinstalar o driver volta ao padrão.",
+      "compatibilidade": {
+        "windows": [
+          "10",
+          "11"
+        ],
+        "gpu": [
+          "amd"
+        ]
+      },
+      "scriptAplicar": [
+        "Set-UTAmdRecommended -TweakId $TweakId"
+      ],
+      "scriptDesfazer": [
+        "Restore-UTAmdRecommended -TweakId $TweakId"
+      ],
+      "scriptDetectar": [
+        "Test-UTAmdSetting"
+      ],
+      "scriptSimular": [
+        "Get-UTAmdPlannedAction"
+      ],
+      "deteccao": "script"
+    },
+    {
+      "id": "UT_GPU_IntelRecomendado",
+      "nome": "Configurações Intel Arc recomendadas",
+      "descricao": "Grava direto no driver da Intel, pela Intel Graphics Control Library (oficial), o mesmo que você faria no Intel Graphics Software: modo de baixa latência ligado, V-Sync a cargo do jogo, Endurance Gaming e limitador de FPS do driver desligados e download de shaders pré-compilados ligado. Cada valor alterado é guardado e o desfazer volta exatamente para ele.",
+      "ganhoEsperado": "Pequeno a médio (latência menor, menos travadas no primeiro carregamento)",
+      "categoria": "GPU",
+      "risco": "baixo",
+      "requerReinicio": false,
+      "controverso": false,
+      "observacao": "O programa lê cada configuração antes de gravar e pula o que o driver não responder. Não foi possível testar numa placa Intel real durante o desenvolvimento; se algo não mudar, o resumo mostra.",
+      "compatibilidade": {
+        "windows": [
+          "10",
+          "11"
+        ],
+        "gpu": [
+          "intel"
+        ]
+      },
+      "scriptAplicar": [
+        "Set-UTIntelRecommended -TweakId $TweakId"
+      ],
+      "scriptDesfazer": [
+        "Restore-UTIntelRecommended -TweakId $TweakId"
+      ],
+      "scriptDetectar": [
+        "Test-UTIntelSetting"
+      ],
+      "scriptSimular": [
+        "Get-UTIntelPlannedAction"
+      ],
       "deteccao": "script"
     }
   ]
