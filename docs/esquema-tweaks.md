@@ -56,6 +56,7 @@ campos abaixo; um tweak inválido não entra no programa.
 | `servicos[]` | não | `nome`, `inicio` e `inicioOriginal` (`Automatic`, `AutomaticDelayedStart`, `Manual`, `Disabled`), `parar` opcional. |
 | `scriptAplicar[]`, `scriptDesfazer[]` | não | Linhas de PowerShell 5.1. Se houver `scriptAplicar`, `scriptDesfazer` é obrigatório. Recebem `$TweakId` e podem usar os helpers (`Save-UTOriginalItem`, `Pop-UTOriginalItem`, `Invoke-UTNative`...). |
 | `scriptDetectar[]` | depende | Devolve `$true` quando o tweak está aplicado. Obrigatório quando `deteccao` é `script` ou `combinada`. |
+| `scriptSimular[]`, `scriptSimularDesfazer[]` | não | Só leitura. Devolvem as linhas que a simulação mostra (ex.: "Estado mínimo do processador: 5 -> 100"). Sem eles, a simulação diz apenas "Executa o script do ajuste". |
 | `deteccao` | sim | `registro`, `servicos`, `script` ou `combinada` (registro + serviços + script). |
 
 Todo tweak precisa ter pelo menos uma ação (`registro`, `servicos` ou `scriptAplicar`) e, para cada ação, o caminho de volta.
@@ -70,6 +71,7 @@ Todo tweak precisa ter pelo menos uma ação (`registro`, `servicos` ou `scriptA
 | `notebook`, `desktop` | Se pode aparecer em notebook / desktop. |
 | `launchersBloqueados` | Ex.: `["xbox"]` para tweaks que quebram o Xbox App/Game Pass. |
 | `x3dDuplo` | `false` bloqueia em Ryzen X3D de dois CCDs. |
+| `exigeX3D` | `"duplo"` ou `"unico"`: o ajuste só aparece nesse tipo de X3D. Ao contrário das outras regras, bloqueia quando o tipo do processador é desconhecido. |
 
 ## Como o motor usa o esquema
 

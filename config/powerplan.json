@@ -1,0 +1,135 @@
+{
+  "versao": 1,
+  "nome": "Upgrade Warzone",
+  "nomeNotebook": "Upgrade Warzone (na tomada)",
+  "descricao": "Plano da Upgrade Store para Call of Duty: Warzone. Processador sempre no máximo, sem economia em USB, PCIe e disco. Criado pelo Upgrade Tweaks.",
+  "bases": [
+    { "guid": "e9a42b02-d5df-448d-aa00-03f14749eb61", "nome": "Desempenho Máximo (Ultimate Performance)" },
+    { "guid": "8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c", "nome": "Alto Desempenho" },
+    { "guid": "381b4222-f694-41f0-9685-ff5bb260df2e", "nome": "Equilibrado" }
+  ],
+  "baseNotebook": "381b4222-f694-41f0-9685-ff5bb260df2e",
+  "equilibrado": "381b4222-f694-41f0-9685-ff5bb260df2e",
+  "configuracoes": [
+    {
+      "id": "procMin",
+      "nome": "Estado mínimo do processador",
+      "subgrupo": "54533251-82be-4824-96c1-47b60b740d00",
+      "configuracao": "893dee8e-2bef-41e0-89c6-b55d0929964c",
+      "valor": 100,
+      "motivo": "Evita que o processador desça o clock entre um quadro e outro; reduz variação do frametime. Aumenta o consumo em repouso."
+    },
+    {
+      "id": "procMax",
+      "nome": "Estado máximo do processador",
+      "subgrupo": "54533251-82be-4824-96c1-47b60b740d00",
+      "configuracao": "bc5038f7-23e0-4960-96da-33abaf5935ec",
+      "valor": 100,
+      "motivo": "Garante que nenhum limite do plano segure o processador abaixo do máximo."
+    },
+    {
+      "id": "coreParking",
+      "nome": "Estacionamento de núcleos (mínimo de núcleos ativos)",
+      "subgrupo": "54533251-82be-4824-96c1-47b60b740d00",
+      "configuracao": "0cc5b647-c1df-4637-891a-dec35c318583",
+      "valor": 100,
+      "pularX3DDuplo": true,
+      "motivo": "Mantém todos os núcleos acordados, sem o atraso de 'acordar' um núcleo estacionado. Nunca é aplicado em Ryzen X3D de dois CCDs, que dependem do estacionamento."
+    },
+    {
+      "id": "boost",
+      "nome": "Modo de aumento de desempenho do processador",
+      "subgrupo": "54533251-82be-4824-96c1-47b60b740d00",
+      "configuracao": "be337238-0d82-4146-a960-4f3749d470c7",
+      "valor": 2,
+      "motivo": "Agressivo: o processador sobe para o clock de boost assim que há carga."
+    },
+    {
+      "id": "resfriamento",
+      "nome": "Política de resfriamento do sistema",
+      "subgrupo": "54533251-82be-4824-96c1-47b60b740d00",
+      "configuracao": "94d3a615-a899-4ac5-ae2b-e4d8f634367f",
+      "valor": 1,
+      "motivo": "Ativa: aumenta a ventoinha antes de reduzir o clock do processador."
+    },
+    {
+      "id": "usbSuspensao",
+      "nome": "Suspensão seletiva de USB",
+      "subgrupo": "2a737441-1930-4402-8d77-b2bebba308a3",
+      "configuracao": "48e6b7a6-50f5-4782-a5d4-53bb8f07e226",
+      "valor": 0,
+      "motivo": "Desativada: o Windows não desliga portas USB ociosas (mouse, teclado, headset), evitando pequenos atrasos e desconexões."
+    },
+    {
+      "id": "aspm",
+      "nome": "Gerenciamento de energia do estado de link PCI Express",
+      "subgrupo": "501a4d13-42af-4429-9fd1-a8218c268e20",
+      "configuracao": "ee12f906-d277-404b-b6da-e5fa1a576df5",
+      "valor": 0,
+      "motivo": "Desligado: a placa de vídeo e o NVMe não entram em economia de link, o que evita latência para 'acordar'."
+    },
+    {
+      "id": "discoDesligar",
+      "nome": "Desligar disco rígido após",
+      "subgrupo": "0012ee47-9041-4b5d-9b77-535fba8b1442",
+      "configuracao": "6738e2c4-e8a5-4a42-b16a-e040e769756e",
+      "valor": 0,
+      "motivo": "Nunca: evita travadas quando um HD em repouso precisa girar de novo."
+    },
+    {
+      "id": "ahciLpm",
+      "nome": "Gerenciamento de energia do link AHCI (HIPM/DIPM)",
+      "subgrupo": "0012ee47-9041-4b5d-9b77-535fba8b1442",
+      "configuracao": "0b2d69d7-a2a1-449c-9680-f91c70521c60",
+      "valor": 0,
+      "opcional": true,
+      "motivo": "Ativo: SSDs e HDs SATA não entram em economia de link. Aplicado só se o Windows tiver essa configuração."
+    },
+    {
+      "id": "nvmeIdle",
+      "nome": "Tempo limite de ociosidade do NVMe primário",
+      "subgrupo": "0012ee47-9041-4b5d-9b77-535fba8b1442",
+      "configuracao": "d639518a-e56d-4345-8af2-b9f32fb26109",
+      "valor": 0,
+      "opcional": true,
+      "motivo": "Desligado: o NVMe não entra nos estados de economia mais profundos. Ganho pequeno; aplicado só se existir."
+    },
+    {
+      "id": "suspender",
+      "nome": "Suspender após",
+      "subgrupo": "238c9fa8-0aad-41ed-83f4-97be242c8f20",
+      "configuracao": "29f6c1db-86da-48c5-9fdb-f2b67b1f44da",
+      "valor": 0,
+      "motivo": "Nunca: o PC não suspende no meio de uma fila longa ou download do jogo."
+    },
+    {
+      "id": "hibernar",
+      "nome": "Hibernar após",
+      "subgrupo": "238c9fa8-0aad-41ed-83f4-97be242c8f20",
+      "configuracao": "9d7815a6-7ee4-497e-8888-515a05f02364",
+      "valor": 0,
+      "motivo": "Nunca, pelo mesmo motivo."
+    },
+    {
+      "id": "video",
+      "nome": "Desligar vídeo após",
+      "subgrupo": "7516b95f-f776-4464-8c53-06167f40cc99",
+      "configuracao": "3c0bc021-c8a8-4e07-a973-6b14cbcb2b7e",
+      "valor": 900,
+      "configuravel": "minutosVideo",
+      "motivo": "Configurável (padrão 15 minutos). Desligar a tela não afeta o desempenho."
+    }
+  ],
+  "idleDisable": {
+    "nome": "Desativar o estado ocioso do processador (IDLEDISABLE)",
+    "subgrupo": "54533251-82be-4824-96c1-47b60b740d00",
+    "configuracao": "5d76a2ca-e8c0-402f-a133-2158492d58ad",
+    "valor": 1
+  },
+  "x3d": {
+    "servicoDriver": "amd3dvcacheSvc",
+    "nomeServico": "AMD 3D V-Cache Performance Optimizer Service",
+    "pacoteGameBar": "Microsoft.XboxGamingOverlay",
+    "linkChipset": "https://www.amd.com/pt/support/download/drivers.html"
+  }
+}

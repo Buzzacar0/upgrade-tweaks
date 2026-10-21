@@ -20,6 +20,11 @@ function Get-UTSystemContext {
     }
     $hardware = $null
     if ($null -ne $sync) { $hardware = $sync['Hardware'] }
+    if ($null -eq $hardware) {
+        # Rules like "never on dual-CCD X3D" are only safe with the hardware known, so collect it
+        # once here when nobody did before (command-line runs skip the Início tab).
+        try { $hardware = Get-UTHardwareInfo } catch { $hardware = $null }
+    }
 
     $context = [pscustomobject]@{
         WindowsGeracao = $(if ($windows) { [string]$windows.Geracao } else { $null })
@@ -161,9 +166,9 @@ function Get-UTTweakAction {
             if ($current.Existe) { $actions.Add(('Serviço {0}: {1} -> {2}' -f $e.nome, $current.StartType, $e.inicio)) }
             else { $actions.Add(('Serviço {0}: não existe neste PC (ignorado)' -f $e.nome)) }
         }
-        if ($hasScript) { $actions.Add('Executa o script do ajuste (' + @($Tweak.scriptAplicar).Count + ' linhas)') }
+        if ($hasScript) { Add-UTScriptedAction -Lista $actions -Tweak $Tweak -Campo 'scriptSimular' -Padrao 'Executa o script do ajuste' }
     } else {
-        if ($hasScript) { $actions.Add('Executa o script de desfazer') }
+        if ($hasScript) { Add-UTScriptedAction -Lista $actions -Tweak $Tweak -Campo 'scriptSimularDesfazer' -Padrao 'Executa o script de desfazer' }
         foreach ($e in $services) {
             $saved = Get-UTOriginalItem -Chave (Get-UTServiceStateKey -Name $e.nome)
             $target = if ($saved) { $saved.startType } else { $e.inicioOriginal }
@@ -182,6 +187,34 @@ function Get-UTTweakAction {
         }
     }
     return $actions.ToArray()
+}
+
+function Add-UTScriptedAction {
+    <#
+    .SYNOPSIS
+        Adds the read-only description a tweak script gives of itself (scriptSimular /
+        scriptSimularDesfazer); falls back to a generic line.
+    #>
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][AllowEmptyCollection()][System.Collections.Generic.List[string]]$Lista,
+        [Parameter(Mandatory)][System.Collections.IDictionary]$Tweak,
+        [Parameter(Mandatory)][string]$Campo,
+        [Parameter(Mandatory)][string]$Padrao
+    )
+    $lines = @($Tweak[$Campo] | Where-Object { $_ })
+    if ($lines.Count -gt 0) {
+        try {
+            $described = @(Invoke-UTTweakScript -Lines $lines -TweakId ([string]$Tweak.id) -Contexto (Get-UTSystemContext) | Where-Object { $_ } | ForEach-Object { [string]$_ })
+            if ($described.Count -gt 0) {
+                foreach ($d in $described) { $Lista.Add($d) }
+                return
+            }
+        } catch {
+            Write-UTLog -Level Debug -TweakId ([string]$Tweak.id) -Message 'Não foi possível descrever a simulação deste ajuste.' -Detalhe $_.Exception.Message
+        }
+    }
+    $Lista.Add($Padrao)
 }
 
 function Invoke-UTTweakApplyCore {

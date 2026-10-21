@@ -11,6 +11,7 @@ function Get-UTTweakState {
     param([string[]]$Id)
 
     $context = Get-UTSystemContext
+    $journal = @(Get-UTAppliedRecord | ForEach-Object { $_.tweakId })
     foreach ($tweak in (Get-UTTweak -Id $Id)) {
         $compat = Test-UTTweakCompatibility -Tweak $tweak -Contexto $context
         $state = [pscustomobject]@{ Estado = 'Desconhecido'; Detalhes = @() }
@@ -20,7 +21,9 @@ function Get-UTTweakState {
             Write-UTLog -Level Aviso -TweakId $tweak.id -Message 'Não foi possível ler o estado deste ajuste.' -Detalhe $_.Exception.Message
         }
         $estado = $state.Estado
-        if (-not $compat.Compativel -and $estado -ne 'Aplicado') { $estado = 'Incompativel' }
+        # An incompatible tweak shows as such even when the system happens to match it; only one
+        # the program itself applied earlier (before a hardware change) keeps "Aplicado" so it can be undone.
+        if (-not $compat.Compativel -and $journal -notcontains [string]$tweak.id) { $estado = 'Incompativel' }
         [pscustomobject]@{
             Id         = [string]$tweak.id
             Nome       = [string]$tweak.nome

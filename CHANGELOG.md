@@ -27,3 +27,10 @@ O formato segue o [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) e 
 - Detecção do Call of Duty na Steam, Battle.net e Xbox App/Game Pass, com executáveis e disco do jogo.
 - "Nota de Otimização" de 0 a 100 com pendências ordenadas por gravidade e a aba que resolve cada uma.
 - Relatório de diagnóstico em TXT ou HTML para o atendimento.
+- Plano de energia "Upgrade Warzone" (`config/powerplan.json`, cada configuração com o motivo): cópia do Desempenho Máximo (com Alto Desempenho e Equilibrado como alternativas), processador a 100%, boost agressivo, sem estacionamento de núcleos e sem economia em USB, PCIe, SATA/NVMe e disco; desligar vídeo configurável. Configurações que não existem no Windows são puladas.
+- Ryzen X3D de dois CCDs: o plano não é aplicado; um ajuste próprio mantém o Equilibrado e confere driver de chipset da AMD, Game Bar e Modo de Jogo.
+- Notebook: plano "Upgrade Warzone (na tomada)" baseado no Equilibrado, mudando só os valores com carregador.
+- Ajustes de Energia: plano Upgrade Warzone, X3D de dois CCDs, mostrar configurações ocultas, IDLEDISABLE (risco alto) e desativar hibernação.
+- Ferramentas da aba Energia: voltar ao plano anterior, exportar e importar `.pow`.
+- Simulação de ajustes feitos por script agora mostra cada valor atual -> novo (`scriptSimular`).
+- Ajuste que não se aplica ao PC aparece como "não se aplica", mesmo quando o sistema por acaso coincide.

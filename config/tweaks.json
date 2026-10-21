@@ -66,6 +66,117 @@
       "scriptDesfazer": [],
       "scriptDetectar": [],
       "deteccao": "registro"
+    },
+    {
+      "id": "UT_Power_UpgradeWarzone",
+      "nome": "Plano de energia Upgrade Warzone",
+      "descricao": "Cria e ativa o plano \"Upgrade Warzone\" (cópia do Desempenho Máximo): processador sempre a 100%, boost agressivo, sem estacionamento de núcleos e sem economia em USB, PCI Express e disco. Reduz a variação do tempo entre quadros causada pelo processador baixando e subindo o clock. Em notebook vira \"Upgrade Warzone (na tomada)\" e só muda o comportamento com o carregador ligado.",
+      "ganhoEsperado": "Pequeno a médio (frametime mais estável; maior em PCs que estavam no Equilibrado ou Economia)",
+      "categoria": "Energia",
+      "risco": "médio",
+      "requerReinicio": false,
+      "controverso": false,
+      "observacao": "Aumenta o consumo e a temperatura em repouso. Não é aplicado em Ryzen X3D de dois CCDs (veja o ajuste específico). Desfazer volta ao plano que estava ativo e apaga o plano criado.",
+      "compatibilidade": { "windows": ["10", "11"], "notebook": true, "desktop": true, "x3dDuplo": false },
+      "registro": [],
+      "servicos": [],
+      "scriptAplicar": [ "[void](Invoke-UTPowerPlanCore -TweakId $TweakId -Contexto $Contexto)" ],
+      "scriptDesfazer": [ "Undo-UTPowerPlanCore -TweakId $TweakId" ],
+      "scriptDetectar": [ "Test-UTPowerPlanApplied" ],
+      "scriptSimular": [ "Get-UTPowerPlanPlannedAction -Contexto $Contexto" ],
+      "scriptSimularDesfazer": [ "Get-UTPowerPlanPlannedAction -Desfazer" ],
+      "deteccao": "script"
+    },
+    {
+      "id": "UT_Power_X3DDuplo_Equilibrado",
+      "nome": "Manter o plano Equilibrado (Ryzen X3D de dois CCDs)",
+      "descricao": "Nos Ryzen 7900X3D, 7950X3D, 9900X3D e 9950X3D, o driver de chipset da AMD e o Game Bar usam o plano Equilibrado para estacionar o CCD sem V-Cache enquanto um jogo está aberto, deixando o Warzone no CCD com V-Cache. Este ajuste ativa o Equilibrado e confere o driver da AMD, o Game Bar e o Modo de Jogo.",
+      "ganhoEsperado": "Médio a alto (o jogo roda no CCD com V-Cache)",
+      "categoria": "Energia",
+      "risco": "baixo",
+      "requerReinicio": false,
+      "controverso": false,
+      "observacao": "Não mude o plano Equilibrado pelo Painel de Controle antigo: isso pode desligar o estacionamento automático. Use as Configurações do Windows.",
+      "compatibilidade": { "windows": ["10", "11"], "exigeX3D": "duplo" },
+      "registro": [],
+      "servicos": [],
+      "scriptAplicar": [ "Invoke-UTX3DBalancedCore -TweakId $TweakId" ],
+      "scriptDesfazer": [ "Undo-UTX3DBalancedCore -TweakId $TweakId" ],
+      "scriptDetectar": [ "(Get-UTActivePowerScheme).Guid -eq (Get-UTConfig -Name 'powerplan').equilibrado" ],
+      "scriptSimular": [
+        "$nomeAtivo = (Get-UTActivePowerScheme).Nome",
+        "\"Ativa o plano Equilibrado (hoje está ativo: $nomeAtivo)\"",
+        "foreach ($c in @(Get-UTX3DDualCheck | Where-Object { -not $_.Ok })) { 'Pendência: ' + $c.Mensagem }"
+      ],
+      "deteccao": "script"
+    },
+    {
+      "id": "UT_Power_ShowHiddenSettings",
+      "nome": "Mostrar configurações ocultas nas Opções de Energia",
+      "descricao": "Faz aparecerem nas Opções de Energia do Windows as configurações que ficam escondidas: modo de boost do processador, estacionamento de núcleos, estado ocioso do processador e economia de energia do SSD/NVMe. Não muda nenhum valor; só deixa você ver e ajustar manualmente.",
+      "ganhoEsperado": "Nenhum por si só (permite ajuste manual)",
+      "categoria": "Energia",
+      "risco": "baixo",
+      "requerReinicio": false,
+      "controverso": false,
+      "observacao": "Feche e abra de novo as Opções de Energia para ver as novas opções.",
+      "compatibilidade": { "windows": ["10", "11"] },
+      "registro": [
+        { "caminho": "HKLM:\\SYSTEM\\CurrentControlSet\\Control\\Power\\PowerSettings\\54533251-82be-4824-96c1-47b60b740d00\\be337238-0d82-4146-a960-4f3749d470c7", "nome": "Attributes", "tipo": "DWord", "valor": 2, "valorOriginal": 1 },
+        { "caminho": "HKLM:\\SYSTEM\\CurrentControlSet\\Control\\Power\\PowerSettings\\54533251-82be-4824-96c1-47b60b740d00\\0cc5b647-c1df-4637-891a-dec35c318583", "nome": "Attributes", "tipo": "DWord", "valor": 2, "valorOriginal": 1 },
+        { "caminho": "HKLM:\\SYSTEM\\CurrentControlSet\\Control\\Power\\PowerSettings\\54533251-82be-4824-96c1-47b60b740d00\\5d76a2ca-e8c0-402f-a133-2158492d58ad", "nome": "Attributes", "tipo": "DWord", "valor": 2, "valorOriginal": 1 },
+        { "caminho": "HKLM:\\SYSTEM\\CurrentControlSet\\Control\\Power\\PowerSettings\\0012ee47-9041-4b5d-9b77-535fba8b1442\\0b2d69d7-a2a1-449c-9680-f91c70521c60", "nome": "Attributes", "tipo": "DWord", "valor": 2, "valorOriginal": 1 },
+        { "caminho": "HKLM:\\SYSTEM\\CurrentControlSet\\Control\\Power\\PowerSettings\\0012ee47-9041-4b5d-9b77-535fba8b1442\\d639518a-e56d-4345-8af2-b9f32fb26109", "nome": "Attributes", "tipo": "DWord", "valor": 2, "valorOriginal": 1 }
+      ],
+      "servicos": [],
+      "scriptAplicar": [],
+      "scriptDesfazer": [],
+      "scriptDetectar": [],
+      "deteccao": "registro"
+    },
+    {
+      "id": "UT_Power_IdleDisable",
+      "nome": "Desativar o estado ocioso do processador (IDLEDISABLE)",
+      "descricao": "Impede o processador de entrar em qualquer estado de repouso, mesmo sem carga. Elimina a latência de acordar o núcleo, mas o processador fica o tempo todo em uso total de energia. Só para quem monitora temperatura e sabe o que está fazendo.",
+      "ganhoEsperado": "Muito pequeno, quase sempre imperceptível no Warzone",
+      "categoria": "Energia",
+      "risco": "alto",
+      "confirmacao": "Este ajuste aumenta MUITO a temperatura e o consumo do processador, mesmo parado na área de trabalho, e pode reduzir o boost em processadores modernos por limite térmico. Não use em notebook nem com cooler fraco. Deseja continuar?",
+      "requerReinicio": false,
+      "controverso": true,
+      "observacao": "Vale para o plano ativo. Desfazer volta o valor anterior.",
+      "compatibilidade": { "windows": ["10", "11"], "notebook": false, "desktop": true },
+      "registro": [],
+      "servicos": [],
+      "scriptAplicar": [ "Invoke-UTIdleDisableCore -TweakId $TweakId" ],
+      "scriptDesfazer": [ "Undo-UTIdleDisableCore -TweakId $TweakId" ],
+      "scriptDetectar": [ "Test-UTIdleDisable" ],
+      "scriptSimular": [
+        "$nomeAtivo = (Get-UTActivePowerScheme).Nome",
+        "\"Estado ocioso do processador no plano '$nomeAtivo': permitido -> desativado (na tomada e na bateria)\""
+      ],
+      "deteccao": "script"
+    },
+    {
+      "id": "UT_Power_Hibernation_Off",
+      "nome": "Desativar a hibernação",
+      "descricao": "Desliga a hibernação e apaga o arquivo hiberfil.sys, liberando no disco do Windows um espaço do tamanho de boa parte da sua RAM. Também desativa a Inicialização Rápida, então o PC passa a fazer um desligamento completo (o que evita alguns problemas de driver depois de desligar).",
+      "ganhoEsperado": "Nenhum em FPS; libera espaço em disco",
+      "categoria": "Energia",
+      "risco": "baixo",
+      "requerReinicio": false,
+      "controverso": false,
+      "observacao": "Em notebook você perde a opção de hibernar com a bateria acabando. O boot pode ficar alguns segundos mais lento sem a Inicialização Rápida.",
+      "compatibilidade": { "windows": ["10", "11"], "notebook": true, "desktop": true },
+      "registro": [
+        { "caminho": "HKLM:\\SYSTEM\\CurrentControlSet\\Control\\Power", "nome": "HibernateEnabled", "tipo": "DWord", "valor": 0, "valorOriginal": 1 }
+      ],
+      "servicos": [],
+      "scriptAplicar": [ "[void](Invoke-UTPowerCfg -Argumentos @('/hibernate', 'off'))" ],
+      "scriptSimular": [ "'Executa powercfg /hibernate off (apaga o hiberfil.sys)'" ],
+      "scriptDesfazer": [ "[void](Invoke-UTPowerCfg -Argumentos @('/hibernate', 'on'))" ],
+      "scriptDetectar": [ "(Get-UTRegistryValue -Path 'HKLM:\\SYSTEM\\CurrentControlSet\\Control\\Power' -Name 'HibernateEnabled').Valor -eq 0" ],
+      "deteccao": "combinada"
     }
   ]
 }
