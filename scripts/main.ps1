@@ -24,7 +24,10 @@
         return 2
     }
 
-    # Implemented in phase 9 (WPF interface).
-    Write-UTLog -Level Aviso -Message 'A interface gráfica ainda não está disponível nesta versão de desenvolvimento.'
-    return 0
+    try {
+        return (Show-UTMainWindow -Simular:$Simular)
+    } catch {
+        Write-UTLog -Level Erro -Message 'Não foi possível abrir a interface gráfica. Use o modo linha de comando (-Preset, -Diagnostico, -DesfazerTudo).' -Detalhe $_.Exception.ToString()
+        return 1
+    }
 }

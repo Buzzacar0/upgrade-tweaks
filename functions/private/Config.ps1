@@ -1,4 +1,19 @@
-﻿function Get-UTConfig {
+﻿function Get-UTSourceRoot {
+    <#
+    .SYNOPSIS
+        Repository folder when running from source (development and tests). Functions copied
+        into background runspaces have no $PSScriptRoot, so the path also lives in $UTSync.
+    #>
+    [CmdletBinding()]
+    [OutputType([string])]
+    param()
+    if ($PSScriptRoot) { return (Split-Path -Parent (Split-Path -Parent $PSScriptRoot)) }
+    $root = Get-UTSyncValue -Key 'RaizRepositorio'
+    if ($root) { return [string]$root }
+    return [string](Get-Location)
+}
+
+function Get-UTConfig {
     <#
     .SYNOPSIS
         Returns a config file (config\<Name>.json) as hashtables, cached per session.
@@ -29,7 +44,7 @@
         if ($null -ne $embedded -and $embedded.ContainsKey($Name)) { $json = $embedded[$Name] }
     }
     if ($null -eq $json) {
-        $file = Join-Path (Split-Path -Parent (Split-Path -Parent $PSScriptRoot)) "config\$Name.json"
+        $file = Join-Path (Get-UTSourceRoot) "config\$Name.json"
         if (Test-Path -LiteralPath $file) { $json = [IO.File]::ReadAllText($file, [Text.Encoding]::UTF8) }
     }
     if ($null -eq $json) { throw "Configuração '$Name' não encontrada." }
@@ -66,7 +81,7 @@ function Get-UTConfigName {
         if ($null -ne $embedded -and $embedded.Count -gt 0) {
             $names = @($embedded.Keys)
         } else {
-            $dir = Join-Path (Split-Path -Parent (Split-Path -Parent $PSScriptRoot)) 'config'
+            $dir = Join-Path (Get-UTSourceRoot) 'config'
             if (Test-Path -LiteralPath $dir) { $names = @(Get-ChildItem -LiteralPath $dir -Filter '*.json' -File | ForEach-Object { $_.BaseName }) }
         }
     }

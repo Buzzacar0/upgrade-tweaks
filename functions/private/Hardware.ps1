@@ -187,8 +187,11 @@ function Get-UTStorageInfo {
     param()
 
     $disks = foreach ($d in @(Get-PhysicalDisk -ErrorAction Stop)) {
+        # Outside the console the Storage module type data may be missing and these come as numbers.
         $bus = [string]$d.BusType
         $media = [string]$d.MediaType
+        if ($bus -eq '17') { $bus = 'NVMe' }
+        $media = switch ($media) { '3' { 'HDD' } '4' { 'SSD' } '5' { 'SCM' } default { $media } }
         $kind = 'Desconhecido'
         if ($bus -eq 'NVMe') { $kind = 'NVMe' }
         elseif ($media -eq 'SSD') { $kind = 'SSD' }

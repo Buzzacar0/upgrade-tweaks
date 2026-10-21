@@ -1,0 +1,9 @@
+{
+  "_comentario": "Textos e links da aba Sobre. 'loja' vazio esconde o botão da Upgrade Store.",
+  "repositorio": "Buzzacar0/upgrade-tweaks",
+  "github": "https://github.com/Buzzacar0/upgrade-tweaks",
+  "loja": "",
+  "comando": "irm https://github.com/Buzzacar0/upgrade-tweaks/releases/latest/download/upgradetweaks.ps1 | iex",
+  "avisoLegal": "Use por sua conta e risco. O Upgrade Tweaks cria um ponto de restauração e guarda o estado original de tudo antes de alterar, e tudo pode ser desfeito na aba Restaurar, mas nenhum otimizador garante ganho de FPS em todo PC. O programa não desliga o Windows Defender, o Windows Update nem o UAC, e não mexe em arquivos do jogo além do arquivo de configuração (com backup). Call of Duty e Warzone são marcas da Activision; este programa não tem relação com a Activision, a Microsoft, a NVIDIA, a AMD ou a Intel.",
+  "creditos": "Inspirado no WinUtil, de Chris Titus Tech (licença MIT); todo o código do Upgrade Tweaks foi escrito do zero. Nomes de configurações não documentadas do driver NVIDIA vêm do NVIDIA Profile Inspector (Orbmu2k, licença MIT)."
+}
