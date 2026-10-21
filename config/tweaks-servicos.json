@@ -1,0 +1,105 @@
+{
+  "versao": 1,
+  "tweaks": [
+    {
+      "id": "UT_Apps_DeviceMetadata_Off",
+      "nome": "Bloquear apps \"companheiros\" de dispositivos",
+      "descricao": "Impede o Windows de baixar sozinho aplicativos e ícones de fabricantes quando você conecta um aparelho (monitor, mouse, headset). Os drivers continuam vindo pelo Windows Update.",
+      "ganhoEsperado": "Nenhum em FPS; evita programas instalados sem pedir",
+      "categoria": "ServicosApps",
+      "risco": "baixo",
+      "requerReinicio": false,
+      "controverso": false,
+      "compatibilidade": { "windows": ["10", "11"] },
+      "registro": [
+        { "caminho": "HKLM:\\SOFTWARE\\Policies\\Microsoft\\Windows\\Device Metadata", "nome": "PreventDeviceMetadataFromNetwork", "tipo": "DWord", "valor": 1, "valorOriginal": null }
+      ],
+      "deteccao": "registro"
+    },
+    {
+      "id": "UT_Apps_RazerBlock",
+      "nome": "Bloquear a instalação automática do Razer Synapse",
+      "descricao": "Ao conectar um periférico Razer, o Windows instala o Synapse sozinho por meio de um \"co-instalador\" do driver. Este ajuste desliga os co-instaladores e a busca de software de dispositivos no Windows Update. O periférico funciona sem o Synapse (só perde RGB e macros).",
+      "ganhoEsperado": "Nenhum em FPS; evita software pesado em segundo plano",
+      "categoria": "ServicosApps",
+      "risco": "médio",
+      "requerReinicio": false,
+      "controverso": false,
+      "observacao": "Efeito colateral: o Windows Update deixa de baixar drivers automaticamente para dispositivos novos; instale drivers pelo site do fabricante.",
+      "compatibilidade": { "windows": ["10", "11"] },
+      "registro": [
+        { "caminho": "HKLM:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Device Installer", "nome": "DisableCoInstallers", "tipo": "DWord", "valor": 1, "valorOriginal": null },
+        { "caminho": "HKLM:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\DriverSearching", "nome": "SearchOrderConfig", "tipo": "DWord", "valor": 0, "valorOriginal": 1 }
+      ],
+      "deteccao": "registro"
+    },
+    {
+      "id": "UT_Apps_LogiBlock",
+      "nome": "Bloquear o Logi Download Assistant",
+      "descricao": "O Windows Update reinstala o Logi Download Assistant junto com os drivers da Logitech, e ele fica oferecendo o G HUB/Options. O programa cria a pasta dele sem permissão de escrita, o que impede a reinstalação. Mouse e teclado funcionam normalmente.",
+      "ganhoEsperado": "Nenhum em FPS; menos processos e pop-ups",
+      "categoria": "ServicosApps",
+      "risco": "baixo",
+      "requerReinicio": false,
+      "controverso": false,
+      "compatibilidade": { "windows": ["10", "11"] },
+      "scriptAplicar": [ "Set-UTLogiBlock -TweakId $TweakId" ],
+      "scriptDesfazer": [ "Restore-UTLogiBlock -TweakId $TweakId" ],
+      "scriptDetectar": [ "Test-UTLogiBlock" ],
+      "scriptSimular": [ "\"Bloqueia a pasta $(Get-UTLogiFolder) (somente leitura para todos)\"" ],
+      "deteccao": "script"
+    },
+    {
+      "id": "UT_Lite_RemoveOneDrive",
+      "nome": "Remover o OneDrive",
+      "descricao": "Desinstala o OneDrive. Os arquivos na nuvem continuam na sua conta Microsoft e a pasta local não é apagada. Se os seus Documentos, Área de Trabalho ou Imagens estiverem dentro do OneDrive (backup de pastas), o programa recusa e explica como desligar o backup antes, para nenhum arquivo ficar inacessível.",
+      "ganhoEsperado": "Pequeno (um programa de sincronização a menos em segundo plano)",
+      "categoria": "ServicosApps",
+      "risco": "médio",
+      "requerReinicio": false,
+      "controverso": false,
+      "observacao": "Desfazer reinstala o OneDrive pelo winget.",
+      "compatibilidade": { "windows": ["10", "11"] },
+      "scriptAplicar": [ "Remove-UTOneDrive -TweakId $TweakId" ],
+      "scriptDesfazer": [ "Install-UTOneDrive" ],
+      "scriptDetectar": [ "-not (Test-UTOneDriveInstalled)" ],
+      "scriptSimular": [ "if (Test-UTOneDriveFolderBackup) { 'Recusado: Documentos/Área de Trabalho/Imagens estão no OneDrive (desligue o backup de pastas antes)' } else { 'Desinstala o OneDrive (arquivos na nuvem e pasta local ficam)' }" ],
+      "deteccao": "script"
+    },
+    {
+      "id": "UT_Lite_RemoveEdge",
+      "nome": "Remover o Microsoft Edge",
+      "descricao": "Desinstala o navegador Microsoft Edge e impede o Windows Update de colocá-lo de volta. O WebView2 (que o Xbox App, a Battle.net e vários programas usam para mostrar telas) é um componente separado e NÃO é removido. Tenha outro navegador instalado antes.",
+      "ganhoEsperado": "Pequeno (menos tarefas de atualização e pré-carregamento)",
+      "categoria": "ServicosApps",
+      "risco": "alto",
+      "confirmacao": "Sem o Edge, links que o Windows abre \"à força\" no Edge (Widgets, ajuda do Windows) podem não funcionar, e na União Europeia e em algumas versões o Windows pode reinstalá-lo. Garanta que você tem outro navegador instalado. Deseja remover o Edge?",
+      "requerReinicio": false,
+      "controverso": true,
+      "observacao": "Desfazer reinstala o Edge pelo winget.",
+      "compatibilidade": { "windows": ["10", "11"] },
+      "scriptAplicar": [ "Remove-UTEdge -TweakId $TweakId" ],
+      "scriptDesfazer": [ "Install-UTEdge -TweakId $TweakId" ],
+      "scriptDetectar": [ "-not (Test-UTEdgeInstalled)" ],
+      "scriptSimular": [ "'Desinstala o Microsoft Edge (o WebView2 fica) e bloqueia a reinstalação pelo Windows Update'" ],
+      "deteccao": "script"
+    },
+    {
+      "id": "UT_Lite_RemoveWidgets",
+      "nome": "Remover os Widgets",
+      "descricao": "Remove o pacote dos Widgets (painel de notícias e clima da barra de tarefas), que fica rodando em segundo plano e consumindo memória. Para só esconder sem remover, use o ajuste de Widgets da aba Privacidade.",
+      "ganhoEsperado": "Pequeno (menos memória e processos em segundo plano)",
+      "categoria": "ServicosApps",
+      "risco": "médio",
+      "requerReinicio": false,
+      "controverso": false,
+      "observacao": "Desfazer reinstala o \"Windows Web Experience Pack\" pela Microsoft Store.",
+      "compatibilidade": { "windows": ["11"] },
+      "scriptAplicar": [ "Remove-UTWidgetsPackage -TweakId $TweakId" ],
+      "scriptDesfazer": [ "Install-UTStoreApp -StoreId '9MSSGKG348SP' -Nome 'Widgets (Windows Web Experience Pack)'" ],
+      "scriptDetectar": [ "Test-UTAppxRemoved -Pacote 'MicrosoftWindows.Client.WebExperience'" ],
+      "scriptSimular": [ "'Remove o pacote MicrosoftWindows.Client.WebExperience de todos os usuários'" ],
+      "deteccao": "script"
+    }
+  ]
+}

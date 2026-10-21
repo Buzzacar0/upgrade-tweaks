@@ -1,0 +1,53 @@
+{
+  "versao": 1,
+  "observacao": "Cada serviço vira um ajuste UT_Svc_<nome> na aba Serviços e Apps. 'padrao' é o tipo de inicialização de fábrica do Windows (usado só se o valor real não tiver sido salvo). Serviços do grupo 'xbox' ficam bloqueados quando o Call of Duty é do Xbox App/Game Pass e nunca entram nos presets automáticos. GamingServices, GamingServicesNet e XboxGipSvc (controles Xbox) não aparecem aqui de propósito.",
+  "servicos": [
+    { "nome": "DiagTrack", "exibicao": "Experiências do Usuário Conectado e Telemetria", "recomendado": "Disabled", "padrao": "Automatic", "risco": "baixo", "grupo": "telemetria",
+      "descricao": "Envia dados de uso e diagnóstico para a Microsoft o tempo todo. Desativar não afeta o Windows Update nem a Microsoft Store." },
+    { "nome": "dmwappushservice", "exibicao": "Serviço de roteamento de mensagens push WAP", "recomendado": "Disabled", "padrao": "Manual", "risco": "baixo", "grupo": "telemetria",
+      "descricao": "Usado pela telemetria para receber mensagens de configuração. Sem uso para quem joga." },
+    { "nome": "WerSvc", "exibicao": "Relatório de Erros do Windows", "recomendado": "Disabled", "padrao": "Manual", "risco": "baixo", "grupo": "telemetria",
+      "descricao": "Coleta e envia relatórios quando um programa trava. Desativado, os relatórios deixam de ir para a Microsoft; o relatório de falhas do próprio Call of Duty continua funcionando." },
+    { "nome": "SysMain", "exibicao": "SysMain (Superfetch)", "recomendado": "Disabled", "padrao": "Automatic", "risco": "baixo", "opcional": true, "grupo": "desempenho",
+      "descricao": "Pré-carrega na memória os programas que você mais usa. Em SSD/NVMe o ganho dele é pequeno; em HD mecânico ele ajuda a abrir programas mais rápido. Desativar evita atividade de disco em segundo plano." },
+    { "nome": "WSearch", "exibicao": "Windows Search (indexação)", "recomendado": "Manual", "padrao": "AutomaticDelayedStart", "risco": "baixo", "opcional": true, "grupo": "desempenho",
+      "descricao": "Indexa arquivos para a pesquisa do Iniciar ficar instantânea. Em Manual a indexação para de rodar em segundo plano; a pesquisa continua funcionando, só fica mais lenta para achar arquivos." },
+    { "nome": "Spooler", "exibicao": "Spooler de Impressão", "recomendado": "Disabled", "padrao": "Automatic", "risco": "médio", "opcional": true, "grupo": "impressora",
+      "descricao": "Gerencia impressoras. SÓ desative se você não usa impressora (nem PDF virtual de impressão). Com ele desativado nenhuma impressora funciona." },
+    { "nome": "Fax", "exibicao": "Fax", "recomendado": "Disabled", "padrao": "Manual", "risco": "baixo", "grupo": "desnecessario",
+      "descricao": "Envio e recebimento de fax pelo PC." },
+    { "nome": "RemoteRegistry", "exibicao": "Registro Remoto", "recomendado": "Disabled", "padrao": "Manual", "risco": "baixo", "grupo": "seguranca",
+      "descricao": "Permite que outro computador da rede altere o registro deste PC. Desativado é mais seguro." },
+    { "nome": "MapsBroker", "exibicao": "Gerenciador de Mapas Baixados", "recomendado": "Disabled", "padrao": "AutomaticDelayedStart", "risco": "baixo", "grupo": "desnecessario",
+      "descricao": "Atualiza mapas offline do app Mapas." },
+    { "nome": "lfsvc", "exibicao": "Serviço de Geolocalização", "recomendado": "Disabled", "padrao": "Manual", "risco": "baixo", "opcional": true, "grupo": "privacidade",
+      "descricao": "Informa a localização do PC aos apps. Desativado, o fuso horário automático e o Encontrar Meu Dispositivo deixam de usar a localização." },
+    { "nome": "RetailDemo", "exibicao": "Serviço de Demonstração de Varejo", "recomendado": "Disabled", "padrao": "Manual", "risco": "baixo", "grupo": "desnecessario",
+      "descricao": "Modo de demonstração das lojas de varejo." },
+    { "nome": "WMPNetworkSvc", "exibicao": "Compartilhamento de Rede do Windows Media Player", "recomendado": "Disabled", "padrao": "Manual", "risco": "baixo", "grupo": "desnecessario",
+      "descricao": "Compartilha a biblioteca do Windows Media Player na rede." },
+    { "nome": "WpcMonSvc", "exibicao": "Controle dos Pais", "recomendado": "Disabled", "padrao": "Manual", "risco": "baixo", "opcional": true, "grupo": "desnecessario",
+      "descricao": "Restrições da Família Microsoft. Não desative em PC de criança com controle dos pais." },
+    { "nome": "wisvc", "exibicao": "Serviço do Programa Windows Insider", "recomendado": "Disabled", "padrao": "Manual", "risco": "baixo", "grupo": "desnecessario",
+      "descricao": "Só é usado por quem participa do Windows Insider (versões de teste)." },
+    { "nome": "diagnosticshub.standardcollector.service", "exibicao": "Coletor Padrão do Hub de Diagnóstico", "recomendado": "Disabled", "padrao": "Manual", "risco": "baixo", "grupo": "telemetria",
+      "descricao": "Coleta diagnóstico para ferramentas de desenvolvedor." },
+    { "nome": "XblAuthManager", "exibicao": "Gerenciador de Autenticação Xbox Live", "recomendado": "Disabled", "padrao": "Manual", "risco": "médio", "opcional": true, "grupo": "xbox",
+      "descricao": "Login na conta Xbox. Sem ele, jogos da Microsoft Store/Game Pass e as conquistas do Xbox não funcionam. Só desative se você NÃO usa o Xbox App nem o Game Pass." },
+    { "nome": "XblGameSave", "exibicao": "Salvamento de Jogos do Xbox Live", "recomendado": "Disabled", "padrao": "Manual", "risco": "médio", "opcional": true, "grupo": "xbox",
+      "descricao": "Salvamentos na nuvem dos jogos Xbox/Game Pass. Só desative se você NÃO usa o Xbox App nem o Game Pass." },
+    { "nome": "XboxNetApiSvc", "exibicao": "Serviço de Rede do Xbox Live", "recomendado": "Disabled", "padrao": "Manual", "risco": "médio", "opcional": true, "grupo": "xbox",
+      "descricao": "Rede do Xbox Live (chat de grupo, NAT do Xbox). Só desative se você NÃO usa o Xbox App nem o Game Pass." }
+  ],
+  "modoLiteManual": {
+    "descricao": "Passa para Manual serviços que iniciam sozinhos com o Windows mas não fazem falta para jogar. Em Manual o serviço continua disponível: o Windows inicia quando algum programa precisar dele.",
+    "servicos": [
+      { "nome": "TrkWks", "padrao": "Automatic" },
+      { "nome": "StorSvc", "padrao": "AutomaticDelayedStart" },
+      { "nome": "DusmSvc", "padrao": "Automatic" },
+      { "nome": "CDPSvc", "padrao": "AutomaticDelayedStart" },
+      { "nome": "PcaSvc", "padrao": "AutomaticDelayedStart" },
+      { "nome": "edgeupdate", "padrao": "AutomaticDelayedStart" }
+    ]
+  }
+}

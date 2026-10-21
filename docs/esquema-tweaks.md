@@ -50,6 +50,7 @@ campos abaixo; um tweak inválido não entra no programa.
 | `requerReinicio` | sim | `true`/`false`. |
 | `controverso` | sim | `true` mostra o selo "controverso". |
 | `observacao`, `confirmacao` | não | Texto extra / texto da confirmação de risco alto. |
+| `abasExtras` | não | Outras abas onde o ajuste também aparece (ex.: QoS do jogo em Rede e em Warzone). |
 | `grupoExclusivo` | não | Tweaks com o mesmo grupo são alternativas (ex.: modos do MPO); só um pode ficar aplicado. |
 | `compatibilidade` | sim | Ver abaixo. Valor desconhecido no PC nunca bloqueia. |
 | `registro[]` | não | `caminho`, `nome` (vazio = valor padrão), `tipo` (`DWord`, `QWord`, `String`, `ExpandString`, `MultiString`, `Binary`), `valor`, `valorOriginal` (padrão do Windows; `null` = o valor não existe por padrão). `"acao": "remover"` apaga o valor em vez de definir. `"ausenteEquivale": true` quando o padrão do Windows (valor ausente) já se comporta como o alvo; aí a detecção não acusa "não aplicado" à toa. |

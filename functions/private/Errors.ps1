@@ -14,7 +14,15 @@
     )
 
     $exception = $ErrorRecord
-    if ($ErrorRecord -is [System.Management.Automation.ErrorRecord]) { $exception = $ErrorRecord.Exception }
+    if ($ErrorRecord -is [System.Management.Automation.ErrorRecord]) {
+        $exception = $ErrorRecord.Exception
+        # A plain `throw 'texto'` from our own code is already a PT-BR message for the user:
+        # PowerShell then uses the text itself as the error id.
+        if ($exception.GetType() -eq [System.Management.Automation.RuntimeException] -and
+            $ErrorRecord.FullyQualifiedErrorId -eq $exception.Message) {
+            return $exception.Message
+        }
+    }
     while ($exception -is [System.Management.Automation.MethodInvocationException] -and $null -ne $exception.InnerException) {
         $exception = $exception.InnerException
     }

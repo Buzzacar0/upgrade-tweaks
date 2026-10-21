@@ -33,6 +33,9 @@
     $id = [string]$Tweak.id
     if ($id -and $id -notmatch '^UT_[A-Za-z0-9_]+$') { $problems.Add("id '$id' fora do padrão UT_Xxx") }
     if ($Tweak.categoria -and $categories -notcontains $Tweak.categoria) { $problems.Add("categoria '$($Tweak.categoria)' inválida") }
+    foreach ($extra in @($Tweak.abasExtras | Where-Object { $null -ne $_ })) {
+        if ($categories -notcontains $extra) { $problems.Add("abasExtras '$extra' inválida") }
+    }
     if ($Tweak.risco -and $risks -notcontains $Tweak.risco) { $problems.Add("risco '$($Tweak.risco)' inválido (use baixo, médio ou alto)") }
     if ($Tweak.risco -eq 'alto' -and [string]::IsNullOrWhiteSpace([string]$Tweak.confirmacao)) {
         $problems.Add("risco alto exige o texto de 'confirmacao'")
