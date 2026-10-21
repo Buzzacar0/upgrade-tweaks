@@ -19,9 +19,13 @@
 
     $cliMode = [bool]($Preset -or $Config -or $DesfazerTudo -or $Diagnostico -or $ExportarRelatorio)
     if ($cliMode) {
-        # Implemented in phase 10 (presets and command line).
-        Write-UTLog -Level Aviso -Message 'O modo linha de comando ainda não está disponível nesta versão de desenvolvimento.'
-        return 2
+        try {
+            return (Invoke-UTCommandLine -Preset $Preset -Config $Config -DesfazerTudo:$DesfazerTudo `
+                    -Diagnostico:$Diagnostico -ExportarRelatorio $ExportarRelatorio -Simular:$Simular)
+        } catch {
+            Write-UTLog -Level Erro -Message (Get-UTFriendlyError -ErrorRecord $_ -Alvo 'o modo linha de comando') -Detalhe $_.Exception.ToString()
+            return 1
+        }
     }
 
     try {

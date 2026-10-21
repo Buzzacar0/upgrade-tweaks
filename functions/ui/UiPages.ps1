@@ -105,6 +105,7 @@ function New-UTUiPageInicio {
     [CmdletBinding()]
     param()
     $page = New-UTUiStack -Itens @((New-UTUiPageHeader -Titulo 'Início' -Descricao 'Diagnóstico do seu PC para o Call of Duty: Warzone. Esta tela só lê o sistema; nada é alterado aqui.'))
+    [void]$page.Children.Add((New-UTUiPresetCard))
     $data = @{}
     $panel = New-UTUiAsyncPanel -Nome 'Diagnóstico do PC' -Carregando 'Analisando o hardware e o Windows (leva alguns segundos)...' -Dados $data -Script { Get-UTDiagnostic } -Montar {
         param($R, $D)
@@ -122,6 +123,53 @@ function New-UTUiPageInicio {
     $data.Painel = $panel
     [void]$page.Children.Add($panel)
     return $page
+}
+
+function New-UTUiPresetCard {
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Justification = 'Builds a UI element; nothing changes on the system.')]
+    [CmdletBinding()]
+    param()
+    $content = New-Object System.Collections.Generic.List[object]
+    $names = @()
+    try { $names = @(Get-UTPresetName) } catch { $names = @() }
+    if ($names -contains 'Seguro') {
+        $big = New-UTUiButton 'Otimizar agora com o preset Seguro (recomendado)' -Estilo Primario -Icone 'E945' -Margem '0,0,0,10' -AoClicar {
+            param($b, $d) $null = $b, $d
+            Select-UTUiPreset -Nome 'Seguro'
+            Invoke-UTUiRun -Modo Aplicar
+        }
+        $big.Padding = '22,12'
+        $big.FontSize = 15
+        $content.Add($big)
+    }
+    foreach ($n in $names) {
+        $p = Get-UTPreset -Nome $n
+        $line = New-UTUiWrap -Itens @((New-UTUiText $n -Peso SemiBold -Margem '0,0,8,0'))
+        [void]$line.Children.Add((New-UTUiButton "Marcar os ajustes do $n" -Estilo Link -Margem '0' -Dados $n -AoClicar { param($b, $d) $null = $b; Select-UTUiPreset -Nome $d }))
+        $content.Add($line)
+        $content.Add((New-UTUiText ([string]$p.descricao) -Cor MutedBrush -Quebrar -Margem '0,2,0,10'))
+    }
+    $files = New-UTUiWrap -Margem '0,4,0,0'
+    [void]$files.Children.Add((New-UTUiButton 'Exportar seleção...' -Icone 'E74E' -Dica 'Salva os ajustes marcados em JSON para repetir em outros PCs (ou usar com -Config).' -AoClicar {
+                param($b, $d) $null = $b, $d
+                $ids = @(Get-UTUiSelectedId)
+                if ($ids.Count -eq 0) { [void](Show-UTUiDialog -Titulo 'Nenhum ajuste marcado' -Mensagem 'Marque os ajustes (ou um preset) antes de exportar.'); return }
+                $path = Get-UTUiFileDialog -Modo Salvar -Filtro 'Seleção do Upgrade Tweaks (*.json)|*.json' -NomeSugerido 'selecao-upgrade-tweaks.json'
+                if ($path) { [void](Export-UTSelection -Id $ids -Caminho $path); [void](Show-UTUiDialog -Titulo 'Seleção salva' -Mensagem "$($ids.Count) ajustes salvos em $path" -Tipo sucesso) }
+            }))
+    [void]$files.Children.Add((New-UTUiButton 'Importar seleção...' -Icone 'E8B5' -AoClicar {
+                param($b, $d) $null = $b, $d
+                $path = Get-UTUiFileDialog -Modo Abrir -Filtro 'Seleção do Upgrade Tweaks (*.json)|*.json'
+                if (-not $path) { return }
+                $imp = Import-UTSelection -Caminho $path
+                Clear-UTUiSelection
+                Set-UTUiSelection -Id @($imp.Ids) -Marcado $true
+                $msg = "$(@($imp.Ids).Count) ajustes marcados. Confira as abas e clique em Aplicar selecionados."
+                if (@($imp.Desconhecidos).Count -gt 0) { $msg += " Ignorados (não existem nesta versão): $($imp.Desconhecidos -join ', ')." }
+                [void](Show-UTUiDialog -Titulo 'Seleção importada' -Mensagem $msg -Tipo sucesso)
+            }))
+    $content.Add($files)
+    return (New-UTUiCard -Titulo 'Presets' -Icone 'E734' -Subtitulo 'Cada preset marca os ajustes; o que não se aplica ao seu hardware é pulado sozinho. Revise as abas antes de aplicar, se quiser.' -Conteudo $content.ToArray())
 }
 
 function New-UTUiDiagnosticView {

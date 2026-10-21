@@ -1,4 +1,4 @@
-<Window xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+﻿<Window xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Upgrade Tweaks"
         Width="1280" Height="820" MinWidth="1100" MinHeight="700"
@@ -380,11 +380,10 @@
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
-                    <StackPanel Orientation="Horizontal" Grid.Column="0">
-                        <TextBox x:Name="SearchBox" Width="260" Tag="Buscar ajustes..." Margin="0,0,10,0"/>
-                        <ComboBox x:Name="PresetBox" Width="170" Margin="0,0,10,0" ToolTip="Marca os ajustes de um preset"/>
-                        <TextBlock x:Name="SelectionText" VerticalAlignment="Center" Foreground="{StaticResource MutedBrush}" Text="Nenhum ajuste marcado"/>
-                    </StackPanel>
+                    <DockPanel Grid.Column="0" Margin="0,0,10,0" LastChildFill="True">
+                        <ComboBox x:Name="PresetBox" DockPanel.Dock="Right" Width="150" Margin="10,0,0,0" ToolTip="Marca os ajustes de um preset"/>
+                        <TextBox x:Name="SearchBox" MinWidth="140" MaxWidth="300" HorizontalAlignment="Left" Tag="Buscar ajustes..."/>
+                    </DockPanel>
                     <StackPanel Orientation="Horizontal" Grid.Column="1">
                         <Button x:Name="SimulateButton" Content="Simular (não altera nada)"/>
                         <Button x:Name="UndoButton" Content="Desfazer selecionados"/>
@@ -413,7 +412,7 @@
                             <Button x:Name="LogCopy" Style="{StaticResource LinkButton}" Content="Copiar log"/>
                         </StackPanel>
                     </DockPanel>
-                    <ListBox x:Name="LogList" Height="140" Background="Transparent" BorderThickness="0" Margin="20,0,20,6"
+                    <ListBox x:Name="LogList" Height="96" Background="Transparent" BorderThickness="0" Margin="20,0,20,6"
                              FontFamily="Cascadia Mono, Consolas" FontSize="12"
                              VirtualizingStackPanel.IsVirtualizing="True" ScrollViewer.HorizontalScrollBarVisibility="Disabled"/>
                 </DockPanel>
@@ -424,10 +423,12 @@
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
                         <ColumnDefinition Width="200"/>
                     </Grid.ColumnDefinitions>
                     <TextBlock x:Name="StatusText" Grid.Column="0" Foreground="{StaticResource MutedBrush}" Text="Pronto." TextTrimming="CharacterEllipsis"/>
-                    <ProgressBar x:Name="BusyBar" Grid.Column="1" Height="4" IsIndeterminate="False" Visibility="Hidden"
+                    <TextBlock x:Name="SelectionText" Grid.Column="1" Margin="16,0,16,0" Foreground="{StaticResource AccentLightBrush}" Text="Nenhum ajuste marcado"/>
+                    <ProgressBar x:Name="BusyBar" Grid.Column="2" Height="4" IsIndeterminate="False" Visibility="Hidden"
                                  Foreground="{StaticResource AccentBrush}" Background="#1E2547" BorderThickness="0"/>
                 </Grid>
             </Border>
