@@ -7,7 +7,7 @@ function Get-UTFolderSize {
     [OutputType([double])]
     param([Parameter(Mandatory)][string]$Caminho)
     if (-not (Test-Path -LiteralPath $Caminho)) { return 0.0 }
-    $sum = (Get-ChildItem -LiteralPath $Caminho -Recurse -File -Force -ErrorAction SilentlyContinue | Measure-Object Length -Sum).Sum
+    $sum = Get-UTSum @(Get-ChildItem -LiteralPath $Caminho -Recurse -File -Force -ErrorAction SilentlyContinue | ForEach-Object { $_.Length })
     return [math]::Round([double]$sum / 1MB, 1)
 }
 
@@ -82,7 +82,7 @@ function Clear-UTTempFile {
         $after = Get-UTFolderSize -Caminho $t.Caminho
         $results.Add([pscustomobject]@{ Id = $t.Id; Nome = $t.Nome; LiberadoMB = [math]::Max(0, [math]::Round($before - $after, 1)); RestanteMB = $after })
     }
-    $total = [math]::Round(($results | Measure-Object LiberadoMB -Sum).Sum, 1)
+    $total = [math]::Round((Get-UTSum @($results | ForEach-Object { $_.LiberadoMB })), 1)
     Write-UTLog -Level Sucesso -Message "Limpeza de temporários: $total MB liberados."
     return $results.ToArray()
 }
@@ -151,7 +151,7 @@ function ConvertFrom-UTToolOutput {
     if (-not $Texto) { return '' }
     $clean = $Texto -replace "`0", ''
     $lines = foreach ($l in ($clean -split "`r?`n")) {
-        $last = @($l -split "`r")[-1].TrimEnd()
+        $last = (@($l -split "`r") | Select-Object -Last 1).TrimEnd()
         # DISM progress bar: [=====   45.0%            ]
         if ($last -and $last -notmatch '^\s*\[[=\s\d.,%]*\]\s*$') { $last }
     }
@@ -199,7 +199,7 @@ function Get-UTDriveOptimizationPlan {
     param([psobject]$Armazenamento)
     if ($null -eq $Armazenamento) { $Armazenamento = Get-UTStorageInfo }
     foreach ($v in @($Armazenamento.Volumes)) {
-        $disk = @($Armazenamento.Discos | Where-Object { $_.Numero -eq $v.Disco })[0]
+        $disk = (@($Armazenamento.Discos | Where-Object { $_.Numero -eq $v.Disco }) | Select-Object -First 1)
         $kind = $(if ($disk) { $disk.Tipo } else { 'Desconhecido' })
         $action = switch ($kind) { 'NVMe' { 'ReTrim' } 'SSD' { 'ReTrim' } 'HDD' { 'Defrag' } default { 'Nenhuma' } }
         $text = switch ($action) { 'ReTrim' { 'TRIM (avisa o SSD dos blocos livres)' } 'Defrag' { 'Desfragmentar (HD)' } default { 'Pular: tipo de disco desconhecido' } }
@@ -314,7 +314,7 @@ function Get-UTSystemShortcut {
 function Open-UTSystemShortcut {
     [CmdletBinding(SupportsShouldProcess)]
     param([Parameter(Mandatory)][ValidateSet('dispositivos', 'energia', 'video', 'graficos', 'seguranca', 'msconfig', 'som', 'servicos')][string]$Atalho)
-    $s = @(Get-UTSystemShortcut | Where-Object Id -eq $Atalho)[0]
+    $s = (@(Get-UTSystemShortcut | Where-Object Id -eq $Atalho) | Select-Object -First 1)
     if (-not $PSCmdlet.ShouldProcess($s.Nome, 'Abrir')) { return }
     if ($s.Argumentos) { Start-Process -FilePath $s.Comando -ArgumentList $s.Argumentos } else { Start-Process -FilePath $s.Comando }
 }

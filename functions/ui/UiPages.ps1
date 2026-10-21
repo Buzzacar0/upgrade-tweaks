@@ -87,7 +87,7 @@ function Test-UTUiVendor {
             if ($names -match 'NVIDIA') { $g += 'nvidia' }
             if ($names -match 'AMD|Radeon') { $g += 'amd' }
             if ($names -match 'Intel') { $g += 'intel' }
-            $maker = [string](@(Get-CimInstance -ClassName Win32_Processor -ErrorAction SilentlyContinue)[0]).Manufacturer
+            $maker = [string]((@(Get-CimInstance -ClassName Win32_Processor -ErrorAction SilentlyContinue) | Select-Object -First 1)).Manufacturer
             $quick = @{ Gpus = $g; Cpu = $(if ($maker -match 'AMD') { 'amd' } elseif ($maker -match 'Intel') { 'intel' } else { $null }) }
             $UTSync['FabricantesRapido'] = $quick
         }
@@ -109,7 +109,7 @@ function New-UTUiPageInicio {
     $data = @{}
     $panel = New-UTUiAsyncPanel -Nome 'Diagnóstico do PC' -Carregando 'Analisando o hardware e o Windows (leva alguns segundos)...' -Dados $data -Script { Get-UTDiagnostic } -Montar {
         param($R, $D)
-        $diag = @($R)[0]
+        $diag = (@($R) | Select-Object -First 1)
         $ui = Get-UTUi
         $ui.Diagnostico = $diag
         if (-not $ui.EstadosPedidos) {
@@ -222,7 +222,7 @@ function New-UTUiDiagnosticView {
         $tab = Get-UTUiTabForCheck -Aba ([string]$p.Aba)
         $extra = $null
         if ($tab -and @(Get-UTUiTabDefinition | Where-Object Id -eq $tab).Count -gt 0) {
-            $tabName = @(Get-UTUiTabDefinition | Where-Object Id -eq $tab)[0].Nome
+            $tabName = (@(Get-UTUiTabDefinition | Where-Object Id -eq $tab) | Select-Object -First 1).Nome
             $extra = New-UTUiButton ("Resolver na aba $tabName") -Estilo Link -Margem '0,4,0,0' -Dados $tab -AoClicar { param($b, $d) $null = $b; Show-UTUiPage -Id $d }
         }
         $items.Add((New-UTUiStatusLine -Status ([string]$p.Status) -Titulo ([string]$p.Titulo) -Texto ([string]$p.Mensagem) -Extra $extra))
@@ -244,7 +244,7 @@ function New-UTUiTweakPage {
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Justification = 'Builds a UI element; nothing changes on the system.')]
     [CmdletBinding()]
     param([Parameter(Mandatory)][string]$Aba, [string]$Descricao, [object[]]$Ferramentas = @(), [string]$TituloLista = 'Ajustes')
-    $tab = @(Get-UTUiTabDefinition | Where-Object Id -eq $Aba)[0]
+    $tab = (@(Get-UTUiTabDefinition | Where-Object Id -eq $Aba) | Select-Object -First 1)
     $page = New-UTUiStack -Itens @((New-UTUiPageHeader -Titulo $tab.Nome -Descricao $Descricao))
     foreach ($f in $Ferramentas) { if ($f) { [void]$page.Children.Add($f) } }
     $list = New-UTUiTweakList -Tweaks @(Get-UTUiTabTweak -Aba $Aba) -Pagina $Aba -Titulo $TituloLista
@@ -259,7 +259,7 @@ function New-UTUiPageEnergia {
     $data = @{}
     $status = New-UTUiAsyncPanel -Nome 'Plano de energia' -Dados $data -Script { Get-UTPowerPlanStatus } -Montar {
         param($R, $D)
-        $s = @($R)[0]
+        $s = (@($R) | Select-Object -First 1)
         $pairs = @(, @('Plano ativo', $s.Ativo.Nome))
         $pairs += , @('Situação', $s.Mensagem)
         $box = New-UTUiStack -Itens @((New-UTUiKeyValue -Pares $pairs))
@@ -334,7 +334,7 @@ function New-UTUiPageRede {
     param()
     $info = New-UTUiAsyncPanel -Nome 'Adaptador de rede' -Script { Get-UTNetworkInfo } -Montar {
         param($R, $D) $null = $D
-        $n = @($R)[0]
+        $n = (@($R) | Select-Object -First 1)
         if (-not $n) { return (New-UTUiText 'Nenhum adaptador de rede conectado.' -Cor YellowBrush) }
         $pairs = @(, @('Adaptador', "$($n.Adaptador) ($($n.Tipo))"))
         $pairs += , @('Velocidade', $n.Velocidade)
@@ -449,7 +449,7 @@ function New-UTUiPageGPU {
             $panel = New-UTUiAsyncPanel -Nome "NVIDIA ($scope)" -Argumentos @{ Escopo = $scope } -Script { param($Escopo) Get-UTNvidiaDrsStatus -Escopo $Escopo } -Montar {
                 param($R, $D) $null = $D
                 $rows = @($R | ForEach-Object { [pscustomobject]@{ Nome = $_.Nome; Atual = $_.Atual; Recomendado = $_.Recomendado; Ok = $(if ($_.Igual) { 'OK' } elseif ($_.Aplicavel) { 'Mudar' } else { '' }) } })
-                $perfil = $(if (@($R).Count -gt 0) { @($R)[0].Perfil } else { '' })
+                $perfil = $(if (@($R).Count -gt 0) { (@($R) | Select-Object -First 1).Perfil } else { '' })
                 New-UTUiStack -Itens @(
                     (New-UTUiText "Perfil do driver: $perfil" -Cor MutedBrush)
                     (New-UTUiTable -Colunas @(@{ Titulo = 'Configuração'; Campo = 'Nome'; Largura = '*' }, @{ Titulo = 'Atual'; Campo = 'Atual'; Largura = 190 }, @{ Titulo = 'Recomendado'; Campo = 'Recomendado'; Largura = 210 }, @{ Titulo = ''; Campo = 'Ok'; Largura = 60 }) -Itens $rows)
@@ -465,7 +465,7 @@ function New-UTUiPageGPU {
         }
         $extra = New-UTUiAsyncPanel -Nome 'Cor e Resizable BAR' -Script { [pscustomobject]@{ Cor = @(Get-UTNvidiaColorRange); Rebar = (Get-UTResizableBarStatus) } } -Montar {
             param($R, $D) $null = $D
-            $x = @($R)[0]
+            $x = (@($R) | Select-Object -First 1)
             $pairs = @($x.Cor | ForEach-Object { , @("Monitor $($_.Nome)", $_.Rotulo) })
             if ($x.Rebar) { $pairs += , @('Resizable BAR', $(if ($x.Rebar.Ligado) { 'Ligado' } else { 'Desligado (ligue na BIOS: veja Ferramentas > BIOS)' })) }
             New-UTUiKeyValue -Pares $pairs
@@ -482,7 +482,7 @@ function New-UTUiPageGPU {
             if ((Show-UTUiDialog -Titulo 'Limpar o cache de shaders?' -Mensagem 'Feche o jogo antes. Na próxima abertura o jogo recompila os shaders: o primeiro carregamento demora mais e pode engasgar no começo. Útil depois de atualizar o driver ou com travadas/artefatos.' -Tipo pergunta -Botoes @('Limpar', 'Cancelar')) -eq 'Limpar') {
                 Invoke-UTUiAction -Nome 'Limpar cache de shaders' -Script { Clear-UTShaderCache -Confirm:$false } -Dados $d -Depois {
                     param($r, $dd)
-                    [void](Show-UTUiDialog -Titulo 'Cache de shaders' -Mensagem "$(@($r)[0]) MB liberados." -Tipo sucesso)
+                    [void](Show-UTUiDialog -Titulo 'Cache de shaders' -Mensagem "$((@($r) | Select-Object -First 1)) MB liberados." -Tipo sucesso)
                     Sync-UTUiAsyncPanel -Painel $dd.Painel
                 }
             }
@@ -543,7 +543,7 @@ function Invoke-UTUiDriverOnlyFlow {
         } -AoTerminar {
             param($R, $E) $null = $E
             if (-not $R.Ok) { Show-UTUiError -Mensagem $R.Erro; return }
-            $code = @($R.Resultado)[-1]
+            $code = (@($R.Resultado) | Select-Object -Last 1)
             $msg = $(if ($code -eq 0) { 'Driver instalado. Reinicie o computador.' } else { "O instalador da NVIDIA terminou com o código $code. Veja o log." })
             [void](Show-UTUiDialog -Titulo 'Driver NVIDIA' -Mensagem $msg -Tipo $(if ($code -eq 0) { 'sucesso' } else { 'aviso' }))
         })
@@ -558,7 +558,7 @@ function New-UTUiPageWarzone {
     $matchData = @{}
     $match = New-UTUiAsyncPanel -Nome 'Modo Partida' -Dados $matchData -Script { [pscustomobject]@{ Status = (Get-UTMatchModeStatus); Lista = @(Get-UTMatchModeList) } } -Montar {
         param($R, $D)
-        $x = @($R)[0]
+        $x = (@($R) | Select-Object -First 1)
         $box = New-UTUiStack
         if ($x.Status.Ativo) {
             [void]$box.Children.Add((New-UTUiText "Modo Partida ATIVO desde $($x.Status.Inicio). Programas fechados: $(@($x.Status.Fechados | ForEach-Object { $_.nome }) -join ', ')" -Cor GreenBrush -Quebrar))
@@ -613,15 +613,15 @@ function New-UTUiPageWarzone {
         [pscustomobject]@{ Arquivos = @($rows); Backups = @(Get-UTCodConfigBackup) }
     } -Montar {
         param($R, $D)
-        $x = @($R)[0]
+        $x = (@($R) | Select-Object -First 1)
         if (@($x.Arquivos).Count -eq 0) { return (New-UTUiText 'Nenhum arquivo de configuração do Call of Duty encontrado em Documentos\Call of Duty\players. Abra o jogo uma vez e feche.' -Cor YellowBrush -Quebrar) }
         $grid = New-UTUiTable -Colunas @(@{ Titulo = 'Jogo'; Campo = 'Titulo'; Largura = 140 }, @{ Titulo = 'Arquivo'; Campo = 'Arquivo'; Largura = '*' }, @{ Titulo = 'RendererWorkerCount'; Campo = 'Threads'; Largura = 150 }) -Itens @($x.Arquivos)
-        $first = @($x.Arquivos)[0]
+        $first = (@($x.Arquivos) | Select-Object -First 1)
         $btns = New-UTUiWrap -Margem '0,6,0,0'
         [void]$btns.Children.Add((New-UTUiButton 'Abrir a pasta' -Icone 'E8B7' -AoClicar { param($b, $d) $null = $b, $d; Open-UTCodConfigFolder }))
         [void]$btns.Children.Add((New-UTUiButton 'Fazer backup' -Icone 'E74E' -Dados @{ Arquivo = $first.Caminho; Painel = $D.Painel } -AoClicar {
                     param($b, $d) $null = $b
-                    Invoke-UTUiAction -Nome 'Backup da configuração' -Argumentos @{ Arquivo = $d.Arquivo } -Script { param($Arquivo) Backup-UTCodConfig -Arquivo $Arquivo } -Dados $d -Depois { param($r, $dd) [void](Show-UTUiDialog -Titulo 'Backup feito' -Mensagem ([string]@($r)[0]) -Tipo sucesso); Sync-UTUiAsyncPanel -Painel $dd.Painel }
+                    Invoke-UTUiAction -Nome 'Backup da configuração' -Argumentos @{ Arquivo = $d.Arquivo } -Script { param($Arquivo) Backup-UTCodConfig -Arquivo $Arquivo } -Dados $d -Depois { param($r, $dd) [void](Show-UTUiDialog -Titulo 'Backup feito' -Mensagem ([string](@($r) | Select-Object -First 1)) -Tipo sucesso); Sync-UTUiAsyncPanel -Painel $dd.Painel }
                 }))
         [void]$btns.Children.Add((New-UTUiButton 'RendererWorkerCount = núcleos físicos' -Icone 'E950' -Dica 'Número de threads de renderização do jogo igual aos núcleos físicos do processador. Feche o jogo antes.' -Dados @{ Arquivo = $first.Caminho; Painel = $D.Painel } -AoClicar {
                     param($b, $d) $null = $b
@@ -633,7 +633,7 @@ function New-UTUiPageWarzone {
                         $items = @($d.Backups | ForEach-Object { [pscustomobject]@{ Id = $_.Backup; Texto = "$($_.Data) - $($_.Nome)"; Marcado = $false } })
                         $pick = Show-UTUiChecklistDialog -Titulo 'Restaurar backup da configuração' -Mensagem 'Marque um backup. O arquivo atual é guardado antes.' -Itens $items -BotaoOk 'Restaurar'
                         if ($null -eq $pick -or @($pick).Count -eq 0) { return }
-                        Invoke-UTUiAction -Nome 'Restaurar configuração' -Argumentos @{ Backup = @($pick)[0] } -Script { param($Backup) Restore-UTCodConfig -Backup $Backup } -Dados $d -Depois { param($r, $dd) $null = $r; Sync-UTUiAsyncPanel -Painel $dd.Painel }
+                        Invoke-UTUiAction -Nome 'Restaurar configuração' -Argumentos @{ Backup = (@($pick) | Select-Object -First 1) } -Script { param($Backup) Restore-UTCodConfig -Backup $Backup } -Dados $d -Depois { param($r, $dd) $null = $r; Sync-UTUiAsyncPanel -Painel $dd.Painel }
                     }))
         }
         New-UTUiStack -Itens @($grid, $btns)
@@ -693,7 +693,7 @@ function New-UTUiPageFerramenta {
                     if ($sel.Count -eq 0) { return }
                     Invoke-UTUiAction -Nome 'Limpando temporários' -Argumentos @{ Itens = $sel } -Script { param([string[]]$Itens) Clear-UTTempFile -Itens $Itens -Confirm:$false } -Dados $d -Depois {
                         param($r, $dd)
-                        $total = [math]::Round((@($r) | Measure-Object LiberadoMB -Sum).Sum, 0)
+                        $total = [math]::Round((Get-UTSum @(@($r) | ForEach-Object { $_.LiberadoMB })), 0)
                         [void](Show-UTUiDialog -Titulo 'Limpeza concluída' -Mensagem "$total MB liberados." -Tipo sucesso -Itens @(@($r) | ForEach-Object { "$($_.Nome): $($_.LiberadoMB) MB" }))
                         Sync-UTUiAsyncPanel -Painel $dd.Painel
                     }
@@ -703,13 +703,13 @@ function New-UTUiPageFerramenta {
     $tempData.Painel = $temp
 
     $repair = New-UTUiWrap
-    [void]$repair.Children.Add((New-UTUiButton 'Limpeza de Disco do Windows' -Icone 'EA99' -AoClicar { param($b, $d) $null = $b, $d; Invoke-UTUiAction -Nome 'Limpeza de Disco' -Exclusivo -Script { Invoke-UTDiskCleanup -Confirm:$false } -Depois { param($r, $dd) $null = $dd; [void](Show-UTUiDialog -Titulo 'Limpeza de Disco' -Mensagem "$(@($r)[0]) GB liberados no disco do Windows." -Tipo sucesso) } }))
+    [void]$repair.Children.Add((New-UTUiButton 'Limpeza de Disco do Windows' -Icone 'EA99' -AoClicar { param($b, $d) $null = $b, $d; Invoke-UTUiAction -Nome 'Limpeza de Disco' -Exclusivo -Script { Invoke-UTDiskCleanup -Confirm:$false } -Depois { param($r, $dd) $null = $dd; [void](Show-UTUiDialog -Titulo 'Limpeza de Disco' -Mensagem "$((@($r) | Select-Object -First 1)) GB liberados no disco do Windows." -Tipo sucesso) } }))
     foreach ($t in @(@('componentcleanup', 'Limpar componentes (DISM)'), @('sfc', 'Verificar arquivos do sistema (sfc)'), @('restorehealth', 'Reparar imagem do Windows (DISM)'))) {
         [void]$repair.Children.Add((New-UTUiButton $t[1] -Icone 'E90F' -Dados $t[0] -AoClicar {
                     param($b, $d) $null = $b
                     Invoke-UTUiAction -Nome 'Reparo do Windows' -Exclusivo -Argumentos @{ Ferramenta = $d } -Script { param($Ferramenta) Invoke-UTWindowsRepairTool -Ferramenta $Ferramenta } -Depois {
                         param($r, $dd) $null = $dd
-                        $x = @($r)[0]
+                        $x = (@($r) | Select-Object -First 1)
                         [void](Show-UTUiDialog -Titulo 'Reparo do Windows' -Mensagem $x.Resumo -Tipo $(if ($x.Sucesso) { 'sucesso' } else { 'aviso' }))
                     }
                 }))
@@ -727,7 +727,7 @@ function New-UTUiPageFerramenta {
     $wuData = @{}
     $wu = New-UTUiAsyncPanel -Nome 'Windows Update' -Dados $wuData -Script { Get-UTWindowsUpdatePause } -Montar {
         param($R, $D)
-        $p = @($R)[0]
+        $p = (@($R) | Select-Object -First 1)
         $box = New-UTUiStack -Itens @((New-UTUiText $(if ($p.Pausado) { "Pausado até $($p.Ate.ToString('dd/MM/yyyy HH:mm'))." } else { 'Atualizações ativas.' }) -Cor $(if ($p.Pausado) { 'YellowBrush' } else { 'GreenBrush' })))
         $btns = New-UTUiWrap -Margem '0,8,0,0'
         foreach ($days in 7, 14, 35) {
@@ -741,7 +741,7 @@ function New-UTUiPageFerramenta {
 
     $paging = New-UTUiAsyncPanel -Nome 'Arquivo de paginação' -Script { Get-UTPageFileStatus } -Montar {
         param($R, $D) $null = $D
-        $p = @($R)[0]
+        $p = (@($R) | Select-Object -First 1)
         New-UTUiStatusLine -Status $(if ($p.Estado -eq 'Automatico') { 'OK' } elseif ($p.Estado -eq 'Desativado') { 'Problema' } else { 'Aviso' }) -Titulo 'Arquivo de paginação' -Texto $p.Mensagem
     }
 
@@ -750,7 +750,7 @@ function New-UTUiPageFerramenta {
 
     $bios = New-UTUiAsyncPanel -Nome 'Guia de BIOS' -Script { Get-UTBiosGuide -Hardware (Get-UTSyncValue -Key 'Hardware') } -Montar {
         param($R, $D) $null = $D
-        $g = @($R)[0]
+        $g = (@($R) | Select-Object -First 1)
         $box = New-UTUiStack
         $head = @()
         if ($g.PlacaMae) { $head += , @('Placa-mãe', $g.PlacaMae) }
@@ -795,7 +795,7 @@ function New-UTUiPagePrograma {
         [pscustomobject]@{ Programas = @(Get-UTProgramStatus -VerificarAtualizacao:$Atualizacao); Winget = [bool](Get-UTWingetPath) }
     } -Montar {
         param($R, $D)
-        $x = @($R)[0]
+        $x = (@($R) | Select-Object -First 1)
         $root = New-UTUiStack
         $bar = New-UTUiWrap -Margem '0,0,0,8'
         [void]$bar.Children.Add((New-UTUiButton 'Procurar atualizações' -Icone 'E895' -Dados $D -AoClicar {
@@ -820,7 +820,7 @@ function New-UTUiPagePrograma {
     [void]$page.Children.Add((New-UTUiCard -Conteudo @($panel)))
     if (Test-UTUiVendor -Gpu nvidia) {
         [void]$page.Children.Add((New-UTUiCard -Titulo 'NVIDIA Profile Inspector' -Icone 'E7F4' -Subtitulo 'Caminho alternativo à aba GPU: importa o perfil recomendado do Warzone em .nip, com backup completo do driver antes.' -Conteudo @(
-                    (New-UTUiButton 'Importar o perfil do Warzone pelo Profile Inspector' -AoClicar { param($b, $d) $null = $b, $d; Invoke-UTUiAction -Nome 'Profile Inspector' -Exclusivo -Script { Import-UTNvidiaInspectorProfile } -Depois { param($r, $dd) $null = $dd; [void](Show-UTUiDialog -Titulo 'Perfil importado' -Mensagem "Backup do driver: $(@($r)[-1])" -Tipo sucesso) } })
+                    (New-UTUiButton 'Importar o perfil do Warzone pelo Profile Inspector' -AoClicar { param($b, $d) $null = $b, $d; Invoke-UTUiAction -Nome 'Profile Inspector' -Exclusivo -Script { Import-UTNvidiaInspectorProfile } -Depois { param($r, $dd) $null = $dd; [void](Show-UTUiDialog -Titulo 'Perfil importado' -Mensagem "Backup do driver: $((@($r) | Select-Object -Last 1))" -Tipo sucesso) } })
                 )))
     }
     return $page
@@ -883,7 +883,7 @@ function Invoke-UTUiProgramAction {
         }
     } -Dados $Dados -Depois {
         param($r, $dd)
-        $x = @($r)[-1]
+        $x = (@($r) | Select-Object -Last 1)
         if ($x -and $x.Mensagem) { [void](Show-UTUiDialog -Titulo $dd.Nome -Mensagem $x.Mensagem -Tipo sucesso) }
         if ($dd.Painel) { Sync-UTUiAsyncPanel -Painel $dd.Painel }
     }
@@ -964,7 +964,7 @@ function New-UTUiPageSobre {
         $d.Host.Child = New-UTUiText 'Consultando o GitHub...' -Cor MutedBrush
         Invoke-UTUiAction -Nome 'Verificar versão' -Argumentos @{ Repo = $d.Repo } -Script { param($Repo) Get-UTGitHubLatestRelease -Repo $Repo } -Dados $d -Depois {
             param($r, $dd)
-            $rel = @($r)[0]
+            $rel = (@($r) | Select-Object -First 1)
             $newer = $false
             try { $newer = ([version]($rel.Versao -replace '[^\d.]', '')) -gt ([version](($dd.Versao -split '-')[0])) } catch { $newer = $rel.Versao -ne $dd.Versao }
             if ($newer) {

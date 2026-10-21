@@ -2,7 +2,7 @@
     . (Join-Path $PSScriptRoot 'TestHelpers.ps1')
     Import-UTUiAssembly
     function Initialize-TestWindow {
-        if ($null -eq $UTSync) { Reset-UTTestEnvironment }
+        if ($null -eq (Get-Variable -Name UTSync -ValueOnly -ErrorAction SilentlyContinue)) { Reset-UTTestEnvironment }
         $ui = Initialize-UTUiState
         $w = Get-UTUiWindow -Name 'MainWindow'
         $ui.Window = $w.Window

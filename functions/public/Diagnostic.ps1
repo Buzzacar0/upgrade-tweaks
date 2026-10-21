@@ -263,7 +263,7 @@ function Get-UTDiagnosticCheck {
             }
         }
         $systemLetter = ([string]$env:SystemDrive).TrimEnd(':')
-        $sysVol = @($storage.Volumes | Where-Object { $_.Letra -eq $systemLetter })[0]
+        $sysVol = (@($storage.Volumes | Where-Object { $_.Letra -eq $systemLetter }) | Select-Object -First 1)
         if ($sysVol) {
             $freePct = if ($sysVol.TotalGB -gt 0) { [math]::Round(100 * $sysVol.LivreGB / $sysVol.TotalGB) } else { 100 }
             if ($sysVol.LivreGB -lt 30 -or $freePct -lt 10) {

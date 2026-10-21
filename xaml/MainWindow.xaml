@@ -336,6 +336,17 @@
         </Style>
     </Window.Resources>
 
+    <Window.Icon>
+        <DrawingImage>
+            <DrawingImage.Drawing>
+                <DrawingGroup>
+                    <GeometryDrawing Brush="#7C3AED" Geometry="M20,0 H60 A20,20 0 0 1 80,20 V60 A20,20 0 0 1 60,80 H20 A20,20 0 0 1 0,60 V20 A20,20 0 0 1 20,0 Z"/>
+                    <GeometryDrawing Brush="#FFFFFF" Geometry="M47,10 L24,46 H40 L33,70 L58,32 H42 Z"/>
+                </DrawingGroup>
+            </DrawingImage.Drawing>
+        </DrawingImage>
+    </Window.Icon>
+
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="232"/>

@@ -79,7 +79,7 @@ function Get-UTNvidiaCurrentLabel {
         $v = [uint32]$Lidos[0].Valor
         return $(if ($v -eq 0) { 'Desligado' } else { "$v FPS" })
     }
-    foreach ($key in @($Item.opcoes.Keys)) {
+    foreach ($key in @($(if ($Item.opcoes) { $Item.opcoes.Keys }))) {
         $vals = @($Item.opcoes[$key].valores | ForEach-Object { ConvertTo-UTDrsValue $_ })
         $match = $true
         for ($i = 0; $i -lt $vals.Count; $i++) {
@@ -453,7 +453,7 @@ function Get-UTNvidiaPowerLimit {
     param()
     $r = Invoke-UTNative -FilePath 'nvidia-smi.exe' -ArgumentList @('--query-gpu=power.limit,power.default_limit,power.min_limit,power.max_limit', '--format=csv,noheader,nounits')
     if ($r.CodigoSaida -ne 0) { throw "nvidia-smi não respondeu: $($r.Saida) $($r.Erro)" }
-    $line = @($r.Saida -split "`r?`n" | Where-Object { $_.Trim() })[0]
+    $line = (@($r.Saida -split "`r?`n" | Where-Object { $_.Trim() }) | Select-Object -First 1)
     $parts = @($line.Split(',') | ForEach-Object { $_.Trim() })
     $num = { param($t) if ($t -match '^[\d.]+$') { [double]::Parse($t, [Globalization.CultureInfo]::InvariantCulture) } else { $null } }
     return [pscustomobject]@{ Atual = (& $num $parts[0]); Padrao = (& $num $parts[1]); Minimo = (& $num $parts[2]); Maximo = (& $num $parts[3]) }

@@ -1,0 +1,69 @@
+name: Testes
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  windows-powershell:
+    name: Analisador, Pester e compilação (Windows PowerShell 5.1)
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Instalar Pester 5.7.1 e PSScriptAnalyzer
+        shell: powershell
+        run: |
+          Set-PSRepository -Name PSGallery -InstallationPolicy Trusted
+          Install-Module Pester -RequiredVersion 5.7.1 -Scope CurrentUser -Force -SkipPublisherCheck
+          Install-Module PSScriptAnalyzer -Scope CurrentUser -Force
+
+      - name: README em dia com o catálogo
+        shell: powershell
+        run: .\scripts\build-docs.ps1 -Verificar
+
+      - name: Analisador e testes
+        shell: powershell
+        run: .\tests\Invoke-UTTests.ps1 -CaminhoResultado tests\results\pester.xml
+
+      - name: Compilar
+        shell: powershell
+        run: .\scripts\compile.ps1 -SemDocumentacao
+
+      - name: Arquivo compilado abre no PowerShell 7
+        shell: pwsh
+        run: |
+          $errors = $null
+          [void][System.Management.Automation.Language.Parser]::ParseFile((Resolve-Path dist\upgradetweaks.ps1), [ref]$null, [ref]$errors)
+          if ($errors) { $errors | ForEach-Object { Write-Error $_.Message }; exit 1 }
+          Write-Host 'OK: sem erros de sintaxe no PowerShell 7.'
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: upgradetweaks
+          path: |
+            dist/upgradetweaks.ps1
+            tests/results/
+          if-no-files-found: ignore
+
+  powershell-7:
+    name: Testes no PowerShell 7
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Instalar Pester 5.7.1
+        shell: pwsh
+        run: |
+          Set-PSRepository -Name PSGallery -InstallationPolicy Trusted
+          Install-Module Pester -RequiredVersion 5.7.1 -Scope CurrentUser -Force -SkipPublisherCheck
+
+      - name: Testes
+        shell: pwsh
+        run: .\tests\Invoke-UTTests.ps1 -SemAnalyzer

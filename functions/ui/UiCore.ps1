@@ -28,6 +28,8 @@ function Initialize-UTUiState {
         Estados     = @{}
         Diagnostico = $null
         PaginaAtual = $null
+        Navegando   = $false
+        EstadosPedidos = $false
         LogLinhas   = New-Object System.Collections.Generic.List[string]
         LogMax      = 2000
     }
@@ -185,7 +187,7 @@ function Receive-UTUiJob {
         $result = $null
         try {
             $out = $job.PowerShell.EndInvoke($job.Handle)
-            $result = @($out)[0]
+            $result = (@($out) | Select-Object -First 1)
         } catch {
             $result = [pscustomobject]@{ Ok = $false; Resultado = @(); Erro = $_.Exception.Message }
         } finally {

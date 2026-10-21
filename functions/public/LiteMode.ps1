@@ -27,7 +27,7 @@ function Get-UTLiteModePlan {
 
     foreach ($id in $ids) {
         if ($excluded -contains $id) { continue }
-        $t = @($all | Where-Object { $_.id -eq $id })[0]
+        $t = (@($all | Where-Object { $_.id -eq $id }) | Select-Object -First 1)
         if ($null -eq $t) { continue }
         if ($t.grupoServico -and $neverGroups -contains $t.grupoServico) { continue }
         $compat = Test-UTTweakCompatibility -Tweak $t -Contexto $context

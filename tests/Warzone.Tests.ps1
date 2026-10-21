@@ -66,6 +66,17 @@ Describe 'Arquivo de configuração do jogo' {
     }
 }
 
+Describe 'Pasta players do jogo' {
+    It 'prefere a pasta que tem arquivos do jogo (Documentos no OneDrive x Documents do perfil)' {
+        $one = Join-Path $TestDrive 'OneDrive\Documentos'
+        $prof = Join-Path $TestDrive 'perfil\Documents'
+        New-Item -ItemType Directory -Force (Join-Path $one 'Call of Duty\players'), (Join-Path $prof 'Call of Duty\players') | Out-Null
+        Set-Content (Join-Path $prof 'Call of Duty\players\s.1.0.cod25.txt0') 'x'
+        Get-UTCodPlayersFolder -Candidatas @($one, $prof) | Should -Be (Join-Path $prof 'Call of Duty\players')
+        Get-UTCodPlayersFolder -Candidatas @((Join-Path $TestDrive 'nada'), $one) | Should -Be (Join-Path $one 'Call of Duty\players')
+    }
+}
+
 Describe 'Guia de configurações do jogo' {
     BeforeEach { Reset-UTTestEnvironment }
 

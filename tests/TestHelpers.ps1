@@ -2,6 +2,8 @@
 # Tests never touch the real system: registry tests use HKCU:\Software\UpgradeTweaksTest and
 # everything that would change Windows (sc.exe, powercfg, CIM) is mocked.
 
+# Same strictness as development mode (scripts\start.ps1): reading a missing property fails.
+Set-StrictMode -Version Latest
 $UTTestRepoRoot = Split-Path -Parent $PSScriptRoot
 foreach ($UTTestFile in (Get-ChildItem -Path (Join-Path $UTTestRepoRoot 'functions') -Filter '*.ps1' -File -Recurse)) {
     . $UTTestFile.FullName

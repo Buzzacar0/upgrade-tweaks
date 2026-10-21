@@ -112,3 +112,36 @@ function Exit-UTNamedLock {
     if ($null -eq $Mutex) { return }
     try { $Mutex.ReleaseMutex() } finally { $Mutex.Dispose() }
 }
+
+function Get-UTField {
+    <#
+    .SYNOPSIS
+        Optional field of a config item (dictionary or object), or -Padrao when it is missing.
+        Under Set-StrictMode -Version Latest reading a missing key throws, even on hashtables.
+    #>
+    [CmdletBinding()]
+    param(
+        [AllowNull()][object]$Objeto,
+        [Parameter(Mandatory)][string]$Nome,
+        [AllowNull()][object]$Padrao = $null
+    )
+    if ($null -eq $Objeto) { return $Padrao }
+    if ($Objeto -is [System.Collections.IDictionary]) {
+        if ($Objeto.Contains($Nome)) { return , $Objeto[$Nome] }
+        return $Padrao
+    }
+    $prop = $Objeto.PSObject.Properties[$Nome]
+    if ($prop) { return , $prop.Value }
+    return $Padrao
+}
+
+function Get-UTSum {
+    # Sum that also works on an empty list (Measure-Object has no Sum then, which fails in strict mode).
+    [CmdletBinding()]
+    [OutputType([double])]
+    param([AllowNull()][AllowEmptyCollection()][object[]]$Valores)
+    $total = 0.0
+    foreach ($v in @($Valores)) { if ($null -ne $v) { $total += [double]$v } }
+    return $total
+}
+

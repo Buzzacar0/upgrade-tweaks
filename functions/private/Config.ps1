@@ -13,6 +13,38 @@
     return [string](Get-Location)
 }
 
+function Add-UTConfigDefault {
+    <#
+    .SYNOPSIS
+        Fills the optional fields of the items of a config file, so the code can read them
+        directly (reading a missing key fails under Set-StrictMode -Version Latest).
+    #>
+    [CmdletBinding()]
+    param([Parameter(Mandatory)][string]$Name, [AllowNull()][object]$Config)
+    if ($Config -isnot [System.Collections.IDictionary]) { return }
+    $lists = @()
+    switch ($Name) {
+        'programs' { $lists += , @(@($Config['programas']), @{ cpu = @(); gpu = @(); winget = ''; github = $null; somentePagina = $false; aviso = ''; pastas = @(); executaveis = @(); site = '' }) }
+        'nvidia-drs' { $lists += , @(@($Config['configuracoes']), @{ tipo = ''; recomendado = $null; opcoes = $null; naoDocumentado = $false; ids = @(); nomeApp = ''; explicacao = '' }) }
+        'bios-guia' { $lists += , @(@($Config['itens']), @{ cpu = @(); x3d = $false; verificacao = ''; aviso = '' }) }
+        'presets' { $lists += , @(@($Config['presets']), @{ herda = ''; exigeConfirmacao = $false; textoConfirmacao = ''; aviso = ''; recomendado = $false; ajustes = @() }) }
+        'cpu-x3d' { $lists += , @(@($Config['modelos']), @{ vcacheNosDois = $false }) }
+        'powerplan' { $lists += , @(@($Config['configuracoes']), @{ configuravel = $false; opcional = $false; pularX3DDuplo = $false }) }
+        'modo-partida' { $lists += , @(@($Config['processos']), @{ marcado = $false; reabrir = $false; grupo = '' }) }
+        'warzone-guia' {
+            if ($Config['perfis'] -is [System.Collections.IDictionary]) {
+                foreach ($k in @($Config['perfis'].Keys)) { $lists += , @(@($Config['perfis'][$k]['itens']), @{ porGpu = $null; porVram = $null; motivo = '' }) }
+            }
+        }
+    }
+    foreach ($pair in $lists) {
+        foreach ($item in @($pair[0])) {
+            if ($item -isnot [System.Collections.IDictionary]) { continue }
+            foreach ($k in $pair[1].Keys) { if (-not $item.Contains($k)) { $item[$k] = $pair[1][$k] } }
+        }
+    }
+}
+
 function Get-UTConfig {
     <#
     .SYNOPSIS
@@ -50,6 +82,7 @@ function Get-UTConfig {
     if ($null -eq $json) { throw "Configuração '$Name' não encontrada." }
 
     $data = ConvertTo-UTHashtable ($json | ConvertFrom-Json)
+    Add-UTConfigDefault -Name $Name -Config $data
     $sync = Get-Variable -Name UTSync -ValueOnly -ErrorAction SilentlyContinue
     if ($null -ne $sync) {
         if ($null -eq $cache) {
@@ -125,6 +158,7 @@ function Get-UTTweak {
                 continue
             }
             $seen[[string]$t.id] = $true
+            Add-UTTweakDefault -Tweak $t
             $valid.Add($t)
         }
         if ($null -eq $cache) { $cache = Get-UTSyncValue -Key 'ConfigCache' }  # Get-UTConfig may have just created it

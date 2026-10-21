@@ -118,7 +118,7 @@ function Find-UTUpgradePowerScheme {
         return [string]$saved.dados.guid
     }
     $cfg = Get-UTConfig -Name 'powerplan'
-    $byName = @($schemes | Where-Object { $_.Nome -eq $cfg.nome -or $_.Nome -eq $cfg.nomeNotebook })[0]
+    $byName = (@($schemes | Where-Object { $_.Nome -eq $cfg.nome -or $_.Nome -eq $cfg.nomeNotebook }) | Select-Object -First 1)
     if ($byName) { return $byName.Guid }
     return $null
 }

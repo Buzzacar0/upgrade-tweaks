@@ -38,7 +38,7 @@ function Show-UTMainWindow {
         $ps = [powershell]::Create()
         $ps.Runspace = $rs
         [void]$ps.AddCommand('Show-UTMainWindow').AddParameter('Simular', [bool]$Simular)
-        try { return [int](@($ps.Invoke())[-1]) } finally { $ps.Dispose(); $rs.Dispose() }
+        try { return [int]((@($ps.Invoke()) | Select-Object -Last 1)) } finally { $ps.Dispose(); $rs.Dispose() }
     }
 
     Import-UTUiAssembly
@@ -121,7 +121,7 @@ function Show-UTUiPage {
     param([Parameter(Mandatory)][string]$Id)
     $ui = Get-UTUi
     if (-not $ui.Pages.ContainsKey($Id)) {
-        $tab = @(Get-UTUiTabDefinition | Where-Object Id -eq $Id)[0]
+        $tab = (@(Get-UTUiTabDefinition | Where-Object Id -eq $Id) | Select-Object -First 1)
         $builder = "New-UTUiPage$Id"
         if ($tab -and $tab.PSObject.Properties['Pagina']) { $builder = "New-UTUiPage$($tab.Pagina)" }
         try {
@@ -137,7 +137,7 @@ function Show-UTUiPage {
 
     $ui.Navegando = $true
     try {
-        $item = @($ui.C['NavList'].Items | Where-Object { $_.Tag -eq $Id })[0]
+        $item = (@($ui.C['NavList'].Items | Where-Object { $_.Tag -eq $Id }) | Select-Object -First 1)
         $ui.C['NavList'].SelectedItem = $item
         if ($ui.C['SearchBox'].Text) { $ui.C['SearchBox'].Text = '' }
     } finally { $ui.Navegando = $false }

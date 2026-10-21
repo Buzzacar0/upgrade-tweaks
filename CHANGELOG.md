@@ -60,3 +60,10 @@ O formato segue o [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) e 
 - Presets Seguro, Competitivo e Extremo (`config/presets.json`, lista explícita de ajustes; Extremo pede "EU ENTENDO"). Personalização, escolha de DNS, alternativas (HAGS, MPO), serviços do Xbox, Spooler e apps de uso comum (Paint, Relógio, Media Player...) nunca entram em preset. Botão grande "Otimizar agora com o preset Seguro" na tela Início e seletor de preset na barra de cima.
 - Exportar e importar a seleção de ajustes em JSON (tela Início ou `-Config`), para padronizar o atendimento.
 - Modo linha de comando: `-Preset`, `-Config`, `-DesfazerTudo`, `-Diagnostico`/`-ExportarRelatorio`, `-Simular` e `-Silencioso`, com códigos de saída 0/1/2/3010. Risco alto pede "EU ENTENDO" digitado (pulado no `-Silencioso`) e a taxa do monitor nunca é mudada sem alguém na tela.
+- GitHub Actions: analisador, testes no Windows PowerShell 5.1 e no PowerShell 7, README conferido com o catálogo e compilação a cada push; tag `v*.*.*` testa, compila e publica a Release com `upgradetweaks.ps1` e o SHA256.
+- README completo em PT-BR (aba por aba, presets, linha de comando, anti-cheat, como desfazer, FAQ) com a tabela de todos os ajustes gerada do catálogo (`scripts/build-docs.ps1`, chamado pelo `compile.ps1`), logo e capturas de tela.
+- Ícone da janela em vetor (XAML).
+
+### Corrigido
+- O modo de desenvolvimento (`Set-StrictMode -Version Latest`) quebrava ao ler campos opcionais dos JSON, ao pegar o primeiro item de listas vazias e ao somar tamanhos de pastas vazias. Os campos opcionais agora recebem valores padrão ao carregar cada configuração, e a suíte de testes roda sempre em modo estrito.
+- O arquivo de configuração do Call of Duty não era encontrado quando a pasta Documentos foi movida para o OneDrive (o jogo continua gravando em `%USERPROFILE%\Documents`).

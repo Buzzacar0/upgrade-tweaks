@@ -21,7 +21,7 @@
     if ($Hardware.PSObject.Properties['Plataforma'] -and $Hardware.Plataforma) { $boardMaker = [string]$Hardware.Plataforma.FabricantePM }
 
     $board = $null
-    if ($boardMaker) { $board = @($cfg.fabricantesPlaca | Where-Object { $boardMaker -match $_.padrao })[0] }
+    if ($boardMaker) { $board = (@($cfg.fabricantesPlaca | Where-Object { $boardMaker -match $_.padrao }) | Select-Object -First 1) }
     $chipset = $null
     if ($cpuVendor -and $cfg.chipset.Contains($cpuVendor)) { $chipset = $cfg.chipset[$cpuVendor] }
 
@@ -31,7 +31,7 @@
         $state = 'Verificar'
         $detail = $null
         if ($i.verificacao) {
-            $check = @($Verificacoes | Where-Object { $_.Id -eq $i.verificacao })[0]
+            $check = (@($Verificacoes | Where-Object { $_.Id -eq $i.verificacao }) | Select-Object -First 1)
             if ($check) {
                 $detail = $check.Mensagem
                 $state = switch ($check.Status) { 'OK' { 'Confirmado' } 'Aviso' { 'Pendente' } 'Problema' { 'Pendente' } default { 'Verificar' } }

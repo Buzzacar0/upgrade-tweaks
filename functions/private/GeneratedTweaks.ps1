@@ -65,7 +65,7 @@ function ConvertTo-UTServiceTweak {
             id              = 'UT_Svc_' + (ConvertTo-UTTweakIdPart $s.nome)
             nome            = "Serviço $($s.exibicao): $($startNames[[string]$s.recomendado])"
             descricao       = [string]$s.descricao
-            ganhoEsperado   = $(if ($s.ganhoEsperado) { [string]$s.ganhoEsperado } else { 'Pequeno (menos atividade em segundo plano)' })
+            ganhoEsperado   = $(if (Get-UTField $s 'ganhoEsperado') { [string](Get-UTField $s 'ganhoEsperado') } else { 'Pequeno (menos atividade em segundo plano)' })
             categoria       = 'ServicosApps'
             risco           = [string]$s.risco
             requerReinicio  = $false
@@ -75,7 +75,7 @@ function ConvertTo-UTServiceTweak {
             servicos        = @([ordered]@{ nome = [string]$s.nome; inicio = [string]$s.recomendado; inicioOriginal = [string]$s.padrao; parar = ($s.recomendado -eq 'Disabled') })
             deteccao        = 'servicos'
             grupoServico    = [string]$s.grupo
-            opcional        = [bool]$s.opcional
+            opcional        = [bool](Get-UTField $s 'opcional' $false)
         }
     }
 
@@ -106,8 +106,8 @@ function ConvertTo-UTAppTweak {
     foreach ($a in @($Config.apps)) {
         $pkg = ([string]$a.pacote).Replace("'", "''")
         $name = ([string]$a.nome).Replace("'", "''")
-        $undoText = $(if ($a.storeId) { 'Desfazer reinstala pela Microsoft Store.' } else { 'Para voltar, reinstale pela Microsoft Store (não há reinstalação automática para este app).' })
-        $undo = $(if ($a.storeId) { "Install-UTStoreApp -StoreId '$($a.storeId)' -Nome '$name'" } else { "Write-UTLog -Level Aviso -TweakId `$TweakId -Message 'Reinstale $name pela Microsoft Store, se quiser de volta.'" })
+        $undoText = $(if (Get-UTField $a 'storeId') { 'Desfazer reinstala pela Microsoft Store.' } else { 'Para voltar, reinstale pela Microsoft Store (não há reinstalação automática para este app).' })
+        $undo = $(if (Get-UTField $a 'storeId') { "Install-UTStoreApp -StoreId '$($a.storeId)' -Nome '$name'" } else { "Write-UTLog -Level Aviso -TweakId `$TweakId -Message 'Reinstale $name pela Microsoft Store, se quiser de volta.'" })
         [ordered]@{
             id              = 'UT_App_' + (ConvertTo-UTTweakIdPart $a.pacote)
             nome            = "Remover o app $($a.nome)"
@@ -123,7 +123,7 @@ function ConvertTo-UTAppTweak {
             scriptDetectar  = @("Test-UTAppxRemoved -Pacote '$pkg'")
             scriptSimular   = @("'Remove o app $name ($pkg) de todos os usuários'")
             deteccao        = 'script'
-            debloatPadrao   = [bool]$a.padrao
+            debloatPadrao   = [bool](Get-UTField $a 'padrao' $false)
             pacote          = [string]$a.pacote
         }
     }

@@ -27,7 +27,9 @@
 [CmdletBinding()]
 param(
     [string]$Version,
-    [string]$OutputPath
+    [string]$OutputPath,
+    # Skip regenerating the tweak table of the README (CI: it only checks it).
+    [switch]$SemDocumentacao
 )
 
 Set-StrictMode -Version Latest
@@ -41,6 +43,7 @@ if (-not $OutputPath) { $OutputPath = Join-Path $repoRoot 'dist\upgradetweaks.ps
 
 # ---------------------------------------------------------------------------------------------
 Write-Host "Compilando Upgrade Tweaks v$Version..." -ForegroundColor Cyan
+if (-not $SemDocumentacao) { & (Join-Path $PSScriptRoot 'build-docs.ps1') }
 
 $startPath = Join-Path $repoRoot 'scripts\start.ps1'
 $startText = Read-UTSourceFile $startPath

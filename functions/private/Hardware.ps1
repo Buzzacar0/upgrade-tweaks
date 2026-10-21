@@ -25,7 +25,7 @@ function Get-UTCpuInfo {
     [CmdletBinding()]
     param()
 
-    $cpu = @(Get-CimInstance -ClassName Win32_Processor -ErrorAction Stop)[0]
+    $cpu = (@(Get-CimInstance -ClassName Win32_Processor -ErrorAction Stop) | Select-Object -First 1)
     $name = ([string]$cpu.Name).Trim() -replace '\s{2,}', ' '
     $vendor = 'desconhecido'
     if ($cpu.Manufacturer -match 'AMD' -or $name -match '\bAMD\b') { $vendor = 'amd' }
@@ -177,7 +177,7 @@ function Get-UTMemoryInfo {
     }
     $modules = @($modules)
     return [pscustomobject]@{
-        TotalGB = [math]::Round((($modules | Measure-Object CapacidadeGB -Sum).Sum), 1)
+        TotalGB = [math]::Round((Get-UTSum @($modules | ForEach-Object { $_.CapacidadeGB })), 1)
         Modulos = $modules
     }
 }
@@ -236,9 +236,9 @@ function Get-UTDriveOfPath {
         [Parameter(Mandatory)][psobject]$Armazenamento
     )
     $letter = ([IO.Path]::GetPathRoot($Path)).TrimEnd(':\').ToUpperInvariant()
-    $volume = @($Armazenamento.Volumes | Where-Object { $_.Letra -eq $letter })[0]
+    $volume = (@($Armazenamento.Volumes | Where-Object { $_.Letra -eq $letter }) | Select-Object -First 1)
     if ($null -eq $volume) { return $null }
-    $disk = @($Armazenamento.Discos | Where-Object { $_.Numero -eq $volume.Disco })[0]
+    $disk = (@($Armazenamento.Discos | Where-Object { $_.Numero -eq $volume.Disco }) | Select-Object -First 1)
     return [pscustomobject]@{
         Letra     = $letter
         LivreGB   = $volume.LivreGB
@@ -331,7 +331,7 @@ function Get-UTDisplayInfo {
         $code = $null
         if ($m.MonitorId) { $code = @($m.MonitorId.Split('\'))[1] }
         if ($code) {
-            $hit = @($edid | Where-Object { [string]$_.InstanceName -like "DISPLAY\$code\*" })[0]
+            $hit = (@($edid | Where-Object { [string]$_.InstanceName -like "DISPLAY\$code\*" }) | Select-Object -First 1)
             if ($hit) {
                 $friendly = -join (@($hit.UserFriendlyName | Where-Object { $_ }) | ForEach-Object { [char]$_ })
                 if ($friendly) { $name = $friendly.Trim() }

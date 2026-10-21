@@ -33,7 +33,7 @@ function Get-UTUiTabTweak {
     #>
     [CmdletBinding()]
     param([Parameter(Mandatory)][string]$Aba)
-    $tab = @(Get-UTUiTabDefinition | Where-Object Id -eq $Aba)[0]
+    $tab = (@(Get-UTUiTabDefinition | Where-Object Id -eq $Aba) | Select-Object -First 1)
     if (-not $tab -or @($tab.Categorias).Count -eq 0) { return @() }
     foreach ($t in @(Get-UTTweak)) {
         $extra = @($t.abasExtras | Where-Object { $tab.Categorias -contains $_ })

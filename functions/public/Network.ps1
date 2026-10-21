@@ -40,7 +40,7 @@ function Set-UTDnsProvider {
         [Parameter(Mandatory)][string]$Provedor,
         [Parameter(Mandatory)][string]$TweakId
     )
-    $p = @((Get-UTConfig -Name 'dns').provedores | Where-Object { $_.id -eq $Provedor })[0]
+    $p = (@((Get-UTConfig -Name 'dns').provedores | Where-Object { $_.id -eq $Provedor }) | Select-Object -First 1)
     if ($null -eq $p) { throw "Provedor de DNS '$Provedor' não existe." }
     $adapters = @(Get-UTDnsTargetInterface)
     if ($adapters.Count -eq 0) { throw 'Nenhuma conexão de rede ativa encontrada.' }
@@ -68,7 +68,7 @@ function Restore-UTDnsProvider {
         $guid = ([string]$item.chave).Substring(4)
         $d = Pop-UTOriginalItem -Chave $item.chave -TweakId $TweakId
         if ($d -isnot [System.Collections.IDictionary]) { continue }
-        $a = @(Get-NetAdapter -ErrorAction SilentlyContinue | Where-Object { [string]$_.InterfaceGuid -eq $guid })[0]
+        $a = (@(Get-NetAdapter -ErrorAction SilentlyContinue | Where-Object { [string]$_.InterfaceGuid -eq $guid }) | Select-Object -First 1)
         if ($null -eq $a -or -not $PSCmdlet.ShouldProcess($a.Name, 'Restaurar DNS')) { continue }
         $servers = @(@($d.ipv4) + @($d.ipv6) | Where-Object { $_ })
         if ($servers.Count -eq 0) {
@@ -88,12 +88,12 @@ function Test-UTDnsProvider {
     [CmdletBinding()]
     [OutputType([bool])]
     param([Parameter(Mandatory)][string]$Provedor)
-    $p = @((Get-UTConfig -Name 'dns').provedores | Where-Object { $_.id -eq $Provedor })[0]
+    $p = (@((Get-UTConfig -Name 'dns').provedores | Where-Object { $_.id -eq $Provedor }) | Select-Object -First 1)
     $adapters = @(Get-UTDnsTargetInterface)
     if ($null -eq $p -or $adapters.Count -eq 0) { return $false }
     foreach ($a in $adapters) {
         $state = Get-UTInterfaceDnsState -InterfaceGuid ([string]$a.InterfaceGuid)
-        if (@($state.Ipv4)[0] -ne @($p.ipv4)[0]) { return $false }
+        if ((@($state.Ipv4) | Select-Object -First 1) -ne (@($p.ipv4) | Select-Object -First 1)) { return $false }
     }
     return $true
 }
@@ -111,7 +111,7 @@ function Measure-UTDnsProvider {
     if (-not $Tentativas) { $Tentativas = [int]$cfg.teste.tentativas }
     $domain = [string]$cfg.teste.dominio
     $results = foreach ($p in @($cfg.provedores)) {
-        $server = @($p.ipv4)[0]
+        $server = (@($p.ipv4) | Select-Object -First 1)
         $ping = Measure-UTPing -Alvo $server -Quantidade $Tentativas
         $times = New-Object System.Collections.Generic.List[double]
         for ($i = 0; $i -lt $Tentativas; $i++) {
@@ -145,7 +145,7 @@ function Get-UTNetworkInfo {
     #>
     [CmdletBinding()]
     param()
-    $config = @(Get-NetIPConfiguration -ErrorAction SilentlyContinue | Where-Object { $_.IPv4DefaultGateway -and $_.NetAdapter.Status -eq 'Up' })[0]
+    $config = (@(Get-NetIPConfiguration -ErrorAction SilentlyContinue | Where-Object { $_.IPv4DefaultGateway -and $_.NetAdapter.Status -eq 'Up' }) | Select-Object -First 1)
     if ($null -eq $config) { return $null }
     $adapter = $config.NetAdapter
     return [pscustomobject]@{
@@ -154,7 +154,7 @@ function Get-UTNetworkInfo {
         Tipo       = $(if ($adapter.MediaType -eq '802.3') { 'Cabo (Ethernet)' } elseif ([string]$adapter.InterfaceDescription -match '(?i)wi-?fi|wireless|802\.11') { 'Wi-Fi' } else { [string]$adapter.MediaType })
         Velocidade = [string]$adapter.LinkSpeed
         IPv4       = @($config.IPv4Address | ForEach-Object { $_.IPAddress })
-        Gateway    = @($config.IPv4DefaultGateway | ForEach-Object { $_.NextHop })[0]
+        Gateway    = (@($config.IPv4DefaultGateway | ForEach-Object { $_.NextHop }) | Select-Object -First 1)
         Dns        = @($config.DNSServer | ForEach-Object { $_.ServerAddresses } | Where-Object { $_ })
     }
 }

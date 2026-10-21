@@ -76,7 +76,7 @@ function Find-UTProgramExecutable {
             if ($hit) { return $hit.FullName }
         }
     }
-    if ($Programa.winget) {
+    if (Get-UTField $Programa 'winget') {
         foreach ($root in "$env:LOCALAPPDATA\Microsoft\WinGet\Packages", "$env:ProgramFiles\WinGet\Packages") {
             foreach ($pkg in @(Get-ChildItem -Path (Join-Path $root ($Programa.winget + '_*')) -Directory -ErrorAction SilentlyContinue)) {
                 foreach ($n in $names) {
@@ -222,7 +222,7 @@ function Install-UTProgramFromGitHub {
     [CmdletBinding(SupportsShouldProcess)]
     param([Parameter(Mandatory)][System.Collections.IDictionary]$Programa)
     $rel = Get-UTGitHubLatestRelease -Repo $Programa.github.repo
-    $asset = @($rel.Arquivos | Where-Object { $_.Nome -match $Programa.github.arquivo })[0]
+    $asset = (@($rel.Arquivos | Where-Object { $_.Nome -match $Programa.github.arquivo }) | Select-Object -First 1)
     if (-not $asset) { throw "A última versão de $($Programa.nome) no GitHub não tem o arquivo esperado. Baixe pela página: $($rel.Pagina)" }
     if (-not $PSCmdlet.ShouldProcess($Programa.nome, "Baixar $($asset.Nome) ($($asset.TamanhoMB) MB) do GitHub")) {
         return [pscustomobject]@{ Id = $Programa.id; Status = 'Simulado'; Mensagem = "Baixar $($asset.Url)" }
@@ -237,7 +237,7 @@ function Install-UTProgramFromGitHub {
             Expand-Archive -LiteralPath $download -DestinationPath $dest -Force
             Set-Content -LiteralPath (Get-UTToolVersionFile -Id $Programa.id) -Value $rel.Versao -Encoding ASCII
         } else {
-            $silent = [string]$Programa.github.argsSilencioso
+            $silent = [string](Get-UTField $Programa.github 'argsSilencioso' '')
             $installArgs = @()
             if ($silent) { $installArgs = @($silent -split ' ') }
             if ($asset.Nome -match '\.msi$') { $r = Invoke-UTNative -FilePath 'msiexec.exe' -ArgumentList (@('/i', $download, '/qn', '/norestart') + $installArgs) -TimeoutSeconds 1800 }

@@ -138,7 +138,7 @@ function Get-UTPowerPlanPlannedAction {
     $cfg = Get-UTConfig -Name 'powerplan'
     $lines = New-Object System.Collections.Generic.List[string]
     $schemes = @(Get-UTPowerSchemeList)
-    $nameOf = { param($g) $hit = @($schemes | Where-Object { $_.Guid -eq $g })[0]; if ($hit) { $hit.Nome } else { $g } }
+    $nameOf = { param($g) $hit = (@($schemes | Where-Object { $_.Guid -eq $g }) | Select-Object -First 1); if ($hit) { $hit.Nome } else { $g } }
 
     if ($Desfazer) {
         $previous = Get-UTOriginalItem -Chave 'generico|energia|planoanterior'
@@ -158,8 +158,8 @@ function Get-UTPowerPlanPlannedAction {
         $reference = $existing
         $lines.Add("Reaproveita o plano '$(& $nameOf $existing)' que já existe")
     } else {
-        $baseGuid = $(if ($isLaptop) { $cfg.baseNotebook } else { @($cfg.bases)[0].guid })
-        $base = @($cfg.bases | Where-Object { $_.guid -eq $baseGuid })[0]
+        $baseGuid = $(if ($isLaptop) { $cfg.baseNotebook } else { (@($cfg.bases) | Select-Object -First 1).guid })
+        $base = (@($cfg.bases | Where-Object { $_.guid -eq $baseGuid }) | Select-Object -First 1)
         $planName = $(if ($isLaptop) { $cfg.nomeNotebook } else { $cfg.nome })
         $lines.Add("Cria o plano '$planName' a partir do $($base.nome)")
     }

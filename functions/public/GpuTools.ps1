@@ -21,7 +21,7 @@ function Get-UTShaderCacheLocation {
     )
     foreach ($k in $known) {
         if (-not (Test-Path -LiteralPath $k.Caminho)) { continue }
-        $bytes = (Get-ChildItem -LiteralPath $k.Caminho -Recurse -File -Force -ErrorAction SilentlyContinue | Measure-Object Length -Sum).Sum
+        $bytes = Get-UTSum @(Get-ChildItem -LiteralPath $k.Caminho -Recurse -File -Force -ErrorAction SilentlyContinue | ForEach-Object { $_.Length })
         [pscustomobject]@{ Nome = $k.Nome; Caminho = $k.Caminho; Fabricante = $k.Fabricante; TamanhoMB = [math]::Round([double]$bytes / 1MB, 1) }
     }
 }

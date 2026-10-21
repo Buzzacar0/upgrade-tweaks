@@ -3,10 +3,35 @@
 
 #region Game config file (Documents\Call of Duty\players)
 function Get-UTCodPlayersFolder {
+    <#
+    .SYNOPSIS
+        Documents\Call of Duty\players of the person using the PC. The game writes to the
+        profile's own Documents folder even when Windows moved Documents to OneDrive, so every
+        candidate is checked and the one with config files wins.
+    #>
     [CmdletBinding()]
     [OutputType([string])]
-    param()
-    return (Join-Path ([Environment]::GetFolderPath('MyDocuments')) 'Call of Duty\players')
+    param([string[]]$Candidatas)
+    if (-not $Candidatas) {
+        $profileDir = $env:USERPROFILE
+        $sid = Get-UTSyncValue -Key 'UsuarioAlvoSid'
+        if ($sid) {
+            $img = Get-UTRegistryValue -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\ProfileList\$sid" -Name 'ProfileImagePath'
+            if ($img.ValorExiste) { $profileDir = [Environment]::ExpandEnvironmentVariables([string]$img.Valor) }
+        }
+        $Candidatas = @(
+            (Join-Path $profileDir 'Documents')
+            [Environment]::GetFolderPath('MyDocuments')
+            $(if ($env:OneDrive) { Join-Path $env:OneDrive 'Documents' })
+            $(if ($env:OneDrive) { Join-Path $env:OneDrive 'Documentos' })
+        ) | Where-Object { $_ } | Select-Object -Unique
+    }
+    $folders = @($Candidatas | ForEach-Object { Join-Path $_ 'Call of Duty\players' })
+    foreach ($f in $folders) {
+        if (@(Get-ChildItem -LiteralPath $f -File -ErrorAction SilentlyContinue | Where-Object { $_.Name -match 'cod\d+' }).Count -gt 0) { return $f }
+    }
+    foreach ($f in $folders) { if (Test-Path -LiteralPath $f) { return $f } }
+    return ($folders | Select-Object -First 1)
 }
 
 function Get-UTCodConfigFile {
@@ -141,10 +166,10 @@ function Set-UTCodRendererWorker {
     #>
     [CmdletBinding(SupportsShouldProcess)]
     param([string]$Arquivo)
-    if (-not $Arquivo) { $Arquivo = @(Get-UTCodConfigFile)[0].Arquivo }
+    if (-not $Arquivo) { $Arquivo = (@(Get-UTCodConfigFile) | Select-Object -First 1).Arquivo }
     if (-not $Arquivo) { throw 'Nenhum arquivo de configuração do Call of Duty encontrado. Abra o jogo uma vez e feche.' }
     $hw = Get-UTSyncValue -Key 'Hardware'
-    $cores = $(if ($hw -and $hw.Cpu) { [int]$hw.Cpu.Nucleos } else { [int](@(Get-CimInstance -ClassName Win32_Processor)[0].NumberOfCores) })
+    $cores = $(if ($hw -and $hw.Cpu) { [int]$hw.Cpu.Nucleos } else { [int]((@(Get-CimInstance -ClassName Win32_Processor) | Select-Object -First 1).NumberOfCores) })
     return (Set-UTCodConfigValue -Arquivo $Arquivo -Chave 'RendererWorkerCount' -Valor ([string]$cores) -WhatIf:$WhatIfPreference)
 }
 #endregion
@@ -162,8 +187,8 @@ function Get-UTWarzoneGuide {
     $vendor = $null
     $vram = $null
     if ($hw) {
-        $vendor = @($hw.GpuFabricantes)[0]
-        $g = @($hw.Gpus | Where-Object { $_ -and -not $_.Integrada })[0]
+        $vendor = (@($hw.GpuFabricantes) | Select-Object -First 1)
+        $g = (@($hw.Gpus | Where-Object { $_ -and -not $_.Integrada }) | Select-Object -First 1)
         if ($g) { $vram = $g.VramGB }
     }
     foreach ($item in @($cfg.perfis[$Perfil].itens)) {
@@ -305,7 +330,7 @@ function Start-UTMatchMode {
     foreach ($p in @(Get-UTMatchModeList -Contexto $Contexto | Where-Object Marcado)) {
         $procs = @(Get-Process -Name $p.Processo -ErrorAction SilentlyContinue)
         if ($procs.Count -eq 0) { continue }
-        $path = @($procs | ForEach-Object { try { $_.Path } catch { $null } } | Where-Object { $_ })[0]
+        $path = (@($procs | ForEach-Object { try { $_.Path } catch { $null } } | Where-Object { $_ }) | Select-Object -First 1)
         if (-not $PSCmdlet.ShouldProcess($p.Nome, 'Fechar durante a partida')) { continue }
         $procs | Stop-Process -Force -ErrorAction SilentlyContinue
         $closed.Add([ordered]@{ processo = $p.Processo; nome = $p.Nome; caminho = $path; reabrir = $p.Reabrir })

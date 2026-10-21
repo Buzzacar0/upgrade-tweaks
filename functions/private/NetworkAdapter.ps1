@@ -53,7 +53,7 @@ function Get-UTNicApplicableProperty {
                 Descricao = $a.InterfaceDescription
                 Palavra   = $kw
                 Nome      = [string]$p.DisplayName
-                Atual     = [string](@($p.RegistryValue)[0])
+                Atual     = [string]((@($p.RegistryValue) | Select-Object -First 1))
                 Alvo      = $target
             }
         }
@@ -91,7 +91,7 @@ function Restore-UTNicAdvancedProperty {
         if ($item.tipo -ne 'generico' -or ([string]$item.chave) -notlike 'nic|*' -or @($item.tweaks) -notcontains $TweakId) { continue }
         $d = Pop-UTOriginalItem -Chave $item.chave -TweakId $TweakId
         if ($d -isnot [System.Collections.IDictionary]) { continue }
-        $adapter = @(Get-UTPhysicalAdapter | Where-Object { $_.InterfaceDescription -eq $d.descricao })[0]
+        $adapter = (@(Get-UTPhysicalAdapter | Where-Object { $_.InterfaceDescription -eq $d.descricao }) | Select-Object -First 1)
         if ($null -eq $adapter) { continue }
         if ($PSCmdlet.ShouldProcess("$($adapter.Name): $($d.palavra)", "Restaurar $($d.valor)")) {
             Set-NetAdapterAdvancedProperty -Name $adapter.Name -RegistryKeyword $d.palavra -RegistryValue ([string]$d.valor) -NoRestart -ErrorAction Stop

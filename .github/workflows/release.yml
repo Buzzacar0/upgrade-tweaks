@@ -1,0 +1,62 @@
+name: Release
+
+on:
+  push:
+    tags: ['v*.*.*']
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Testar, compilar e publicar
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Instalar Pester 5.7.1 e PSScriptAnalyzer
+        shell: powershell
+        run: |
+          Set-PSRepository -Name PSGallery -InstallationPolicy Trusted
+          Install-Module Pester -RequiredVersion 5.7.1 -Scope CurrentUser -Force -SkipPublisherCheck
+          Install-Module PSScriptAnalyzer -Scope CurrentUser -Force
+
+      - name: Versão da tag igual ao arquivo VERSION
+        shell: powershell
+        run: |
+          $tag = '${{ github.ref_name }}'.TrimStart('v')
+          $file = (Get-Content VERSION -Raw).Trim()
+          if ($tag -ne $file) { Write-Error "A tag v$tag não bate com o arquivo VERSION ($file)."; exit 1 }
+
+      - name: Analisador e testes
+        shell: powershell
+        run: .\tests\Invoke-UTTests.ps1
+
+      - name: Compilar
+        shell: powershell
+        run: .\scripts\compile.ps1 -SemDocumentacao
+
+      - name: SHA256
+        shell: powershell
+        run: |
+          $hash = (Get-FileHash dist\upgradetweaks.ps1 -Algorithm SHA256).Hash
+          Set-Content -Path dist\upgradetweaks.ps1.sha256 -Value "$hash  upgradetweaks.ps1" -Encoding ASCII
+          "SHA256: $hash" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append -Encoding utf8
+
+      - name: Notas da versão (CHANGELOG)
+        shell: powershell
+        run: |
+          $version = '${{ github.ref_name }}'.TrimStart('v')
+          $text = Get-Content CHANGELOG.md -Raw -Encoding UTF8
+          $m = [regex]::Match($text, "(?ms)^## \[$([regex]::Escape($version))\][^\n]*\n(.*?)(?=^## \[|\z)")
+          $notes = $(if ($m.Success) { $m.Groups[1].Value.Trim() } else { "Upgrade Tweaks $version" })
+          $hash = (Get-Content dist\upgradetweaks.ps1.sha256 -Raw).Trim()
+          $notes += "`n`n## Como usar`n`nNo PowerShell como administrador:`n`n``````powershell`nirm https://github.com/${{ github.repository }}/releases/latest/download/upgradetweaks.ps1 | iex`n```````n`nSHA256 de ``upgradetweaks.ps1``: ``$($hash.Split(' ')[0])``"
+          [IO.File]::WriteAllText("$PWD\dist\notas.md", $notes, (New-Object System.Text.UTF8Encoding($false)))
+
+      - name: Publicar a Release
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create '${{ github.ref_name }}' dist/upgradetweaks.ps1 dist/upgradetweaks.ps1.sha256 --title "Upgrade Tweaks ${{ github.ref_name }}" --notes-file dist/notas.md

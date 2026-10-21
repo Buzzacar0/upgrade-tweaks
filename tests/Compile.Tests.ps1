@@ -120,3 +120,12 @@ Describe 'scripts\compile.ps1' {
         $msg | Should -BeExactly 'Windows 11: versão suportada.'
     }
 }
+
+Describe 'README' {
+    It 'a tabela de ajustes está em dia com o catálogo (scripts\build-docs.ps1)' {
+        $exe = Join-Path $PSHOME $(if ($PSVersionTable.PSEdition -eq 'Core') { 'pwsh.exe' } else { 'powershell.exe' })
+        $out = & $exe -NoProfile -ExecutionPolicy Bypass -File (Join-Path (Split-Path -Parent $PSScriptRoot) 'scripts\build-docs.ps1') -Verificar 2>&1
+        $LASTEXITCODE | Should -Be 0 -Because ($out -join ' ')
+    }
+}
+
