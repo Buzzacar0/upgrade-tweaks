@@ -342,7 +342,7 @@ qualidade de filtragem), marcadas como **experimentais**, com backup. Anti-Lag, 
 | 4 (limitação) | XMP/EXPO: o `Win32_PhysicalMemory.Speed` costuma trazer a velocidade JEDEC, não a do XMP. Se o XMP estiver desligado, `Speed` e `ConfiguredClockSpeed` ficam iguais. Por isso o diagnóstico também lê a velocidade do part number (ex.: `F5-6000J3038F16G` = 6000) e avisa quando a DDR5 está a 4800 / DDR4 a 2666 |
 | 6 | Variante de MPO com `EnableOverlay`; máscara `UserPreferencesMask` que mantém fontes e miniaturas; chave do Storage Sense no 25H2 |
 | 6 | Id winget do O&O ShutUp10++ |
-| 7 | NVIDIA App × gravação direta no DRS (só leitura sem autorização); `NvAPI_Disp_ColorControl` para faixa dinâmica; se "dimensionamento na tela" é viável via `DISP_SetDisplayConfig` |
-| 7 | Chaves UMD da AMD que dá para validar |
-| 7 | Nome do arquivo de config do MW4 depois do lançamento (23/10) |
+| 7 (feito) | DRS gravado direto pela NVAPI (a NVIDIA App lê o mesmo banco; backup `.txt` antes). Faixa dinâmica via `NvAPI_Disp_ColorControl` (`NV_COLOR_DATA_V5`). Dimensionamento na tela ficou de fora: depende do modo do monitor e o Windows já expõe |
+| 7 (decidido) | AMD: só checklist. As chaves UMD do Adrenalin mudam entre versões e o próprio Adrenalin regrava; não há forma documentada de validar |
+| 7 / 12 | Arquivo de config do MW4 depois do lançamento (23/10): o código procura por padrão (`s.N.N.codNN.txtN`, `options.N.codNN.cst`) e mapeia cod22..cod26; conferir o número do título na revisão final |
 | 8 | Página oficial atual do Ryzen Master e do Intel Graphics Software |

@@ -38,3 +38,10 @@ O formato segue o [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) e 
 - Modo Lite (`config/modo-lite.json`): debloat agressivo mostrado como lista antes de aplicar, sem serviços do Xbox, Spooler, Store, Game Bar, Defender ou Windows Update.
 - Gerenciador de inicialização, ferramentas de rede (teste de latência/jitter/perda, DNS, reset de rede) e dispositivos opcionais.
 - Ajustes que compartilham valores agora se seguram mutuamente: desfazer um não desfaz o outro.
+- Aba GPU, NVIDIA: leitura e gravação direta no banco de perfis do driver (NVAPI DRS, sem depender do Painel de Controle aposentado) com o perfil que a NVIDIA já tem para o Call of Duty ou um perfil próprio "Upgrade Tweaks - Warzone"; tabela atual × recomendado (`config/nvidia-drs.json`, cada opção com explicação), V-Sync/G-SYNC/limite de FPS conforme o monitor, backup `.txt` do DRS antes de gravar e restaurar padrões.
+- Faixa dinâmica Completa (0-255) por monitor, taxa de atualização máxima do monitor (testada antes de aplicar), power limit máximo via `nvidia-smi` (risco alto, só desktop) e status do Resizable BAR.
+- Ferramentas da aba GPU: limpar cache de shaders (NVIDIA, AMD, Intel e DirectX) com o espaço liberado, páginas oficiais de driver, checklists de AMD, Intel, NVIDIA App e DDU (`config/gpu-guia.json`) e instalação guiada "só o driver de vídeo" da NVIDIA.
+- Aba Warzone: localiza o arquivo de configuração do jogo, faz backup/restauração, altera só chaves que já existem (ex.: `RendererWorkerCount` = núcleos físicos) e guia de configurações do jogo por placa e VRAM (`config/warzone-guia.json`).
+- Exclusão do jogo e do cache de shaders no Windows Defender (sem desligar o Defender), desfeita removendo só o que foi adicionado.
+- Modo Partida (`config/modo-partida.json`): fecha os programas marcados, ativa o plano Upgrade Warzone (Equilibrado em X3D de dois CCDs) e, ao desligar, volta o plano e reabre os programas sem privilégio de administrador. Limpeza da memória em espera fica opcional e com aviso honesto.
+- Diagnóstico: avisos de monitor em faixa Limitada e de Resizable BAR desligado.

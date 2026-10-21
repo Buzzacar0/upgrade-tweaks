@@ -35,6 +35,7 @@ function Get-UTSystemContext {
         Launchers      = $(if ($hardware) { @($hardware.Launchers) } else { @() })
         X3D            = $(if ($hardware) { $hardware.X3D } else { $null })
         Executaveis    = $(if ($hardware -and $hardware.PSObject.Properties['Executaveis']) { @($hardware.Executaveis) } else { @() })
+        PastasJogo     = $(if ($hardware -and $hardware.PSObject.Properties['PastasJogo']) { @($hardware.PastasJogo) } else { @() })
     }
     if ($null -ne $sync) { $sync['Contexto'] = $context }
     return $context

@@ -48,6 +48,15 @@ function Get-UTHardwareInfo {
         Launchers      = $(if ($game) { @($game.Launchers) } else { @() })
         X3D            = $(if ($cpu -and $cpu.X3D.EhX3D) { $cpu.X3D.Tipo } else { $null })
         Executaveis    = $(if ($game) { @($game.Instalacoes | ForEach-Object { $_.Executaveis } | Where-Object { $_ } | Sort-Object -Unique) } else { @() })
+        PastasJogo     = $(if ($game) { @($game.Instalacoes | ForEach-Object { $_.Caminho } | Where-Object { $_ } | Sort-Object -Unique) } else { @() })
+        Nvidia         = $null
+    }
+
+    if (@($gpus | Where-Object { $_.Fabricante -eq 'nvidia' }).Count -gt 0) {
+        $info.Nvidia = Invoke-UTCollector -Nome 'driver NVIDIA' -Erros $errors -Coletor {
+            [pscustomobject]@{ Cor = @(Get-UTNvidiaColorRange); ResizableBar = (Get-UTResizableBarStatus) }
+        }
+        $info.Erros = $errors.ToArray()
     }
 
     $sync = Get-Variable -Name UTSync -ValueOnly -ErrorAction SilentlyContinue
@@ -175,6 +184,23 @@ function Get-UTDiagnosticCheck {
         }
         break
     }
+    $nv = $null
+    if ($Hardware.PSObject.Properties['Nvidia']) { $nv = $Hardware.Nvidia }
+    if ($nv) {
+        $limited = @($nv.Cor | Where-Object { $_ -and -not $_.Completa })
+        if ($limited.Count -gt 0) {
+            $checks.Add((New-UTCheck -Id 'faixa' -Titulo 'Faixa dinâmica de cor' -Status Aviso -Mensagem ("O monitor {0} está com a faixa dinâmica Limitada (16-235): preto acinzentado e imagem lavada. Use a faixa Completa (aba GPU)." -f (($limited | ForEach-Object { $_.Nome }) -join ', ')) -Peso 5 -Aba 'GPU'))
+        } elseif (@($nv.Cor).Count -gt 0) {
+            $checks.Add((New-UTCheck -Id 'faixa' -Titulo 'Faixa dinâmica de cor' -Status OK -Mensagem 'Monitores na faixa dinâmica Completa (0-255).' -Peso 5 -Aba 'GPU'))
+        }
+        $rebar = $nv.ResizableBar
+        if ($rebar -and $rebar.Ligado -eq $false) {
+            $checks.Add((New-UTCheck -Id 'rebar' -Titulo 'Resizable BAR' -Status Aviso -Mensagem 'Resizable BAR desligado. Ative no BIOS: Above 4G Decoding e Re-Size BAR Support ligados, CSM desligado (veja o guia de BIOS).' -Peso 5 -Aba 'BIOS'))
+        } elseif ($rebar -and $rebar.Ligado) {
+            $checks.Add((New-UTCheck -Id 'rebar' -Titulo 'Resizable BAR' -Status OK -Mensagem 'Resizable BAR ligado.' -Peso 5 -Aba 'BIOS'))
+        }
+    }
+
     $sys = $Hardware.Sistema
     $rtxNew = @($dgpus | Where-Object { $_.Fabricante -eq 'nvidia' -and $_.Nome -match 'RTX\s*(40|50)\d{2}' }).Count -gt 0
     if ($sys) {

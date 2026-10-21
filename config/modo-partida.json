@@ -1,0 +1,29 @@
+{
+  "versao": 1,
+  "observacao": "Lista padrão do Modo Partida. 'marcado' = fechado por padrão; 'reabrir' = volta ao sair do Modo Partida. O usuário pode marcar/desmarcar e acrescentar processos; a escolha fica salva no PC. Discord, áudio e drivers nunca vêm marcados: só fecham se o usuário acrescentar. Os processos em 'protegidos' nunca são fechados. O launcher onde o Call of Duty está instalado também nunca é fechado.",
+  "processos": [
+    { "processo": "chrome", "nome": "Google Chrome", "grupo": "Navegadores", "marcado": true, "reabrir": false },
+    { "processo": "msedge", "nome": "Microsoft Edge", "grupo": "Navegadores", "marcado": true, "reabrir": false },
+    { "processo": "firefox", "nome": "Firefox", "grupo": "Navegadores", "marcado": true, "reabrir": false },
+    { "processo": "opera", "nome": "Opera / Opera GX", "grupo": "Navegadores", "marcado": true, "reabrir": false },
+    { "processo": "brave", "nome": "Brave", "grupo": "Navegadores", "marcado": true, "reabrir": false },
+    { "processo": "EpicGamesLauncher", "nome": "Epic Games Launcher", "grupo": "Outros launchers", "marcado": true, "reabrir": false },
+    { "processo": "EADesktop", "nome": "EA app", "grupo": "Outros launchers", "marcado": true, "reabrir": false },
+    { "processo": "upc", "nome": "Ubisoft Connect", "grupo": "Outros launchers", "marcado": true, "reabrir": false },
+    { "processo": "steam", "nome": "Steam", "grupo": "Outros launchers", "marcado": true, "reabrir": true },
+    { "processo": "Battle.net", "nome": "Battle.net", "grupo": "Outros launchers", "marcado": true, "reabrir": true },
+    { "processo": "OneDrive", "nome": "OneDrive (pausa a sincronização)", "grupo": "Sincronização", "marcado": true, "reabrir": true },
+    { "processo": "ms-teams", "nome": "Microsoft Teams", "grupo": "Comunicação", "marcado": true, "reabrir": false },
+    { "processo": "SignalRgb", "nome": "SignalRGB", "grupo": "RGB e periféricos", "marcado": true, "reabrir": true },
+    { "processo": "iCUE", "nome": "Corsair iCUE", "grupo": "RGB e periféricos", "marcado": false, "reabrir": true },
+    { "processo": "lghub", "nome": "Logitech G HUB (pode resetar DPI/macros)", "grupo": "RGB e periféricos", "marcado": false, "reabrir": true },
+    { "processo": "RazerAppEngine", "nome": "Razer Synapse (pode resetar DPI/macros)", "grupo": "RGB e periféricos", "marcado": false, "reabrir": true },
+    { "processo": "ArmouryCrate", "nome": "ASUS Armoury Crate", "grupo": "RGB e periféricos", "marcado": false, "reabrir": true },
+    { "processo": "Spotify", "nome": "Spotify", "grupo": "Música", "marcado": false, "reabrir": true }
+  ],
+  "protegidos": [
+    "audiodg", "csrss", "dwm", "explorer", "lsass", "services", "smss", "svchost", "wininit", "winlogon", "fontdrvhost",
+    "MsMpEng", "SecurityHealthService", "nvcontainer", "NVDisplay.Container", "RadeonSoftware", "atiesrxx", "atieclxx", "igfxEM",
+    "RtkAudUService64", "NahimicSvc64", "cod", "vgc", "powershell", "pwsh", "conhost"
+  ]
+}

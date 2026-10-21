@@ -1,0 +1,48 @@
+{
+  "versao": 1,
+  "observacao": "Guia de configurações dentro do jogo (Call of Duty: Warzone / CoD HQ). Os nomes seguem o menu em português do jogo e podem mudar a cada temporada: atualize este arquivo quando mudar. 'porGpu' troca o valor conforme o fabricante da placa; 'porVram' escolhe pelo tamanho da memória de vídeo (GB mínimos).",
+  "perfis": {
+    "competitivo": {
+      "titulo": "Competitivo / FPS máximo",
+      "descricao": "Prioriza FPS alto e estável e visibilidade de inimigos. Ideal para monitores de 144 Hz ou mais.",
+      "itens": [
+        { "grupo": "Tela", "opcao": "Modo de exibição", "valor": "Tela cheia exclusiva", "motivo": "Menor latência; em PCs com dois monitores, \"Tela cheia sem bordas\" é mais prático e quase igual com o Reflex." },
+        { "grupo": "Tela", "opcao": "Taxa de atualização", "valor": "A máxima do monitor", "motivo": "" },
+        { "grupo": "Tela", "opcao": "Resolução de renderização", "valor": "100", "motivo": "Abaixo de 100 a imagem fica borrada; use o upscaler para ganhar FPS." },
+        { "grupo": "Tela", "opcao": "NVIDIA Reflex Low Latency", "valor": "Ligado + Boost", "porGpu": { "amd": "Não disponível (use o Anti-Lag 2 se aparecer)", "intel": "Não disponível" }, "motivo": "Reduz a latência do sistema; substitui o modo de baixa latência do driver." },
+        { "grupo": "Tela", "opcao": "Limite de taxa de quadros", "valor": "Personalizado: 3 abaixo do Hz com G-SYNC/FreeSync; sem limite caso contrário", "motivo": "" },
+        { "grupo": "Qualidade", "opcao": "Upscaling / nitidez", "valor": "DLSS Qualidade", "porGpu": { "amd": "FSR Qualidade", "intel": "XeSS Qualidade" }, "motivo": "Mais FPS com pouca perda de nitidez." },
+        { "grupo": "Qualidade", "opcao": "Geração de quadros", "valor": "Desligado", "motivo": "Aumenta o FPS mostrado, mas acrescenta latência." },
+        { "grupo": "Qualidade", "opcao": "Resolução das texturas", "valor": "Normal", "porVram": { "8": "Normal", "12": "Alta", "16": "Alta" }, "motivo": "Depende da memória de vídeo: com pouca VRAM, texturas altas causam travadas." },
+        { "grupo": "Qualidade", "opcao": "Filtragem de textura anisotrópica", "valor": "Alta", "motivo": "Custa quase nada." },
+        { "grupo": "Qualidade", "opcao": "Qualidade da sombra", "valor": "Baixa", "motivo": "Sombras são das opções mais pesadas." },
+        { "grupo": "Qualidade", "opcao": "Oclusão de ambiente", "valor": "Desligado", "motivo": "Pesado e escurece cantos onde inimigos se escondem." },
+        { "grupo": "Qualidade", "opcao": "Reflexos de espaço de tela", "valor": "Desligado", "motivo": "" },
+        { "grupo": "Qualidade", "opcao": "Iluminação volumétrica / efeitos de clima", "valor": "Baixa", "motivo": "" },
+        { "grupo": "Qualidade", "opcao": "Qualidade do terreno / detalhes de vegetação", "valor": "Baixa", "motivo": "Menos vegetação na frente da mira." },
+        { "grupo": "Pós-processamento", "opcao": "Desfoque de movimento (mundo e armas)", "valor": "Desligado", "motivo": "" },
+        { "grupo": "Pós-processamento", "opcao": "Granulação de filme", "valor": "0", "motivo": "" },
+        { "grupo": "Pós-processamento", "opcao": "Profundidade de campo", "valor": "Desligado", "motivo": "" },
+        { "grupo": "Pós-processamento", "opcao": "Aberração cromática", "valor": "Desligado", "motivo": "" },
+        { "grupo": "Avançado", "opcao": "Cache de sombreadores na pasta do jogo / compilação", "valor": "Deixe compilar até o fim antes de jogar", "motivo": "Jogar com a compilação em andamento causa travadas." },
+        { "grupo": "Avançado", "opcao": "Alocação de VRAM", "valor": "80 a 90%", "motivo": "Mais que isso pode causar travadas quando o Discord/navegador também usam vídeo." }
+      ]
+    },
+    "equilibrio": {
+      "titulo": "Equilíbrio (imagem bonita com bom FPS)",
+      "descricao": "Para monitores de 60 a 144 Hz e para quem quer imagem mais bonita sem perder competitividade.",
+      "itens": [
+        { "grupo": "Tela", "opcao": "Modo de exibição", "valor": "Tela cheia sem bordas", "motivo": "" },
+        { "grupo": "Tela", "opcao": "NVIDIA Reflex Low Latency", "valor": "Ligado", "porGpu": { "amd": "Não disponível (use o Anti-Lag 2 se aparecer)", "intel": "Não disponível" }, "motivo": "" },
+        { "grupo": "Tela", "opcao": "Limite de taxa de quadros", "valor": "3 abaixo do Hz do monitor", "motivo": "" },
+        { "grupo": "Qualidade", "opcao": "Upscaling / nitidez", "valor": "DLSS Qualidade ou DLAA", "porGpu": { "amd": "FSR Qualidade ou FSR Nativo AA", "intel": "XeSS Qualidade" }, "motivo": "" },
+        { "grupo": "Qualidade", "opcao": "Resolução das texturas", "valor": "Alta", "porVram": { "8": "Normal", "12": "Alta", "16": "Muito alta" }, "motivo": "" },
+        { "grupo": "Qualidade", "opcao": "Qualidade da sombra", "valor": "Média", "motivo": "" },
+        { "grupo": "Qualidade", "opcao": "Oclusão de ambiente", "valor": "Ligado (só objetos estáticos)", "motivo": "" },
+        { "grupo": "Pós-processamento", "opcao": "Desfoque de movimento", "valor": "Desligado", "motivo": "" },
+        { "grupo": "Pós-processamento", "opcao": "Granulação de filme", "valor": "0", "motivo": "" },
+        { "grupo": "Pós-processamento", "opcao": "Profundidade de campo", "valor": "Desligado", "motivo": "" }
+      ]
+    }
+  }
+}

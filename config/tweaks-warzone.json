@@ -50,6 +50,23 @@
       "scriptDetectar": [ "Test-UTGameIfeoPriority -Contexto $Contexto" ],
       "scriptSimular": [ "Get-UTGameExecutable -Contexto $Contexto | ForEach-Object { 'Prioridade Alta ao abrir: ' + (Split-Path -Leaf $_) } | Sort-Object -Unique" ],
       "deteccao": "script"
+    },
+    {
+      "id": "UT_Warzone_DefenderExclusion",
+      "nome": "Excluir a pasta do jogo e o cache de shaders do Windows Defender",
+      "descricao": "O Defender verifica cada arquivo que o jogo abre. Com a pasta do Call of Duty e o cache de shaders fora da verificação, o carregamento e a compilação de shaders podem ficar mais rápidos e com menos travadas. O Defender continua ligado para todo o resto do PC.",
+      "ganhoEsperado": "Pequeno a médio em carregamento e compilação de shaders",
+      "categoria": "Warzone",
+      "risco": "médio",
+      "requerReinicio": false,
+      "controverso": false,
+      "observacao": "Troca de segurança: um arquivo malicioso colocado dentro dessas pastas não seria verificado. Só exclui pastas do jogo e de cache, nunca o disco inteiro. Se você usa outro antivírus, configure a exclusão nele.",
+      "compatibilidade": { "windows": ["10", "11"], "exigeJogo": true },
+      "scriptAplicar": [ "Add-UTDefenderGameExclusion -TweakId $TweakId -Contexto $Contexto" ],
+      "scriptDesfazer": [ "Remove-UTDefenderGameExclusion -TweakId $TweakId" ],
+      "scriptDetectar": [ "Test-UTDefenderGameExclusion -Contexto $Contexto" ],
+      "scriptSimular": [ "Get-UTDefenderExclusionTarget -Contexto $Contexto | ForEach-Object { \"Exclusão do Defender: $_\" }" ],
+      "deteccao": "script"
     }
   ]
 }
