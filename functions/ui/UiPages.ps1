@@ -898,6 +898,7 @@ function New-UTUiPageRestaurar {
     $all = New-UTUiCard -Titulo 'Desfazer tudo' -Icone 'E7A7' -Subtitulo 'Reverte, na ordem inversa, tudo que o Upgrade Tweaks aplicou neste PC, voltando cada valor para o que estava antes.' -Conteudo @(
         (New-UTUiButton 'Desfazer TUDO' -Estilo Perigo -Icone 'E7A7' -AoClicar {
             param($b, $d) $null = $b, $d
+            if (@(Get-UTAppliedRecord).Count -eq 0) { [void](Show-UTUiDialog -Titulo 'Nada para desfazer' -Mensagem 'O Upgrade Tweaks ainda não aplicou nenhum ajuste neste PC.' -Tipo info); return }
             if ((Show-UTUiDialog -Titulo 'Desfazer tudo?' -Mensagem 'Todos os ajustes aplicados pelo Upgrade Tweaks serão revertidos. Alguns só voltam depois de reiniciar.' -Tipo aviso -Botoes @('Desfazer tudo', 'Cancelar')) -ne 'Desfazer tudo') { return }
             [void](Invoke-UTUiJob -Nome 'Desfazendo tudo' -Exclusivo -Script { Undo-UTAllTweak } -Estado @{ Ids = @(); Modo = 'Desfazer' } -AoTerminar {
                     param($R, $E) $null = $E

@@ -63,7 +63,9 @@ O formato segue o [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) e 
 - GitHub Actions: analisador, testes no Windows PowerShell 5.1 e no PowerShell 7, README conferido com o catálogo e compilação a cada push; tag `v*.*.*` testa, compila e publica a Release com `upgradetweaks.ps1` e o SHA256.
 - README completo em PT-BR (aba por aba, presets, linha de comando, anti-cheat, como desfazer, FAQ) com a tabela de todos os ajustes gerada do catálogo (`scripts/build-docs.ps1`, chamado pelo `compile.ps1`), logo e capturas de tela.
 - Ícone da janela em vetor (XAML).
+- Roteiro de teste manual em VM antes da primeira Release (`docs/teste-manual.md`) e teste de ponta a ponta do arquivo compilado no CI (diagnóstico e simulação dos três presets).
 
 ### Corrigido
+- "Desfazer TUDO" sem nada aplicado agora só avisa, em vez de mostrar um resumo vazio.
 - O modo de desenvolvimento (`Set-StrictMode -Version Latest`) quebrava ao ler campos opcionais dos JSON, ao pegar o primeiro item de listas vazias e ao somar tamanhos de pastas vazias. Os campos opcionais agora recebem valores padrão ao carregar cada configuração, e a suíte de testes roda sempre em modo estrito.
 - O arquivo de configuração do Call of Duty não era encontrado quando a pasta Documentos foi movida para o OneDrive (o jogo continua gravando em `%USERPROFILE%\Documents`).

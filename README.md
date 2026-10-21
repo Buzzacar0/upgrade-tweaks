@@ -380,7 +380,7 @@ Requisitos: Windows PowerShell 5.1, Pester 5.7.1 e PSScriptAnalyzer (`Install-Mo
 | Só atualizar a tabela de ajustes | `powershell -File scripts\build-docs.ps1` |
 | Corrigir codificação (UTF-8 com BOM) | `powershell -File scripts\fix-encoding.ps1` |
 | Abrir a interface sem alterar nada | `powershell -File scripts\start.ps1 -Simular` |
-| Publicar uma versão | atualize `VERSION` e o `CHANGELOG.md`, depois `git tag v0.1.0` e `git push --tags`: o GitHub Actions testa, compila e cria a Release com `upgradetweaks.ps1` e o SHA256 |
+| Publicar uma versão | siga o [roteiro de teste manual](docs/teste-manual.md) numa VM, atualize `VERSION` e o `CHANGELOG.md`, depois `git tag v0.1.0` e `git push --tags`: o GitHub Actions testa, compila e cria a Release com `upgradetweaks.ps1` e o SHA256 |
 
 Estrutura: `scripts/start.ps1` (elevação e entrada), `functions/` (privadas, públicas e `ui/`), `config/` (catálogo de ajustes e listas em JSON, editáveis sem mexer no código), `xaml/` (janela), `tests/` (Pester). O esquema do catálogo está em [`docs/esquema-tweaks.md`](docs/esquema-tweaks.md).
 

@@ -185,6 +185,16 @@ Describe 'Aplicar, desfazer e simular' {
         $r.Resultado[0].Status | Should -Be 'Desfeito'
     }
 
+    It 'Desfazer TUDO sem nada aplicado só avisa' {
+        Mock Get-UTAppliedRecord { }
+        Mock Show-UTUiDialog { 'OK' }
+        $page = New-UTUiPageRestaurar
+        $btn = $page.Children[1].Child.Children[2]
+        & $btn.Tag.Acao $btn $btn.Tag.Dados
+        Should -Invoke Show-UTUiDialog -Times 1 -ParameterFilter { $Titulo -eq 'Nada para desfazer' }
+        @($script:jobs | Where-Object Nome -eq 'Desfazendo tudo').Count | Should -Be 0
+    }
+
     It 'resumo oferece reiniciar quando precisa' {
         Mock Show-UTUiDialog { if ($Titulo -eq 'Reiniciar agora?') { 'Reiniciar' } else { 'Reiniciar agora' } }
         Mock Restart-UTUiComputer {}
