@@ -14,7 +14,7 @@
         return $problems.ToArray()
     }
 
-    $categories = 'Energia', 'Gaming', 'Latencia', 'Rede', 'ServicosApps', 'Privacidade', 'Visual', 'Personalizar', 'GPU', 'Warzone'
+    $categories = 'Energia', 'Gaming', 'Latencia', 'Rede', 'ServicosApps', 'Privacidade', 'Visual', 'Personalizar', 'GPU', 'Warzone', 'Ferramentas'
     $risks = 'baixo', 'médio', 'alto'
     $regTypes = 'DWord', 'QWord', 'String', 'ExpandString', 'MultiString', 'Binary'
     $startTypes = 'Automatic', 'AutomaticDelayedStart', 'Manual', 'Disabled'

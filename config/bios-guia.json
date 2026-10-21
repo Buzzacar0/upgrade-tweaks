@@ -1,0 +1,133 @@
+{
+  "_comentario": "Guia de BIOS da aba Ferramentas. 'verificacao' liga o item a um teste do diagnóstico (id do check): OK = confirmado, Aviso/Problema = pendente. 'cpu' e 'x3d' filtram pelo hardware detectado.",
+  "fabricantesPlaca": [
+    { "padrao": "ASUS", "nome": "ASUS", "suporte": "https://www.asus.com/support/download-center/", "teclaBios": "Del ou F2" },
+    { "padrao": "Micro-Star|MSI", "nome": "MSI", "suporte": "https://www.msi.com/support/download", "teclaBios": "Del" },
+    { "padrao": "Gigabyte", "nome": "Gigabyte / AORUS", "suporte": "https://www.gigabyte.com/Support", "teclaBios": "Del" },
+    { "padrao": "ASRock", "nome": "ASRock", "suporte": "https://www.asrock.com/support/index.asp", "teclaBios": "Del ou F2" },
+    { "padrao": "BIOSTAR", "nome": "Biostar", "suporte": "https://www.biostar.com.tw/app/en/support/download.php", "teclaBios": "Del" }
+  ],
+  "chipset": {
+    "amd": { "nome": "Driver de chipset AMD", "url": "https://www.amd.com/en/support/download/drivers.html" },
+    "intel": { "nome": "Intel Driver & Support Assistant", "url": "https://www.intel.com/content/www/us/en/support/detect.html" }
+  },
+  "itens": [
+    {
+      "id": "atualizarbios",
+      "grupo": "Básico",
+      "titulo": "Atualizar a BIOS",
+      "texto": "BIOS nova corrige estabilidade de memória, compatibilidade e, nos Intel 13ª/14ª geração, traz o microcódigo que evita a degradação do processador (0x12B ou mais novo). Baixe só do site do fabricante da placa-mãe e use o recurso de atualização da própria BIOS (EZ Flash, M-Flash, Q-Flash, Instant Flash).",
+      "aviso": "Não desligue o PC durante a atualização. Depois de atualizar, a BIOS volta ao padrão: ligue XMP/EXPO e Resizable BAR de novo."
+    },
+    {
+      "id": "chipset",
+      "grupo": "Básico",
+      "titulo": "Driver de chipset",
+      "texto": "Instale o driver de chipset mais novo do fabricante do processador. Nos Ryzen ele traz o plano de energia certo e, nos X3D de dois CCDs, o driver que manda o jogo para o CCD com 3D V-Cache."
+    },
+    {
+      "id": "xmp",
+      "grupo": "Memória",
+      "titulo": "XMP (Intel) / EXPO (AMD) ligado",
+      "verificacao": "xmp",
+      "texto": "Sem XMP/EXPO a memória roda na velocidade básica (ex.: DDR5 a 4800 em vez de 6000), o que derruba o FPS mínimo no Warzone. Na BIOS procure por XMP, EXPO, DOCP ou A-XMP e escolha o perfil 1.",
+      "aviso": "Depois de ligar, teste com o OCCT (teste de memória) por 30 minutos. Se der erro ou tela azul, use o perfil 2 ou suba a tensão SoC/VDD conforme o manual da placa."
+    },
+    {
+      "id": "rebar",
+      "grupo": "PCIe e vídeo",
+      "titulo": "Resizable BAR e Above 4G Decoding",
+      "verificacao": "rebar",
+      "texto": "Ligue \"Above 4G Decoding\" e \"Re-Size BAR Support\" (às vezes chamado de Smart Access Memory). Ajuda o Warzone a usar a VRAM da placa de vídeo inteira. Exige o CSM desligado."
+    },
+    {
+      "id": "csm",
+      "grupo": "PCIe e vídeo",
+      "titulo": "CSM desligado (boot UEFI)",
+      "texto": "O CSM (modo de compatibilidade/Legacy) precisa estar desligado para Resizable BAR e Secure Boot funcionarem. Se o Windows foi instalado em modo Legacy (disco MBR), converta antes com o mbr2gpt da Microsoft, senão o PC não inicia."
+    },
+    {
+      "id": "secureboot",
+      "grupo": "Segurança exigida pelo jogo",
+      "titulo": "Secure Boot ligado",
+      "verificacao": "secureboot",
+      "texto": "O Call of Duty (RICOCHET) exige Secure Boot. Na BIOS: Boot > Secure Boot > Enabled, com as chaves padrão instaladas (\"Install default keys\" / modo Standard)."
+    },
+    {
+      "id": "tpm",
+      "grupo": "Segurança exigida pelo jogo",
+      "titulo": "TPM 2.0 ligado",
+      "verificacao": "tpm",
+      "texto": "Ligue o fTPM (AMD) ou PTT (Intel) na BIOS. Exigido pelo Windows 11 e pelo anti-cheat do Call of Duty."
+    },
+    {
+      "id": "pbo",
+      "grupo": "Processador AMD",
+      "cpu": [ "amd" ],
+      "titulo": "Precision Boost Overdrive (PBO)",
+      "texto": "O PBO deixa o Ryzen subir mais o clock enquanto houver folga de temperatura e energia. Em \"Advanced\" ou \"AMD Overclocking\" > Precision Boost Overdrive > Enabled (ou Advanced com limites da placa). Ganho pequeno em jogos; mais calor.",
+      "aviso": "Com cooler fraco o ganho some porque o processador já esbarra na temperatura."
+    },
+    {
+      "id": "curveoptimizer",
+      "grupo": "Processador AMD",
+      "cpu": [ "amd" ],
+      "titulo": "Curve Optimizer (negativo)",
+      "texto": "Diminui a tensão em cada clock: o processador esquenta menos e sustenta clock mais alto. Comece com -10 em todos os núcleos (All Core) e desça de 5 em 5 até no máximo -30.",
+      "aviso": "Valor negativo demais trava ou reinicia o PC, às vezes só em repouso. Teste cada passo com o OCCT (CPU, 1 hora) e use o PC normalmente por alguns dias antes de descer mais."
+    },
+    {
+      "id": "fclk",
+      "grupo": "Processador AMD",
+      "cpu": [ "amd" ],
+      "titulo": "FCLK e UCLK",
+      "texto": "AM5 (Ryzen 7000/9000): com DDR5-6000 deixe UCLK = MCLK (1:1, \"UCLK DIV1 MODE\") e FCLK em 2000 MHz (ou 2100 se estiver estável). AM4 (Ryzen 5000): FCLK igual à metade da velocidade da memória (DDR4-3600 = FCLK 1800).",
+      "aviso": "FCLK instável causa erros WHEA no Visualizador de Eventos e travadas; volte para Auto se acontecer."
+    },
+    {
+      "id": "mcr",
+      "grupo": "Processador AMD",
+      "cpu": [ "amd" ],
+      "titulo": "Memory Context Restore",
+      "texto": "Nos AM5 o boot pode demorar quase um minuto porque a memória é treinada a cada inicialização. Ligue \"Memory Context Restore\" (e \"Power Down Enable\" quando a placa pedir junto) para o boot ficar rápido.",
+      "aviso": "Se aparecer instabilidade depois de ligar, desligue de novo."
+    },
+    {
+      "id": "eco",
+      "grupo": "Processador AMD",
+      "cpu": [ "amd" ],
+      "titulo": "Modo ECO / limites de energia",
+      "texto": "Se o processador passa de 90 °C ou o cooler é pequeno, o modo ECO (65 W ou 105 W) corta muito o calor com perda mínima em jogos, que quase nunca usam o processador inteiro."
+    },
+    {
+      "id": "x3dnotas",
+      "grupo": "Processador AMD",
+      "cpu": [ "amd" ],
+      "x3d": true,
+      "titulo": "Notas para Ryzen X3D",
+      "texto": "Os X3D já vêm ajustados para jogos: o PBO tem pouco efeito, mas o Curve Optimizer negativo ajuda a manter o clock. Nos modelos de dois CCDs (7900X3D, 7950X3D, 9900X3D, 9950X3D) mantenha o plano Equilibrado, o driver de chipset AMD e o Game Bar ligados: são eles que colocam o jogo no CCD com cache. Não desative núcleos na BIOS para isso."
+    },
+    {
+      "id": "intellimites",
+      "grupo": "Processador Intel",
+      "cpu": [ "intel" ],
+      "titulo": "Limites de energia (PL1/PL2) e perfil Intel Default",
+      "texto": "Nos Core 13ª/14ª geração escolha o perfil \"Intel Default Settings\" (Performance ou Extreme conforme o modelo) em vez de limites ilimitados da placa. Limites ilimitados aumentam calor e o risco de degradação, com ganho mínimo em jogos.",
+      "aviso": "Junto com a BIOS nova (microcódigo 0x12B ou mais novo). Se o processador já trava em jogos mesmo no padrão, procure a garantia da Intel."
+    },
+    {
+      "id": "intelundervolt",
+      "grupo": "Processador Intel",
+      "cpu": [ "intel" ],
+      "titulo": "Undervolt (quando a placa permite)",
+      "texto": "Alguns Intel aceitam um offset negativo de tensão (ex.: -0,050 V) ou um limite de IccMax/AC Load Line menor, reduzindo calor. Em muitas placas o undervolt fica bloqueado pela proteção da Intel (Undervolt Protection / CEP).",
+      "aviso": "Teste com o OCCT por 1 hora depois de cada mudança."
+    },
+    {
+      "id": "fans",
+      "grupo": "Temperaturas",
+      "titulo": "Curva das fans e temperaturas",
+      "texto": "Abra o HWiNFO (aba Programas) durante uma partida e veja as temperaturas máximas: processador até ~85-90 °C e placa de vídeo até ~80-85 °C (hotspot até ~100 °C) são normais. Acima disso ajuste a curva das fans na BIOS (Q-Fan, Smart Fan) para subir a rotação a partir de 60-70 °C."
+    }
+  ]
+}

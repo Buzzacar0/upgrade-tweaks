@@ -34,7 +34,7 @@ Describe 'Catálogo config\tweaks-*.json' {
     }
 
     It 'a categoria do tweak combina com o arquivo onde ele está' {
-        $map = @{ 'tweaks-gaming.json' = 'Gaming'; 'tweaks-energia.json' = 'Energia'; 'tweaks-latencia.json' = 'Latencia'; 'tweaks-warzone.json' = 'Warzone'; 'tweaks-gpu.json' = 'GPU'
+        $map = @{ 'tweaks-gaming.json' = 'Gaming'; 'tweaks-energia.json' = 'Energia'; 'tweaks-latencia.json' = 'Latencia'; 'tweaks-warzone.json' = 'Warzone'; 'tweaks-gpu.json' = 'GPU'; 'tweaks-ferramentas.json' = 'Ferramentas'
             'tweaks-rede.json' = 'Rede'; 'tweaks-servicos.json' = 'ServicosApps'; 'tweaks-privacidade.json' = 'Privacidade'; 'tweaks-visual.json' = 'Visual'; 'tweaks-personalizar.json' = 'Personalizar' }
         foreach ($file in Get-ChildItem -Path (Join-Path $UTTestRepoRoot 'config') -Filter 'tweaks-*.json') {
             $expected = $map[$file.Name]

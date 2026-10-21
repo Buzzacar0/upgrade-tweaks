@@ -95,7 +95,7 @@ Legenda da decisão: **Portar** (entra no nosso catálogo), **Adaptar** (entra c
 | Bing Search, Start Recommendations | Portar | `UT_Privacy_BingSearch_Off`, `UT_Privacy_StartRecommendations_Off` | Privacidade | |
 | Sticky Keys | Portar | `UT_Gaming_StickyKeys_Off` | Gaming | Inclui Filtragem e Alternância |
 | Game Mode | Portar | `UT_Gaming_GameMode_On` | Gaming | |
-| O&O ShutUp10++ | Adaptar | catálogo de programas | Programas | winget `OO-Software.ShutUp10` (verificar na Fase 8) |
+| O&O ShutUp10++ | Adaptar | catálogo de programas | Programas | winget `OO-Software.ShutUp10` (verificado na Fase 8; hoje se chama "O&O ShutUp10" v3) |
 | DNS | Adaptar | seletor de DNS | Rede | Mesma lista (Cloudflare, Google, Quad9, OpenDNS, AdGuard) + DHCP |
 | Ultimate Performance | Adaptar | `Invoke-UTPowerPlan` | Energia | Base do plano "Upgrade Warzone" |
 | Fixes (rede, winget, Windows Update) | Portar | ações da aba Ferramentas | Ferramentas | Reset Winsock/TCP-IP, reparo do winget |
@@ -171,6 +171,7 @@ a já ter usado o WinUtil antes. Nada novo que precise de tweak próprio.
 | Everything | `voidtools.Everything` | OK |
 | CrystalDiskInfo | `CrystalDewWorld.CrystalDiskInfo` | OK |
 | CrystalDiskMark | `CrystalDewWorld.CrystalDiskMark` | OK |
+| O&O ShutUp10 | `OO-Software.ShutUp10` | OK (verificado em 2026-10-21; nome atual sem "++", v3.6) |
 | VC++ 2015+ x64 | `Microsoft.VCRedist.2015+.x64` | OK |
 | DirectX End-User Runtime | `Microsoft.DirectX` | OK |
 | Edge / OneDrive / WebView2 | `Microsoft.Edge`, `Microsoft.OneDrive`, `Microsoft.EdgeWebView2Runtime` | OK (usados nos "desfazer") |
@@ -341,8 +342,8 @@ qualidade de filtragem), marcadas como **experimentais**, com backup. Anti-Lag, 
 | 4 (feito) | CCD duplo além do nome: modelo fora da lista é classificado pela contagem de núcleos (mais de 8 = dois CCDs; sem informação = dois CCDs, o caminho seguro) |
 | 4 (limitação) | XMP/EXPO: o `Win32_PhysicalMemory.Speed` costuma trazer a velocidade JEDEC, não a do XMP. Se o XMP estiver desligado, `Speed` e `ConfiguredClockSpeed` ficam iguais. Por isso o diagnóstico também lê a velocidade do part number (ex.: `F5-6000J3038F16G` = 6000) e avisa quando a DDR5 está a 4800 / DDR4 a 2666 |
 | 6 | Variante de MPO com `EnableOverlay`; máscara `UserPreferencesMask` que mantém fontes e miniaturas; chave do Storage Sense no 25H2 |
-| 6 | Id winget do O&O ShutUp10++ |
+| 6 (feito) | Id winget do O&O ShutUp10: `OO-Software.ShutUp10` (v3.6, 2026-10-21) |
 | 7 (feito) | DRS gravado direto pela NVAPI (a NVIDIA App lê o mesmo banco; backup `.txt` antes). Faixa dinâmica via `NvAPI_Disp_ColorControl` (`NV_COLOR_DATA_V5`). Dimensionamento na tela ficou de fora: depende do modo do monitor e o Windows já expõe |
 | 7 (decidido) | AMD: só checklist. As chaves UMD do Adrenalin mudam entre versões e o próprio Adrenalin regrava; não há forma documentada de validar |
 | 7 / 12 | Arquivo de config do MW4 depois do lançamento (23/10): o código procura por padrão (`s.N.N.codNN.txtN`, `options.N.codNN.cst`) e mapeia cod22..cod26; conferir o número do título na revisão final |
-| 8 | Página oficial atual do Ryzen Master e do Intel Graphics Software |
+| 8 (feito) | Ryzen Master: `amd.com/en/products/software/ryzen-master.html`. Intel Graphics Software fica no guia Intel da aba GPU. MSI Utility v3: tópico 378044 do fórum Guru3D. IAPT: espelho da TechPowerUp (a Microsoft tirou o download) |

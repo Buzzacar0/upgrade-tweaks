@@ -1,0 +1,30 @@
+{
+  "tweaks": [
+    {
+      "id": "UT_Ferramentas_PaginacaoAuto",
+      "nome": "Arquivo de paginação gerenciado pelo sistema",
+      "descricao": "Volta o arquivo de paginação para \"gerenciado pelo sistema\" em todas as unidades. O Call of Duty reserva muita memória virtual; com a paginação desativada ou pequena demais o jogo fecha sozinho (erros de memória, DEV ERROR). Desativar a paginação não deixa o PC mais rápido, nem com 32 GB de RAM.",
+      "ganhoEsperado": "Evita fechamentos do jogo; não muda o FPS",
+      "categoria": "Ferramentas",
+      "risco": "baixo",
+      "requerReinicio": true,
+      "controverso": false,
+      "observacao": "Se você definiu um tamanho fixo de propósito, o desfazer volta exatamente para ele.",
+      "compatibilidade": {
+        "windows": [ "10", "11" ],
+        "notebook": true,
+        "desktop": true
+      },
+      "registro": [
+        {
+          "caminho": "HKLM:\\SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Memory Management",
+          "nome": "PagingFiles",
+          "tipo": "MultiString",
+          "valor": [ "?:\\pagefile.sys" ],
+          "valorOriginal": [ "?:\\pagefile.sys" ]
+        }
+      ],
+      "deteccao": "registro"
+    }
+  ]
+}

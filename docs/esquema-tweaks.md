@@ -45,7 +45,7 @@ campos abaixo; um tweak inválido não entra no programa.
 |---|---|---|
 | `id` | sim | `UT_` + letras, números e `_`. Único. |
 | `nome`, `descricao`, `ganhoEsperado` | sim | Texto em PT-BR. A descrição diz o ganho real; efeito duvidoso é dito com todas as letras. |
-| `categoria` | sim | Aba onde aparece: `Energia`, `Gaming`, `Latencia`, `Rede`, `ServicosApps`, `Privacidade`, `Visual`, `Personalizar`, `GPU`, `Warzone`. |
+| `categoria` | sim | Aba onde aparece: `Energia`, `Gaming`, `Latencia`, `Rede`, `ServicosApps`, `Privacidade`, `Visual`, `Personalizar`, `GPU`, `Warzone`, `Ferramentas`. |
 | `risco` | sim | `baixo`, `médio` ou `alto`. `alto` exige `confirmacao` (texto da caixa de diálogo). |
 | `requerReinicio` | sim | `true`/`false`. |
 | `controverso` | sim | `true` mostra o selo "controverso". |

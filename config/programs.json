@@ -1,0 +1,207 @@
+{
+  "_comentario": "Catálogo da aba Programas. Para acrescentar um programa basta copiar um item. winget: id exato (winget show --id <id> -e). github: repositório e padrão do nome do arquivo na última Release (usado quando não há winget). executaveis: nomes do .exe; pastas: onde procurar (aceita %VARIAVEIS% e *). somentePagina: só abre o site oficial. Versões e hashes nunca são fixados aqui.",
+  "categorias": [
+    "Overclock e monitoramento",
+    "GPU e driver",
+    "Latência e sistema",
+    "Utilitários"
+  ],
+  "programas": [
+    {
+      "id": "afterburner",
+      "nome": "MSI Afterburner",
+      "categoria": "Overclock e monitoramento",
+      "descricao": "Overclock e undervolt da placa de vídeo, curva das fans e gráficos de uso/temperatura. Para overlay e limite de FPS ele usa o RivaTuner (instale junto).",
+      "site": "https://www.msi.com/Landing/afterburner/graphics-cards",
+      "winget": "Guru3D.Afterburner",
+      "executaveis": [ "MSIAfterburner.exe" ],
+      "pastas": [ "%ProgramFiles(x86)%\\MSI Afterburner" ]
+    },
+    {
+      "id": "rtss",
+      "nome": "RivaTuner Statistics Server",
+      "categoria": "Overclock e monitoramento",
+      "descricao": "Overlay de FPS/frametime e limitador de FPS com frametime muito estável. Use o limite do jogo ou o Reflex primeiro; o RTSS é a alternativa quando o jogo não tem limite bom.",
+      "site": "https://www.guru3d.com/download/rtss-rivatuner-statistics-server-download/",
+      "winget": "Guru3D.RTSS",
+      "executaveis": [ "RTSS.exe" ],
+      "pastas": [ "%ProgramFiles(x86)%\\RivaTuner Statistics Server" ]
+    },
+    {
+      "id": "hwinfo",
+      "nome": "HWiNFO64",
+      "categoria": "Overclock e monitoramento",
+      "descricao": "Sensores completos (temperatura, clock, consumo, throttling) e registro em arquivo. É o melhor jeito de ver se CPU ou GPU estão esquentando demais durante a partida.",
+      "site": "https://www.hwinfo.com/download/",
+      "winget": "REALiX.HWiNFO",
+      "executaveis": [ "HWiNFO64.exe" ],
+      "pastas": [ "%ProgramFiles%\\HWiNFO64" ]
+    },
+    {
+      "id": "occt",
+      "nome": "OCCT",
+      "categoria": "Overclock e monitoramento",
+      "descricao": "Testes de estabilidade de CPU, memória, GPU e fonte. Rode depois de ligar XMP/EXPO, Curve Optimizer ou overclock: erro no teste = ajuste instável.",
+      "site": "https://www.ocbase.com/",
+      "winget": "OCBase.OCCT.Personal",
+      "executaveis": [ "OCCT.exe" ],
+      "pastas": [ "%ProgramFiles%\\OCCT", "%LOCALAPPDATA%\\Programs\\OCCT" ]
+    },
+    {
+      "id": "cpuz",
+      "nome": "CPU-Z",
+      "categoria": "Overclock e monitoramento",
+      "descricao": "Mostra processador, placa-mãe e memória (velocidade real, timings e se o XMP/EXPO está ativo na aba Memory).",
+      "site": "https://www.cpuid.com/softwares/cpu-z.html",
+      "winget": "CPUID.CPU-Z",
+      "executaveis": [ "cpuz.exe" ],
+      "pastas": [ "%ProgramFiles%\\CPUID\\CPU-Z" ]
+    },
+    {
+      "id": "gpuz",
+      "nome": "GPU-Z",
+      "categoria": "Overclock e monitoramento",
+      "descricao": "Informações da placa de vídeo: modelo exato, BIOS, Resizable BAR, linha PCIe em uso e sensores.",
+      "site": "https://www.techpowerup.com/gpuz/",
+      "winget": "TechPowerUp.GPU-Z",
+      "executaveis": [ "GPU-Z.exe" ],
+      "pastas": [ "%ProgramFiles(x86)%\\GPU-Z", "%ProgramFiles%\\GPU-Z" ]
+    },
+    {
+      "id": "ryzenmaster",
+      "nome": "AMD Ryzen Master",
+      "categoria": "Overclock e monitoramento",
+      "descricao": "Ferramenta oficial da AMD para PBO, Curve Optimizer e monitoramento dos Ryzen. Não existe no winget e a AMD exige aceitar os termos no site, então o programa só abre a página oficial.",
+      "site": "https://www.amd.com/en/products/software/ryzen-master.html",
+      "somentePagina": true,
+      "cpu": [ "amd" ],
+      "executaveis": [ "AMD Ryzen Master.exe" ],
+      "pastas": [ "%ProgramFiles%\\AMD\\RyzenMaster\\bin" ]
+    },
+    {
+      "id": "profileinspector",
+      "nome": "NVIDIA Profile Inspector",
+      "categoria": "GPU e driver",
+      "descricao": "Editor avançado dos perfis do driver NVIDIA. O Upgrade Tweaks já grava o perfil do Warzone direto no driver (aba GPU); o Inspector é o caminho alternativo e permite importar o perfil recomendado em .nip.",
+      "site": "https://github.com/Orbmu2k/nvidiaProfileInspector",
+      "winget": "Orbmu2k.nvidiaProfileInspector",
+      "github": { "repo": "Orbmu2k/nvidiaProfileInspector", "arquivo": "\\.zip$" },
+      "gpu": [ "nvidia" ],
+      "executaveis": [ "nvidiaProfileInspector.exe" ],
+      "pastas": []
+    },
+    {
+      "id": "ddu",
+      "nome": "Display Driver Uninstaller (DDU)",
+      "categoria": "GPU e driver",
+      "descricao": "Remove por completo o driver de vídeo (NVIDIA, AMD ou Intel) antes de instalar outro. Use quando trocar de placa ou se o driver estiver com problema.",
+      "site": "https://www.wagnardsoft.com/display-driver-uninstaller-ddu",
+      "winget": "Wagnardsoft.DisplayDriverUninstaller",
+      "aviso": "Use em Modo de Segurança, com a internet desconectada, e tenha o instalador do driver novo já baixado. Veja o guia do DDU na aba GPU.",
+      "executaveis": [ "Display Driver Uninstaller.exe" ],
+      "pastas": [ "%ProgramFiles(x86)%\\Display Driver Uninstaller", "%ProgramFiles%\\Display Driver Uninstaller" ]
+    },
+    {
+      "id": "nvcleanstall",
+      "nome": "NVCleanstall",
+      "categoria": "GPU e driver",
+      "descricao": "Monta um instalador do driver NVIDIA só com os componentes escolhidos (sem NVIDIA App, telemetria etc.). Alternativa ao \"só o driver de vídeo\" da aba GPU.",
+      "site": "https://www.techpowerup.com/nvcleanstall/",
+      "winget": "TechPowerUp.NVCleanstall",
+      "gpu": [ "nvidia" ],
+      "executaveis": [ "NVCleanstall.exe" ],
+      "pastas": [ "%ProgramFiles%\\NVCleanstall", "%ProgramFiles(x86)%\\NVCleanstall" ]
+    },
+    {
+      "id": "msiutility",
+      "nome": "MSI Utility v3",
+      "categoria": "Latência e sistema",
+      "descricao": "Liga o modo de interrupção MSI (Message Signaled Interrupts) em placas e controladoras. Não tem site oficial, só o anexo no fórum Guru3D; o Upgrade Tweaks já faz o modo MSI da placa de vídeo sozinho (aba Latência), então ele só abre a página.",
+      "site": "https://forums.guru3d.com/threads/windows-line-based-vs-message-signaled-based-interrupts-msi-tool.378044/",
+      "somentePagina": true,
+      "executaveis": [],
+      "pastas": []
+    },
+    {
+      "id": "iapt",
+      "nome": "Interrupt Affinity Policy Tool",
+      "categoria": "Latência e sistema",
+      "descricao": "Ferramenta antiga da Microsoft para fixar as interrupções de um dispositivo em núcleos específicos. A Microsoft tirou o download do ar; o link é o espelho da TechPowerUp. Uso avançado: afinidade errada piora a latência.",
+      "site": "https://www.techpowerup.com/download/microsoft-interrupt-affinity-tool/",
+      "somentePagina": true,
+      "executaveis": [],
+      "pastas": []
+    },
+    {
+      "id": "autoruns",
+      "nome": "Autoruns (Sysinternals)",
+      "categoria": "Latência e sistema",
+      "descricao": "Lista tudo o que inicia com o Windows (serviços, drivers, tarefas, extensões). Mais completo que o gerenciador de inicialização da aba Serviços e Apps.",
+      "site": "https://learn.microsoft.com/sysinternals/downloads/autoruns",
+      "winget": "Microsoft.Sysinternals.Autoruns",
+      "executaveis": [ "Autoruns64.exe", "autoruns.exe" ],
+      "pastas": []
+    },
+    {
+      "id": "processlasso",
+      "nome": "Process Lasso",
+      "categoria": "Latência e sistema",
+      "descricao": "Controla prioridade e afinidade de processos de forma persistente. Opcional: o Windows já gerencia bem um jogo em primeiro plano; útil para casos específicos.",
+      "site": "https://bitsum.com/",
+      "winget": "BitSum.ProcessLasso",
+      "executaveis": [ "ProcessLasso.exe" ],
+      "pastas": [ "%ProgramFiles%\\Process Lasso" ]
+    },
+    {
+      "id": "shutup10",
+      "nome": "O&O ShutUp10",
+      "categoria": "Latência e sistema",
+      "descricao": "Painel de privacidade do Windows 10/11 com recomendações. Complementa a aba Privacidade; evite aplicar as opções vermelhas sem saber o que fazem.",
+      "site": "https://www.oo-software.com/en/shutup10",
+      "winget": "OO-Software.ShutUp10",
+      "executaveis": [ "OOSU10.exe" ],
+      "pastas": []
+    },
+    {
+      "id": "7zip",
+      "nome": "7-Zip",
+      "categoria": "Utilitários",
+      "descricao": "Compactador gratuito. Também é usado pelo \"só o driver de vídeo\" da aba GPU para extrair o instalador da NVIDIA.",
+      "site": "https://www.7-zip.org/",
+      "winget": "7zip.7zip",
+      "github": { "repo": "ip7z/7zip", "arquivo": "^7z\\d+-x64\\.exe$", "argsSilencioso": "/S" },
+      "executaveis": [ "7zFM.exe" ],
+      "pastas": [ "%ProgramFiles%\\7-Zip" ]
+    },
+    {
+      "id": "everything",
+      "nome": "Everything",
+      "categoria": "Utilitários",
+      "descricao": "Busca de arquivos instantânea em todos os discos.",
+      "site": "https://www.voidtools.com/",
+      "winget": "voidtools.Everything",
+      "executaveis": [ "Everything.exe" ],
+      "pastas": [ "%ProgramFiles%\\Everything" ]
+    },
+    {
+      "id": "crystaldiskinfo",
+      "nome": "CrystalDiskInfo",
+      "categoria": "Utilitários",
+      "descricao": "Saúde e temperatura dos SSDs e HDs (S.M.A.R.T.). Estado \"Cuidado\" ou \"Ruim\" = faça backup e troque o disco.",
+      "site": "https://crystalmark.info/en/software/crystaldiskinfo/",
+      "winget": "CrystalDewWorld.CrystalDiskInfo",
+      "executaveis": [ "DiskInfo64.exe", "DiskInfo32.exe" ],
+      "pastas": [ "%ProgramFiles%\\CrystalDiskInfo" ]
+    },
+    {
+      "id": "crystaldiskmark",
+      "nome": "CrystalDiskMark",
+      "categoria": "Utilitários",
+      "descricao": "Mede a velocidade de leitura e escrita dos discos. Bom para conferir se o NVMe está na linha PCIe certa.",
+      "site": "https://crystalmark.info/en/software/crystaldiskmark/",
+      "winget": "CrystalDewWorld.CrystalDiskMark",
+      "executaveis": [ "DiskMark64.exe", "DiskMark32.exe" ],
+      "pastas": [ "%ProgramFiles%\\CrystalDiskMark*" ]
+    }
+  ]
+}

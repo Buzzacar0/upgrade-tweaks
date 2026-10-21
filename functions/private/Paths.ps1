@@ -10,7 +10,7 @@
     [CmdletBinding()]
     [OutputType([string])]
     param(
-        [ValidateSet('Root', 'Logs', 'Backups', 'State', 'Temp')]
+        [ValidateSet('Root', 'Logs', 'Backups', 'State', 'Temp', 'Tools')]
         [string]$Name = 'Root'
     )
 
@@ -24,6 +24,7 @@
         'Logs'    { return (Join-Path $root 'logs') }
         'Backups' { return (Join-Path $root 'backups') }
         'State'   { return (Join-Path $root 'state') }
+        'Tools'   { return (Join-Path $root 'ferramentas') }
         'Temp'    { return (Join-Path ([IO.Path]::GetTempPath()) 'UpgradeTweaks') }
     }
 }
