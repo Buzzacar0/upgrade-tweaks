@@ -357,10 +357,13 @@ Describe 'Leitura real deste PC (só leitura)' {
     It 'coleta o hardware sem erro e gera uma nota de 0 a 100' {
         $hw = Get-UTHardwareInfo
         $hw.Cpu.Nome | Should -Not -BeNullOrEmpty
-        @($hw.Gpus).Count | Should -BeGreaterThan 0
         $hw.Memoria.TotalGB | Should -BeGreaterThan 0
-        @($hw.Monitores).Count | Should -BeGreaterThan 0
-        $hw.Monitores[0].HzAtual | Should -BeGreaterThan 0
+        if (-not $env:GITHUB_ACTIONS) {
+            # The CI virtual machine has no real graphics card or monitor.
+            @($hw.Gpus).Count | Should -BeGreaterThan 0
+            @($hw.Monitores).Count | Should -BeGreaterThan 0
+            (@($hw.Monitores) | Select-Object -First 1).HzAtual | Should -BeGreaterThan 0
+        }
         $d = Get-UTDiagnostic -Hardware $hw
         $d.Nota | Should -BeGreaterOrEqual 0
         $d.Nota | Should -BeLessOrEqual 100

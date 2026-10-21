@@ -35,6 +35,25 @@ jobs:
         shell: powershell
         run: .\scripts\compile.ps1 -SemDocumentacao
 
+      - name: Ponta a ponta com o arquivo compilado (diagnóstico e simulação, nada é alterado)
+        shell: powershell
+        timeout-minutes: 15
+        run: |
+          $admin = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
+          if (-not $admin) { Write-Host 'Runner sem administrador: teste pulado.'; exit 0 }
+          $env:UPGRADETWEAKS_HOME = Join-Path $env:RUNNER_TEMP 'ut'
+          $report = Join-Path $env:RUNNER_TEMP 'relatorio.html'
+          powershell -NoProfile -ExecutionPolicy Bypass -File dist\upgradetweaks.ps1 -Diagnostico -ExportarRelatorio $report
+          if ($LASTEXITCODE -ne 0) { Write-Error "Diagnóstico terminou com $LASTEXITCODE"; exit 1 }
+          if (-not (Test-Path $report)) { Write-Error 'Relatório não foi gerado.'; exit 1 }
+          foreach ($preset in 'Seguro', 'Competitivo', 'Extremo') {
+            powershell -NoProfile -ExecutionPolicy Bypass -File dist\upgradetweaks.ps1 -Simular -Preset $preset -Silencioso
+            if ($LASTEXITCODE -ne 0) { Write-Error "Simulação do preset $preset terminou com $LASTEXITCODE"; Get-Content (Join-Path $env:UPGRADETWEAKS_HOME 'logs\*.log') -Tail 60; exit 1 }
+          }
+          $errors = @(Get-Content (Join-Path $env:UPGRADETWEAKS_HOME 'logs\*.log') | Where-Object { $_ -match '\[ERRO' })
+          $errors | ForEach-Object { Write-Host $_ }
+          Write-Host "Linhas de erro no log: $($errors.Count)"
+
       - name: Arquivo compilado abre no PowerShell 7
         shell: pwsh
         run: |
