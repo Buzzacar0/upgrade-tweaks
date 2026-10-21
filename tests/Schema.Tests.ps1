@@ -1,23 +1,48 @@
 ﻿BeforeDiscovery {
     $repoRoot = Split-Path -Parent $PSScriptRoot
-    $raw = Get-Content -LiteralPath (Join-Path $repoRoot 'config\tweaks.json') -Raw -Encoding UTF8 | ConvertFrom-Json
-    $tweakCases = @($raw.tweaks | ForEach-Object { @{ Id = $_.id } })
+    $tweakCases = foreach ($file in Get-ChildItem -Path (Join-Path $repoRoot 'config') -Filter 'tweaks*.json') {
+        $raw = Get-Content -LiteralPath $file.FullName -Raw -Encoding UTF8 | ConvertFrom-Json
+        $raw.tweaks | ForEach-Object { @{ Id = $_.id; Arquivo = $file.Name } }
+    }
+    $tweakCases = @($tweakCases)
 }
 
 BeforeAll {
     . (Join-Path $PSScriptRoot 'TestHelpers.ps1')
-    $catalog = ConvertTo-UTHashtable (Get-Content -LiteralPath (Join-Path $UTTestRepoRoot 'config\tweaks.json') -Raw -Encoding UTF8 | ConvertFrom-Json)
+    $catalog = [ordered]@{ tweaks = @() }
+    foreach ($file in Get-ChildItem -Path (Join-Path $UTTestRepoRoot 'config') -Filter 'tweaks*.json') {
+        $catalog.tweaks += @((ConvertTo-UTHashtable (Get-Content -LiteralPath $file.FullName -Raw -Encoding UTF8 | ConvertFrom-Json)).tweaks)
+    }
     $fixture = ConvertTo-UTHashtable (Get-Content -LiteralPath (Join-Path $PSScriptRoot 'fixtures\tweaks.json') -Raw -Encoding UTF8 | ConvertFrom-Json)
 }
 
-Describe 'config\tweaks.json' {
+Describe 'Catálogo config\tweaks-*.json' {
+    BeforeEach { Reset-UTTestEnvironment }
+
     It 'tem a lista de tweaks' {
         @($catalog.tweaks).Count | Should -BeGreaterThan 0
     }
 
-    It 'não tem ids repetidos' {
+    It 'não tem ids repetidos entre os arquivos' {
         $ids = @($catalog.tweaks | ForEach-Object { $_.id })
         @($ids | Group-Object | Where-Object Count -gt 1).Count | Should -Be 0
+    }
+
+    It 'o motor carrega todos (nenhum descartado como inválido)' {
+        $loaded = @(Get-UTTweak)
+        $loaded.Count | Should -BeGreaterOrEqual @($catalog.tweaks).Count
+    }
+
+    It 'a categoria do tweak combina com o arquivo onde ele está' {
+        $map = @{ 'tweaks-gaming.json' = 'Gaming'; 'tweaks-energia.json' = 'Energia'; 'tweaks-latencia.json' = 'Latencia'; 'tweaks-warzone.json' = 'Warzone'
+            'tweaks-rede.json' = 'Rede'; 'tweaks-servicos.json' = 'ServicosApps'; 'tweaks-privacidade.json' = 'Privacidade'; 'tweaks-visual.json' = 'Visual'; 'tweaks-personalizar.json' = 'Personalizar' }
+        foreach ($file in Get-ChildItem -Path (Join-Path $UTTestRepoRoot 'config') -Filter 'tweaks-*.json') {
+            $expected = $map[$file.Name]
+            if (-not $expected) { continue }
+            foreach ($t in (Get-Content -LiteralPath $file.FullName -Raw -Encoding UTF8 | ConvertFrom-Json).tweaks) {
+                $t.categoria | Should -Be $expected -Because "$($t.id) está em $($file.Name)"
+            }
+        }
     }
 
     It '<Id> segue o esquema (campos, risco, desfazer, detecção)' -TestCases $tweakCases {

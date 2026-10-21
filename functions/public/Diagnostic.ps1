@@ -47,6 +47,7 @@ function Get-UTHardwareInfo {
         EhNotebook     = $(if ($platform) { $platform.EhNotebook } else { $null })
         Launchers      = $(if ($game) { @($game.Launchers) } else { @() })
         X3D            = $(if ($cpu -and $cpu.X3D.EhX3D) { $cpu.X3D.Tipo } else { $null })
+        Executaveis    = $(if ($game) { @($game.Instalacoes | ForEach-Object { $_.Executaveis } | Where-Object { $_ } | Sort-Object -Unique) } else { @() })
     }
 
     $sync = Get-Variable -Name UTSync -ValueOnly -ErrorAction SilentlyContinue

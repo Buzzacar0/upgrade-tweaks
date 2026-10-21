@@ -71,6 +71,7 @@ Todo tweak precisa ter pelo menos uma ação (`registro`, `servicos` ou `scriptA
 | `notebook`, `desktop` | Se pode aparecer em notebook / desktop. |
 | `launchersBloqueados` | Ex.: `["xbox"]` para tweaks que quebram o Xbox App/Game Pass. |
 | `x3dDuplo` | `false` bloqueia em Ryzen X3D de dois CCDs. |
+| `exigeJogo` | `true` para ajustes dos executáveis do Call of Duty: só aparecem com o jogo encontrado. |
 | `exigeX3D` | `"duplo"` ou `"unico"`: o ajuste só aparece nesse tipo de X3D. Ao contrário das outras regras, bloqueia quando o tipo do processador é desconhecido. |
 
 ## Como o motor usa o esquema

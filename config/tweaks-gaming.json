@@ -1,0 +1,207 @@
+{
+  "versao": 1,
+  "tweaks": [
+    {
+      "id": "UT_Gaming_GameDVR_Off",
+      "nome": "Desativar gravação em segundo plano (Game DVR)",
+      "descricao": "Desliga a captura do Xbox Game Bar e a gravação contínua dos últimos minutos de jogo. Quando essa gravação está ligada, ela usa o codificador de vídeo da GPU o tempo todo e pode causar pequenos travamentos. O Game Bar continua instalado e funcionando (atalhos, Modo de Jogo, widgets).",
+      "ganhoEsperado": "Pequeno a médio (maior se a gravação em segundo plano estava ligada)",
+      "categoria": "Gaming",
+      "risco": "baixo",
+      "requerReinicio": false,
+      "controverso": false,
+      "observacao": "Se você grava clipes pelo Game Bar (Win+Alt+R), eles param de funcionar. Use o NVIDIA App/ShadowPlay, o AMD ReLive ou o OBS se precisar gravar.",
+      "compatibilidade": { "windows": ["10", "11"], "gpu": ["nvidia", "amd", "intel"], "cpu": ["amd", "intel"], "notebook": true, "desktop": true, "launchersBloqueados": [], "x3dDuplo": true },
+      "registro": [
+        { "caminho": "HKCU:\\System\\GameConfigStore", "nome": "GameDVR_Enabled", "tipo": "DWord", "valor": 0, "valorOriginal": 1 },
+        { "caminho": "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\GameDVR", "nome": "AppCaptureEnabled", "tipo": "DWord", "valor": 0, "valorOriginal": null },
+        { "caminho": "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\GameDVR", "nome": "HistoricalCaptureEnabled", "tipo": "DWord", "valor": 0, "valorOriginal": null },
+        { "caminho": "HKLM:\\SOFTWARE\\Policies\\Microsoft\\Windows\\GameDVR", "nome": "AllowGameDVR", "tipo": "DWord", "valor": 0, "valorOriginal": null }
+      ],
+      "servicos": [],
+      "scriptAplicar": [],
+      "scriptDesfazer": [],
+      "scriptDetectar": [],
+      "deteccao": "registro"
+    },
+    {
+      "id": "UT_Gaming_GameMode_On",
+      "nome": "Ativar o Modo de Jogo",
+      "descricao": "Garante que o Modo de Jogo do Windows esteja ligado. Com ele, o Windows dá prioridade ao jogo aberto e evita instalar drivers e mostrar avisos de reinício durante a partida. Já vem ligado de fábrica; este ajuste só corrige PCs em que alguém desligou.",
+      "ganhoEsperado": "Pequeno (mais estabilidade do que FPS)",
+      "categoria": "Gaming",
+      "risco": "baixo",
+      "requerReinicio": false,
+      "controverso": false,
+      "observacao": "Nos Ryzen X3D de dois CCDs (7900X3D, 7950X3D, 9900X3D, 9950X3D) o Modo de Jogo é necessário para o driver da AMD colocar o jogo no CCD com V-Cache.",
+      "compatibilidade": { "windows": ["10", "11"], "gpu": ["nvidia", "amd", "intel"], "cpu": ["amd", "intel"], "notebook": true, "desktop": true, "launchersBloqueados": [], "x3dDuplo": true },
+      "registro": [
+        { "caminho": "HKCU:\\Software\\Microsoft\\GameBar", "nome": "AutoGameModeEnabled", "tipo": "DWord", "valor": 1, "valorOriginal": null, "ausenteEquivale": true },
+        { "caminho": "HKCU:\\Software\\Microsoft\\GameBar", "nome": "AllowAutoGameMode", "tipo": "DWord", "valor": 1, "valorOriginal": null, "ausenteEquivale": true }
+      ],
+      "servicos": [],
+      "scriptAplicar": [],
+      "scriptDesfazer": [],
+      "scriptDetectar": [],
+      "deteccao": "registro"
+    },
+    {
+      "id": "UT_Gaming_MouseAccel_Off",
+      "nome": "Desativar a aceleração do mouse (\"Aprimorar precisão do ponteiro\")",
+      "descricao": "Desliga a aceleração do ponteiro do Windows, para que o cursor ande sempre a mesma distância para o mesmo movimento do mouse. O Warzone lê o mouse direto (raw input), então dentro da partida não muda nada; a diferença aparece nos menus, no lobby e no Windows.",
+      "ganhoEsperado": "Nenhum em FPS; mira mais consistente fora da partida",
+      "categoria": "Gaming",
+      "risco": "baixo",
+      "requerReinicio": true,
+      "controverso": false,
+      "observacao": "Vale depois de sair e entrar de novo na conta do Windows (ou reiniciar).",
+      "compatibilidade": { "windows": ["10", "11"], "gpu": ["nvidia", "amd", "intel"], "cpu": ["amd", "intel"], "notebook": true, "desktop": true, "launchersBloqueados": [], "x3dDuplo": true },
+      "registro": [
+        { "caminho": "HKCU:\\Control Panel\\Mouse", "nome": "MouseSpeed", "tipo": "String", "valor": "0", "valorOriginal": "1" },
+        { "caminho": "HKCU:\\Control Panel\\Mouse", "nome": "MouseThreshold1", "tipo": "String", "valor": "0", "valorOriginal": "6" },
+        { "caminho": "HKCU:\\Control Panel\\Mouse", "nome": "MouseThreshold2", "tipo": "String", "valor": "0", "valorOriginal": "10" }
+      ],
+      "servicos": [],
+      "scriptAplicar": [],
+      "scriptDesfazer": [],
+      "scriptDetectar": [],
+      "deteccao": "registro"
+    },
+    {
+      "id": "UT_Gaming_HAGS_On",
+      "nome": "Ligar o Agendamento de GPU acelerado por hardware (HAGS)",
+      "descricao": "Deixa a própria placa de vídeo organizar a fila de trabalho, em vez do Windows. Nas NVIDIA RTX 40 e 50 é o recomendado e é obrigatório para o Frame Generation (DLSS 3/4). Em outras placas o resultado varia: teste ligado e desligado no seu PC. Se a placa ou o driver não suportarem, o Windows simplesmente ignora.",
+      "ganhoEsperado": "Pequeno (necessário para Frame Generation nas RTX 40/50)",
+      "categoria": "Gaming",
+      "risco": "baixo",
+      "requerReinicio": true,
+      "controverso": false,
+      "grupoExclusivo": "hags",
+      "observacao": "Exige reiniciar o PC.",
+      "compatibilidade": { "windows": ["10", "11"], "buildMinimo": 19041 },
+      "registro": [
+        { "caminho": "HKLM:\\SYSTEM\\CurrentControlSet\\Control\\GraphicsDrivers", "nome": "HwSchMode", "tipo": "DWord", "valor": 2, "valorOriginal": null }
+      ],
+      "deteccao": "registro"
+    },
+    {
+      "id": "UT_Gaming_HAGS_Off",
+      "nome": "Desligar o Agendamento de GPU acelerado por hardware (HAGS)",
+      "descricao": "Volta a fila de trabalho da placa de vídeo para o Windows. Use só se notar travadas com o HAGS ligado. Desligado, o Frame Generation das RTX 40/50 deixa de funcionar.",
+      "ganhoEsperado": "Depende do PC; teste caso a caso",
+      "categoria": "Gaming",
+      "risco": "baixo",
+      "requerReinicio": true,
+      "controverso": true,
+      "grupoExclusivo": "hags",
+      "compatibilidade": { "windows": ["10", "11"], "buildMinimo": 19041 },
+      "registro": [
+        { "caminho": "HKLM:\\SYSTEM\\CurrentControlSet\\Control\\GraphicsDrivers", "nome": "HwSchMode", "tipo": "DWord", "valor": 1, "valorOriginal": null }
+      ],
+      "deteccao": "registro"
+    },
+    {
+      "id": "UT_Gaming_WindowedOptimizations",
+      "nome": "Otimizações para jogos em janela",
+      "descricao": "Liga a opção do Windows 11 que troca o modo de apresentação de jogos DirectX 10/11 em janela ou tela cheia sem borda pelo modelo moderno (flip), com latência próxima à da tela cheia exclusiva. Mantém os outros ajustes de DirectX que você já tinha (Auto HDR etc.).",
+      "ganhoEsperado": "Pequeno a médio em jogos DX11 em janela; nenhum no Warzone (DirectX 12)",
+      "categoria": "Gaming",
+      "risco": "baixo",
+      "requerReinicio": false,
+      "controverso": false,
+      "compatibilidade": { "windows": ["11"], "buildMinimo": 22000 },
+      "scriptAplicar": [ "Set-UTDirectXGlobalFlag -Key 'SwapEffectUpgradeEnable' -Value '1' -TweakId $TweakId" ],
+      "scriptDesfazer": [ "[void](Restore-UTTweakRegistryItem -TweakId $TweakId)" ],
+      "scriptDetectar": [ "Test-UTDirectXGlobalFlag -Key 'SwapEffectUpgradeEnable' -Value '1'" ],
+      "scriptSimular": [ "'Configurações > Sistema > Tela > Gráficos > Otimizações para jogos em janela: ligado'" ],
+      "deteccao": "script"
+    },
+    {
+      "id": "UT_Gaming_MMCSS_Games",
+      "nome": "Perfil multimídia (MMCSS) com prioridade para jogos",
+      "descricao": "Reserva menos CPU para tarefas de fundo do agendador multimídia (SystemResponsiveness 10 em vez de 20) e sobe a prioridade da tarefa \"Games\" do MMCSS. Atenção: só programas que se registram no MMCSS como jogo são afetados, e muitos jogos não fazem isso; por isso o efeito costuma ser pequeno ou nulo. Não usamos o valor 0, que pode atrapalhar áudio.",
+      "ganhoEsperado": "Pequeno ou nulo (depende do jogo usar o MMCSS)",
+      "categoria": "Gaming",
+      "risco": "médio",
+      "requerReinicio": true,
+      "controverso": true,
+      "compatibilidade": { "windows": ["10", "11"] },
+      "registro": [
+        { "caminho": "HKLM:\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Multimedia\\SystemProfile", "nome": "SystemResponsiveness", "tipo": "DWord", "valor": 10, "valorOriginal": 20 },
+        { "caminho": "HKLM:\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Multimedia\\SystemProfile\\Tasks\\Games", "nome": "GPU Priority", "tipo": "DWord", "valor": 8, "valorOriginal": 8 },
+        { "caminho": "HKLM:\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Multimedia\\SystemProfile\\Tasks\\Games", "nome": "Priority", "tipo": "DWord", "valor": 6, "valorOriginal": 2 },
+        { "caminho": "HKLM:\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Multimedia\\SystemProfile\\Tasks\\Games", "nome": "Scheduling Category", "tipo": "String", "valor": "High", "valorOriginal": "Medium" },
+        { "caminho": "HKLM:\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Multimedia\\SystemProfile\\Tasks\\Games", "nome": "SFIO Priority", "tipo": "String", "valor": "High", "valorOriginal": "Normal" }
+      ],
+      "deteccao": "registro"
+    },
+    {
+      "id": "UT_Gaming_Win32PrioritySeparation",
+      "nome": "Separação de prioridade do processador (Win32PrioritySeparation = 0x26)",
+      "descricao": "Define explicitamente fatias de tempo curtas e variáveis, com reforço de 3x para o programa em primeiro plano. Sendo honesto: no Windows de desktop o valor padrão (2) já se comporta quase igual, então a diferença é mínima. Fica aqui porque muitos guias pedem; a gente explica o que é.",
+      "ganhoEsperado": "Praticamente nulo (o padrão já é parecido)",
+      "categoria": "Gaming",
+      "risco": "médio",
+      "requerReinicio": false,
+      "controverso": true,
+      "compatibilidade": { "windows": ["10", "11"] },
+      "registro": [
+        { "caminho": "HKLM:\\SYSTEM\\CurrentControlSet\\Control\\PriorityControl", "nome": "Win32PrioritySeparation", "tipo": "DWord", "valor": 38, "valorOriginal": 2 }
+      ],
+      "deteccao": "registro"
+    },
+    {
+      "id": "UT_Gaming_StickyKeys_Off",
+      "nome": "Desativar os atalhos de Teclas de Aderência, Filtragem e Alternância",
+      "descricao": "Impede que apertar Shift cinco vezes (ou segurar Shift/Num Lock) abra as janelas de acessibilidade no meio da partida e te tire do jogo. As funções continuam disponíveis nas Configurações; só o atalho acidental é desligado.",
+      "ganhoEsperado": "Nenhum em FPS; evita sair do jogo sem querer",
+      "categoria": "Gaming",
+      "risco": "baixo",
+      "requerReinicio": false,
+      "controverso": false,
+      "observacao": "Vale depois de sair e entrar na conta, ou reiniciar.",
+      "compatibilidade": { "windows": ["10", "11"] },
+      "registro": [
+        { "caminho": "HKCU:\\Control Panel\\Accessibility\\StickyKeys", "nome": "Flags", "tipo": "String", "valor": "506", "valorOriginal": "510" },
+        { "caminho": "HKCU:\\Control Panel\\Accessibility\\ToggleKeys", "nome": "Flags", "tipo": "String", "valor": "58", "valorOriginal": "62" },
+        { "caminho": "HKCU:\\Control Panel\\Accessibility\\Keyboard Response", "nome": "Flags", "tipo": "String", "valor": "122", "valorOriginal": "126" }
+      ],
+      "deteccao": "registro"
+    },
+    {
+      "id": "UT_Gaming_MPO_Compat",
+      "nome": "Multiplane Overlay (MPO): desativar (compatibilidade)",
+      "descricao": "Desliga o MPO, recurso do Windows que mistura camadas de imagem direto na placa de vídeo. Em alguns PCs, principalmente com dois monitores de taxas diferentes, o MPO causa tela piscando, travadas ou tela preta; nesses casos desligar resolve. Onde não há problema, desligar pode até piorar um pouco.",
+      "ganhoEsperado": "Resolve flicker/stutter quando o MPO é o culpado; nenhum caso contrário",
+      "categoria": "Gaming",
+      "risco": "médio",
+      "requerReinicio": true,
+      "controverso": true,
+      "grupoExclusivo": "mpo",
+      "observacao": "Há relatos de que esta chave não tem mais efeito no Windows 11 24H2 ou mais novo. Só use se tiver o problema.",
+      "compatibilidade": { "windows": ["10", "11"] },
+      "registro": [
+        { "caminho": "HKLM:\\SOFTWARE\\Microsoft\\Windows\\Dwm", "nome": "OverlayTestMode", "tipo": "DWord", "valor": 5, "valorOriginal": null }
+      ],
+      "deteccao": "registro"
+    },
+    {
+      "id": "UT_Gaming_MPO_Full",
+      "nome": "Multiplane Overlay (MPO): desativar totalmente",
+      "descricao": "Mesma ideia do modo compatibilidade, somando a chave do driver de vídeo que desliga as sobreposições (DisableOverlays). Use só se o modo compatibilidade não resolveu o problema de tela piscando ou travadas.",
+      "ganhoEsperado": "Resolve flicker/stutter quando o MPO é o culpado; nenhum caso contrário",
+      "categoria": "Gaming",
+      "risco": "médio",
+      "requerReinicio": true,
+      "controverso": true,
+      "grupoExclusivo": "mpo",
+      "observacao": "Para voltar ao MPO ligado (padrão), desfaça o modo aplicado.",
+      "compatibilidade": { "windows": ["10", "11"] },
+      "registro": [
+        { "caminho": "HKLM:\\SOFTWARE\\Microsoft\\Windows\\Dwm", "nome": "OverlayTestMode", "tipo": "DWord", "valor": 5, "valorOriginal": null },
+        { "caminho": "HKLM:\\SYSTEM\\CurrentControlSet\\Control\\GraphicsDrivers", "nome": "DisableOverlays", "tipo": "DWord", "valor": 1, "valorOriginal": null }
+      ],
+      "deteccao": "registro"
+    }
+  ]
+}

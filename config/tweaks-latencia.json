@@ -1,0 +1,209 @@
+{
+  "versao": 1,
+  "tweaks": [
+    {
+      "id": "UT_Lat_DynamicTick_Off",
+      "nome": "Desativar o tick dinâmico do kernel (disabledynamictick)",
+      "descricao": "Desliga a economia de energia do relógio do kernel, que deixa de \"pular\" interrupções quando o PC está ocioso. Pode reduzir pequenas variações de latência, mas o efeito é pequeno e difícil de medir em jogos, e o consumo em repouso sobe um pouco.",
+      "ganhoEsperado": "Pequeno e difícil de medir",
+      "categoria": "Latencia",
+      "risco": "médio",
+      "requerReinicio": true,
+      "controverso": true,
+      "observacao": "Se o BitLocker estiver ligado, ele é suspenso por um reinício antes da alteração, para o Windows não pedir a chave de recuperação.",
+      "compatibilidade": { "windows": ["10", "11"], "notebook": false, "desktop": true },
+      "scriptAplicar": [ "Set-UTBcdSetting -Name 'disabledynamictick' -Value 'yes' -TweakId $TweakId" ],
+      "scriptDesfazer": [ "Restore-UTBcdSetting -Name 'disabledynamictick' -TweakId $TweakId" ],
+      "scriptDetectar": [ "(Get-UTBcdSetting -Name 'disabledynamictick').Ligado" ],
+      "scriptSimular": [ "'bcdedit /set {current} disabledynamictick yes'" ],
+      "deteccao": "script"
+    },
+    {
+      "id": "UT_Lat_GlobalTimerResolution",
+      "nome": "Resolução do timer global (Windows 11)",
+      "descricao": "Desde o Windows 10 2004, quando um programa pede um timer mais preciso (por exemplo 1 ms), só ele recebe; e no Windows 11 janelas minimizadas perdem esse pedido. Esta opção volta ao comportamento antigo: o pedido de qualquer programa vale para o sistema todo. Ajuda quando o jogo depende de um limitador de FPS ou ferramenta externa que pede timer preciso.",
+      "ganhoEsperado": "Pequeno; perceptível só em casos específicos (limitadores externos)",
+      "categoria": "Latencia",
+      "risco": "baixo",
+      "requerReinicio": true,
+      "controverso": true,
+      "observacao": "Pode aumentar um pouco o consumo de energia quando algum programa pede timer preciso.",
+      "compatibilidade": { "windows": ["11"], "buildMinimo": 22000 },
+      "registro": [
+        { "caminho": "HKLM:\\SYSTEM\\CurrentControlSet\\Control\\Session Manager\\kernel", "nome": "GlobalTimerResolutionRequests", "tipo": "DWord", "valor": 1, "valorOriginal": null }
+      ],
+      "deteccao": "registro"
+    },
+    {
+      "id": "UT_Lat_MSI_GPU",
+      "nome": "Modo MSI para a placa de vídeo",
+      "descricao": "Faz a placa de vídeo usar interrupções por mensagem (MSI) em vez das linhas antigas compartilhadas, o que reduz a chance de conflito e de latência de interrupção. As NVIDIA e AMD atuais já vêm com MSI ligado pelo driver; nesse caso o programa mostra como já aplicado e não muda nada.",
+      "ganhoEsperado": "Pequeno; nenhum se o driver já usa MSI (o comum hoje)",
+      "categoria": "Latencia",
+      "risco": "médio",
+      "requerReinicio": true,
+      "controverso": false,
+      "compatibilidade": { "windows": ["10", "11"] },
+      "scriptAplicar": [ "Set-UTMsiMode -Tipo GPU -TweakId $TweakId" ],
+      "scriptDesfazer": [ "[void](Restore-UTTweakRegistryItem -TweakId $TweakId)" ],
+      "scriptDetectar": [ "Test-UTMsiMode -Tipo GPU" ],
+      "scriptSimular": [ "Get-UTMsiDevice -Tipo GPU | ForEach-Object { \"MSISupported = 1: $($_.Nome)\" }" ],
+      "deteccao": "script"
+    },
+    {
+      "id": "UT_Lat_MSI_NIC",
+      "nome": "Modo MSI para a placa de rede",
+      "descricao": "O mesmo modo MSI, aplicado à placa de rede com cabo/Wi-Fi PCI Express. A maioria dos drivers atuais (Intel, Realtek, Killer) já usa MSI; aí nada muda.",
+      "ganhoEsperado": "Pequeno; nenhum se o driver já usa MSI",
+      "categoria": "Latencia",
+      "risco": "médio",
+      "requerReinicio": true,
+      "controverso": false,
+      "compatibilidade": { "windows": ["10", "11"] },
+      "scriptAplicar": [ "Set-UTMsiMode -Tipo NIC -TweakId $TweakId" ],
+      "scriptDesfazer": [ "[void](Restore-UTTweakRegistryItem -TweakId $TweakId)" ],
+      "scriptDetectar": [ "Test-UTMsiMode -Tipo NIC" ],
+      "scriptSimular": [ "Get-UTMsiDevice -Tipo NIC | ForEach-Object { \"MSISupported = 1: $($_.Nome)\" }" ],
+      "deteccao": "script"
+    },
+    {
+      "id": "UT_Lat_BitLocker_Off",
+      "nome": "Desativar o BitLocker / Criptografia do dispositivo",
+      "descricao": "O Windows 11 24H2 liga a criptografia do disco sozinho em muitas instalações. A criptografia por software usa o processador em toda leitura e escrita e, em testes com SSD NVMe, reduz o desempenho do disco de forma perceptível (carregamentos e compilação de shaders). Desativar descriptografa o disco do Windows; o processo roda em segundo plano e pode levar de minutos a horas.",
+      "ganhoEsperado": "Médio em velocidade de disco; pequeno em FPS",
+      "categoria": "Latencia",
+      "risco": "alto",
+      "confirmacao": "Sem o BitLocker, quem pegar o seu disco (ou o notebook roubado) consegue ler os seus arquivos. A descriptografia leva tempo e o PC pode ficar mais lento enquanto ela roda. Deseja desativar a criptografia do disco do Windows?",
+      "requerReinicio": false,
+      "controverso": false,
+      "observacao": "Desfazer liga o BitLocker de novo com o TPM e cria uma chave de recuperação: anote-a (Configurações > Privacidade e segurança > Criptografia do dispositivo) ou salve na sua conta Microsoft.",
+      "compatibilidade": { "windows": ["10", "11"] },
+      "scriptAplicar": [
+        "if (-not (Get-UTBitLockerStatus).Disponivel) { throw 'O BitLocker não está disponível neste Windows.' }",
+        "Disable-BitLocker -MountPoint $env:SystemDrive | Out-Null"
+      ],
+      "scriptDesfazer": [
+        "Enable-BitLocker -MountPoint $env:SystemDrive -TpmProtector -UsedSpaceOnly -SkipHardwareTest -ErrorAction Stop | Out-Null",
+        "Add-BitLockerKeyProtector -MountPoint $env:SystemDrive -RecoveryPasswordProtector -ErrorAction Stop | Out-Null",
+        "Write-UTLog -Level Aviso -TweakId $TweakId -Message 'BitLocker ligado de novo. Guarde a chave de recuperação (manage-bde -protectors -get C:).'"
+      ],
+      "scriptDetectar": [ "$s = Get-UTBitLockerStatus", "$s.Disponivel -and -not $s.Protegido -and $s.Estado -in 'FullyDecrypted', 'DecryptionInProgress'" ],
+      "scriptSimular": [ "$s = Get-UTBitLockerStatus", "\"Descriptografa o disco $env:SystemDrive (hoje: $($s.Estado), $($s.Percentual)% criptografado)\"" ],
+      "deteccao": "script"
+    },
+    {
+      "id": "UT_Lat_ReservedStorage_Off",
+      "nome": "Desativar o armazenamento reservado",
+      "descricao": "O Windows guarda de 7 a 10 GB do disco para atualizações e arquivos temporários. Desativar devolve esse espaço. Só vale a pena em discos pequenos; reative antes de uma atualização grande do Windows para ela não falhar por falta de espaço.",
+      "ganhoEsperado": "Nenhum em FPS; libera 7 a 10 GB",
+      "categoria": "Latencia",
+      "risco": "baixo",
+      "requerReinicio": false,
+      "controverso": false,
+      "compatibilidade": { "windows": ["10", "11"] },
+      "scriptAplicar": [ "$r = Invoke-UTNative -FilePath 'dism.exe' -ArgumentList @('/Online', '/Set-ReservedStorageState', '/State:Disabled')", "if ($r.CodigoSaida -ne 0) { throw \"DISM falhou: $($r.Saida)\" }" ],
+      "scriptDesfazer": [ "$r = Invoke-UTNative -FilePath 'dism.exe' -ArgumentList @('/Online', '/Set-ReservedStorageState', '/State:Enabled')", "if ($r.CodigoSaida -ne 0) { throw \"DISM falhou: $($r.Saida)\" }" ],
+      "scriptDetectar": [ "$r = Invoke-UTNative -FilePath 'dism.exe' -ArgumentList @('/Online', '/Get-ReservedStorageState')", "$r.Saida -match '(?i)(Disabled|Desabilitad|Desativad)'" ],
+      "scriptSimular": [ "'DISM /Online /Set-ReservedStorageState /State:Disabled'" ],
+      "deteccao": "script"
+    },
+    {
+      "id": "UT_Lat_StorageSense_Off",
+      "nome": "Desativar o Sensor de Armazenamento",
+      "descricao": "O Sensor de Armazenamento apaga temporários e arquivos da Lixeira automaticamente, em segundo plano. Desligar evita essa atividade de disco em horas aleatórias; a limpeza pode ser feita quando você quiser pela aba Ferramentas.",
+      "ganhoEsperado": "Nenhum em FPS; evita limpeza em segundo plano",
+      "categoria": "Latencia",
+      "risco": "baixo",
+      "requerReinicio": false,
+      "controverso": false,
+      "compatibilidade": { "windows": ["10", "11"] },
+      "registro": [
+        { "caminho": "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\StorageSense\\Parameters\\StoragePolicy", "nome": "01", "tipo": "DWord", "valor": 0, "valorOriginal": null }
+      ],
+      "deteccao": "registro"
+    },
+    {
+      "id": "UT_Lat_PowerThrottling_Off",
+      "nome": "Desativar o Power Throttling do Windows",
+      "descricao": "O Power Throttling joga programas em segundo plano para núcleos e clocks de economia. O jogo em primeiro plano não é afetado por ele; quem ganha são os programas abertos junto (Discord, OBS, navegador com live), que deixam de ser segurados. Aumenta um pouco o consumo.",
+      "ganhoEsperado": "Pequeno (mais para quem grava ou faz live jogando)",
+      "categoria": "Latencia",
+      "risco": "baixo",
+      "requerReinicio": true,
+      "controverso": false,
+      "observacao": "Em notebook, piora a autonomia da bateria.",
+      "compatibilidade": { "windows": ["10", "11"] },
+      "registro": [
+        { "caminho": "HKLM:\\SYSTEM\\CurrentControlSet\\Control\\Power\\PowerThrottling", "nome": "PowerThrottlingOff", "tipo": "DWord", "valor": 1, "valorOriginal": null }
+      ],
+      "deteccao": "registro"
+    },
+    {
+      "id": "UT_Lat_UsbPower_Off",
+      "nome": "Não deixar o Windows desligar dispositivos USB para economizar energia",
+      "descricao": "Desmarca \"Permitir que o computador desligue este dispositivo para economizar energia\" nos hubs USB e dispositivos USB (mouse, teclado, headset). Evita desconexões e o pequeno atraso de acordar o dispositivo.",
+      "ganhoEsperado": "Pequeno; evita travadas e desconexões de periféricos",
+      "categoria": "Latencia",
+      "risco": "médio",
+      "requerReinicio": false,
+      "controverso": false,
+      "observacao": "Em notebook, consome um pouco mais de bateria.",
+      "compatibilidade": { "windows": ["10", "11"] },
+      "scriptAplicar": [ "Disable-UTUsbPowerSaving -TweakId $TweakId" ],
+      "scriptDesfazer": [ "Restore-UTUsbPowerSaving -TweakId $TweakId" ],
+      "scriptDetectar": [ "Test-UTUsbPowerSaving" ],
+      "scriptSimular": [ "$n = @(Get-UTUsbPowerDevice | Where-Object { $_.Enable }).Count", "\"Desmarca a economia de energia em $n dispositivo(s) USB\"" ],
+      "deteccao": "script"
+    },
+    {
+      "id": "UT_Lat_MemoryCompression_Off",
+      "nome": "Desativar a compressão de memória",
+      "descricao": "O Windows comprime páginas de memória pouco usadas para caber mais coisa na RAM, gastando um pouco de CPU nisso. Com bastante memória (32 GB ou mais) a compressão quase não é necessária e desligar economiza esse trabalho. Com 16 GB ou menos, desligar pode piorar: o Windows passa a usar mais o disco.",
+      "ganhoEsperado": "Pequeno com 32 GB+; pode piorar com 16 GB ou menos",
+      "categoria": "Latencia",
+      "risco": "médio",
+      "requerReinicio": true,
+      "controverso": true,
+      "compatibilidade": { "windows": ["10", "11"] },
+      "scriptAplicar": [ "Disable-MMAgent -MemoryCompression -ErrorAction Stop" ],
+      "scriptDesfazer": [ "Enable-MMAgent -MemoryCompression -ErrorAction Stop" ],
+      "scriptDetectar": [ "-not (Get-MMAgent).MemoryCompression" ],
+      "scriptSimular": [ "'Disable-MMAgent -MemoryCompression (vale depois de reiniciar)'" ],
+      "deteccao": "script"
+    },
+    {
+      "id": "UT_Lat_Spectre_Off",
+      "nome": "Desativar as mitigações de Spectre/Meltdown",
+      "descricao": "Desliga as proteções por software contra as falhas Spectre e Meltdown. O ganho só é relevante em processadores Intel antigos (até a 9ª geração); nos processadores atuais (Intel 10ª geração em diante, Ryzen) as proteções são em hardware e o ganho é praticamente zero.",
+      "ganhoEsperado": "Relevante só em Intel até a 9ª geração; quase nulo nos atuais",
+      "categoria": "Latencia",
+      "risco": "alto",
+      "confirmacao": "Isto reduz a segurança do Windows: um programa malicioso pode ler dados de outros programas (inclusive senhas no navegador). Só faz sentido em Intel antigo. Deseja continuar?",
+      "requerReinicio": true,
+      "controverso": true,
+      "compatibilidade": { "windows": ["10", "11"] },
+      "registro": [
+        { "caminho": "HKLM:\\SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Memory Management", "nome": "FeatureSettingsOverride", "tipo": "DWord", "valor": 3, "valorOriginal": null },
+        { "caminho": "HKLM:\\SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Memory Management", "nome": "FeatureSettingsOverrideMask", "tipo": "DWord", "valor": 3, "valorOriginal": null }
+      ],
+      "deteccao": "registro"
+    },
+    {
+      "id": "UT_Lat_HVCI_Off",
+      "nome": "Desativar a Integridade da Memória (HVCI)",
+      "descricao": "A Integridade da Memória usa virtualização para impedir drivers maliciosos ou adulterados de rodar no kernel. Ela custa alguns % de desempenho em parte dos jogos. Desligar NÃO mexe no Secure Boot nem no TPM, que continuam ligados (e são os que o Call of Duty exige).",
+      "ganhoEsperado": "Pequeno (alguns % em parte dos jogos)",
+      "categoria": "Latencia",
+      "risco": "alto",
+      "confirmacao": "A Integridade da Memória é uma proteção importante contra malware no kernel. Sem ela, um driver malicioso pode controlar o PC. Secure Boot e TPM continuam ligados. Prefira desligar pela tela Segurança do Windows > Segurança do dispositivo > Isolamento de núcleo, onde dá para ver o efeito. Deseja continuar?",
+      "requerReinicio": true,
+      "controverso": true,
+      "observacao": "Se a Integridade da Memória estiver travada pelo firmware ou por política da empresa, o Windows ignora esta alteração.",
+      "compatibilidade": { "windows": ["10", "11"] },
+      "registro": [
+        { "caminho": "HKLM:\\SYSTEM\\CurrentControlSet\\Control\\DeviceGuard\\Scenarios\\HypervisorEnforcedCodeIntegrity", "nome": "Enabled", "tipo": "DWord", "valor": 0, "valorOriginal": null }
+      ],
+      "deteccao": "registro"
+    }
+  ]
+}

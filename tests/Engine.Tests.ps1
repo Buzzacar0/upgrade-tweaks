@@ -297,7 +297,7 @@ Describe 'Get-UTConfig' {
     }
 
     It 'lê o config\ do repositório no desenvolvimento' {
-        @((Get-UTConfig -Name 'tweaks').tweaks).Count | Should -BeGreaterThan 0
+        @((Get-UTConfig -Name 'tweaks-gaming').tweaks).Count | Should -BeGreaterThan 0
     }
 
     It 'erro claro para configuração inexistente' {

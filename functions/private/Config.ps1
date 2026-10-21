@@ -46,6 +46,41 @@
     return $data
 }
 
+function Get-UTConfigName {
+    <#
+    .SYNOPSIS
+        Names of the available config files that start with -Prefixo ("tweaks" -> tweaks,
+        tweaks-gaming, tweaks-rede...). Uses the same source order as Get-UTConfig; when
+        UPGRADETWEAKS_CONFIG_DIR is set (tests), only that folder counts.
+    #>
+    [CmdletBinding()]
+    [OutputType([string[]])]
+    param([Parameter(Mandatory)][string]$Prefixo)
+
+    $names = @()
+    $overrideDir = $env:UPGRADETWEAKS_CONFIG_DIR
+    if ($overrideDir) {
+        $names = @(Get-ChildItem -LiteralPath $overrideDir -Filter '*.json' -File | ForEach-Object { $_.BaseName })
+    } else {
+        $embedded = Get-Variable -Name UTEmbeddedConfig -ValueOnly -ErrorAction SilentlyContinue
+        if ($null -ne $embedded -and $embedded.Count -gt 0) {
+            $names = @($embedded.Keys)
+        } else {
+            $dir = Join-Path (Split-Path -Parent (Split-Path -Parent $PSScriptRoot)) 'config'
+            if (Test-Path -LiteralPath $dir) { $names = @(Get-ChildItem -LiteralPath $dir -Filter '*.json' -File | ForEach-Object { $_.BaseName }) }
+        }
+    }
+    $pattern = '^' + [regex]::Escape($Prefixo) + '(-.+)?$'
+    return @($names | Where-Object { $_ -match $pattern } | Sort-Object)
+}
+
+function Test-UTConfigFile {
+    [CmdletBinding()]
+    [OutputType([bool])]
+    param([Parameter(Mandatory)][string]$Name)
+    return (@(Get-UTConfigName -Prefixo $Name) -contains $Name)
+}
+
 function Get-UTTweak {
     <#
     .SYNOPSIS
@@ -60,10 +95,14 @@ function Get-UTTweak {
     $valid = $null
     if ($null -ne $cache -and $cache.ContainsKey($cacheKey)) { $valid = $cache[$cacheKey] }
     if ($null -eq $valid) {
-        $config = Get-UTConfig -Name 'tweaks'
+        $all = New-Object System.Collections.Generic.List[object]
+        foreach ($name in @(Get-UTConfigName -Prefixo 'tweaks')) {
+            foreach ($t in @((Get-UTConfig -Name $name).tweaks)) { $all.Add($t) }
+        }
+        foreach ($t in @(Get-UTGeneratedTweak)) { $all.Add($t) }
         $valid = New-Object System.Collections.Generic.List[object]
         $seen = @{}
-        foreach ($t in @($config.tweaks)) {
+        foreach ($t in $all) {
             $errors = @(Test-UTTweakDefinition -Tweak $t)
             if ($errors.Count -eq 0 -and $seen.ContainsKey([string]$t.id)) { $errors = @('id duplicado') }
             if ($errors.Count -gt 0) {

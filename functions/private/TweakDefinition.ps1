@@ -108,7 +108,7 @@
         foreach ($c in @($compat.cpu | Where-Object { $null -ne $_ })) { if ($c -notin 'amd', 'intel') { $problems.Add("compatibilidade.cpu '$c' inválido") } }
         foreach ($l in @($compat.launchersBloqueados | Where-Object { $null -ne $_ })) { if ($l -notin 'battlenet', 'steam', 'xbox') { $problems.Add("compatibilidade.launchersBloqueados '$l' inválido") } }
         if ($compat.Contains('exigeX3D') -and $compat.exigeX3D -notin 'unico', 'duplo') { $problems.Add("compatibilidade.exigeX3D '$($compat.exigeX3D)' inválido (use unico ou duplo)") }
-        foreach ($b in 'notebook', 'desktop', 'x3dDuplo') {
+        foreach ($b in 'notebook', 'desktop', 'x3dDuplo', 'exigeJogo') {
             if ($compat.Contains($b) -and $compat[$b] -isnot [bool]) { $problems.Add("compatibilidade.$b precisa ser true ou false") }
         }
     }
@@ -153,6 +153,8 @@ function Test-UTTweakCompatibility {
             $reason = "Bloqueado porque o jogo usa $($launcherNames[$launcherHit[0]]); este ajuste atrapalharia o launcher."
         } elseif ($Contexto.X3D -eq 'duplo' -and $compat.Contains('x3dDuplo') -and -not $compat.x3dDuplo) {
             $reason = 'Não aplicar em Ryzen X3D de dois CCDs: o driver da AMD precisa dessa configuração para usar o CCD com V-Cache no jogo.'
+        } elseif ($compat.exigeJogo -and @($Contexto.Executaveis | Where-Object { $_ }).Count -eq 0) {
+            $reason = 'Call of Duty não encontrado neste PC (Steam, Battle.net ou Xbox App). Instale o jogo e rode o diagnóstico de novo.'
         } elseif ($compat.exigeX3D -and $Contexto.X3D -ne $compat.exigeX3D) {
             # A requirement (unlike a restriction) blocks when the PC is unknown: it must be confirmed.
             $reason = $(if ($compat.exigeX3D -eq 'duplo') { 'Só se aplica a Ryzen X3D de dois CCDs (7900X3D, 7950X3D, 9900X3D, 9950X3D...).' } else { 'Só se aplica a Ryzen X3D de um CCD.' })

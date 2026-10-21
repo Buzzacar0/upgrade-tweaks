@@ -1,0 +1,55 @@
+{
+  "versao": 1,
+  "tweaks": [
+    {
+      "id": "UT_Warzone_GpuPreference",
+      "nome": "Usar a placa de vídeo dedicada no Call of Duty",
+      "descricao": "Diz ao Windows para sempre rodar os executáveis do Call of Duty na GPU de alto desempenho. Essencial em notebooks e em PCs com vídeo integrado no processador (como os Ryzen 7000/9000), onde o Windows às vezes escolhe a GPU errada. Só grava a preferência do Windows; os arquivos do jogo não são tocados.",
+      "ganhoEsperado": "Alto se o jogo estava na GPU integrada; nenhum caso contrário",
+      "categoria": "Warzone",
+      "risco": "baixo",
+      "requerReinicio": false,
+      "controverso": false,
+      "observacao": "Vale para os executáveis encontrados agora. Depois de um título novo do CoD, aplique de novo.",
+      "compatibilidade": { "windows": ["10", "11"], "exigeJogo": true },
+      "scriptAplicar": [ "Set-UTGameRegistryFlag -Path 'HKCU:\\Software\\Microsoft\\DirectX\\UserGpuPreferences' -Mode GpuPreference -TweakId $TweakId -Contexto $Contexto" ],
+      "scriptDesfazer": [ "[void](Restore-UTTweakRegistryItem -TweakId $TweakId)" ],
+      "scriptDetectar": [ "Test-UTGameRegistryFlag -Path 'HKCU:\\Software\\Microsoft\\DirectX\\UserGpuPreferences' -Mode GpuPreference -Contexto $Contexto" ],
+      "scriptSimular": [ "Get-UTGameExecutable -Contexto $Contexto | ForEach-Object { \"Preferência de GPU = alto desempenho: $_\" }" ],
+      "deteccao": "script"
+    },
+    {
+      "id": "UT_Warzone_FSO_Off",
+      "nome": "Desativar as otimizações de tela cheia no Call of Duty",
+      "descricao": "Marca os executáveis do Call of Duty com a opção de compatibilidade \"Desabilitar otimizações de tela inteira\". Em jogos antigos isso forçava a tela cheia exclusiva de verdade. No Warzone (DirectX 12) o efeito é incerto: alguns jogadores relatam menos latência, outros nenhuma diferença. Teste antes e desfaça se não notar melhora.",
+      "ganhoEsperado": "Incerto no DirectX 12; teste antes",
+      "categoria": "Warzone",
+      "risco": "baixo",
+      "requerReinicio": false,
+      "controverso": true,
+      "compatibilidade": { "windows": ["10", "11"], "exigeJogo": true },
+      "scriptAplicar": [ "Set-UTGameRegistryFlag -Path 'HKCU:\\Software\\Microsoft\\Windows NT\\CurrentVersion\\AppCompatFlags\\Layers' -Mode DisableFso -TweakId $TweakId -Contexto $Contexto" ],
+      "scriptDesfazer": [ "[void](Restore-UTTweakRegistryItem -TweakId $TweakId)" ],
+      "scriptDetectar": [ "Test-UTGameRegistryFlag -Path 'HKCU:\\Software\\Microsoft\\Windows NT\\CurrentVersion\\AppCompatFlags\\Layers' -Mode DisableFso -Contexto $Contexto" ],
+      "scriptSimular": [ "Get-UTGameExecutable -Contexto $Contexto | ForEach-Object { \"Desabilitar otimizações de tela inteira: $_\" }" ],
+      "deteccao": "script"
+    },
+    {
+      "id": "UT_Warzone_CpuPriority",
+      "nome": "Prioridade alta de CPU para o Call of Duty",
+      "descricao": "Configura o Windows para abrir os executáveis do Call of Duty sempre com prioridade Alta (Image File Execution Options). É uma configuração do Windows e não altera o jogo. O ganho costuma ser pequeno e aparece mais em PCs com muitos programas abertos junto do jogo.",
+      "ganhoEsperado": "Pequeno (mais em PCs com muita coisa em segundo plano)",
+      "categoria": "Warzone",
+      "risco": "médio",
+      "requerReinicio": false,
+      "controverso": true,
+      "observacao": "Configuração do Windows, não altera o jogo. Desative se notar qualquer problema (áudio picotando, Discord travando, comportamento estranho do jogo).",
+      "compatibilidade": { "windows": ["10", "11"], "exigeJogo": true },
+      "scriptAplicar": [ "Set-UTGameIfeoPriority -TweakId $TweakId -Contexto $Contexto" ],
+      "scriptDesfazer": [ "[void](Restore-UTTweakRegistryItem -TweakId $TweakId)" ],
+      "scriptDetectar": [ "Test-UTGameIfeoPriority -Contexto $Contexto" ],
+      "scriptSimular": [ "Get-UTGameExecutable -Contexto $Contexto | ForEach-Object { 'Prioridade Alta ao abrir: ' + (Split-Path -Leaf $_) } | Sort-Object -Unique" ],
+      "deteccao": "script"
+    }
+  ]
+}
