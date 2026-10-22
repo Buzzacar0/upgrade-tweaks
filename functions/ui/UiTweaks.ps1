@@ -8,23 +8,24 @@ function Get-UTUiTabDefinition {
     #>
     [CmdletBinding()]
     param()
+    # Secao groups the sidebar like the macOS Settings; Cor is the squircle color (theme token).
     @(
-        [pscustomobject]@{ Id = 'Inicio'; Nome = 'Início'; Icone = 'E80F'; Categorias = @() }
-        [pscustomobject]@{ Id = 'Monitor'; Nome = 'Monitor'; Icone = 'E9D9'; Categorias = @() }
-        [pscustomobject]@{ Id = 'Energia'; Nome = 'Energia'; Icone = 'E945'; Categorias = @('Energia') }
-        [pscustomobject]@{ Id = 'Gaming'; Nome = 'Gaming'; Icone = 'E7FC'; Categorias = @('Gaming') }
-        [pscustomobject]@{ Id = 'Latencia'; Nome = 'Latência'; Icone = 'E916'; Categorias = @('Latencia') }
-        [pscustomobject]@{ Id = 'Rede'; Nome = 'Rede'; Icone = 'E968'; Categorias = @('Rede') }
-        [pscustomobject]@{ Id = 'ServicosApps'; Nome = 'Serviços e Apps'; Icone = 'E71D'; Categorias = @('ServicosApps'); Pagina = 'Servico' }
-        [pscustomobject]@{ Id = 'Privacidade'; Nome = 'Privacidade'; Icone = 'EA18'; Categorias = @('Privacidade') }
-        [pscustomobject]@{ Id = 'GPU'; Nome = 'GPU'; Icone = 'E7F4'; Categorias = @('GPU') }
-        [pscustomobject]@{ Id = 'Warzone'; Nome = 'Warzone'; Icone = 'E7C1'; Categorias = @('Warzone') }
-        [pscustomobject]@{ Id = 'Ferramentas'; Nome = 'Ferramentas'; Icone = 'EC7A'; Categorias = @('Ferramentas'); Pagina = 'Ferramenta' }
-        [pscustomobject]@{ Id = 'BIOS'; Nome = 'BIOS'; Icone = 'E950'; Categorias = @(); Pagina = 'Firmware' }
-        [pscustomobject]@{ Id = 'Programas'; Nome = 'Programas'; Icone = 'E896'; Categorias = @(); Pagina = 'Programa' }
-        [pscustomobject]@{ Id = 'Personalizar'; Nome = 'Personalizar'; Icone = 'E771'; Categorias = @('Personalizar', 'Visual') }
-        [pscustomobject]@{ Id = 'Restaurar'; Nome = 'Restaurar'; Icone = 'E777'; Categorias = @() }
-        [pscustomobject]@{ Id = 'Sobre'; Nome = 'Sobre'; Icone = 'E946'; Categorias = @() }
+        [pscustomobject]@{ Id = 'Inicio'; Nome = 'Início'; Icone = 'E80F'; Cor = 'IconBlue'; Secao = ''; Categorias = @() }
+        [pscustomobject]@{ Id = 'Monitor'; Nome = 'Monitor'; Icone = 'E9D9'; Cor = 'IconGreen'; Secao = ''; Categorias = @() }
+        [pscustomobject]@{ Id = 'Energia'; Nome = 'Energia'; Icone = 'E945'; Cor = 'IconOrange'; Secao = 'Otimização'; Categorias = @('Energia') }
+        [pscustomobject]@{ Id = 'Gaming'; Nome = 'Gaming'; Icone = 'E7FC'; Cor = 'IconGreen'; Secao = 'Otimização'; Categorias = @('Gaming') }
+        [pscustomobject]@{ Id = 'Latencia'; Nome = 'Latência'; Icone = 'E916'; Cor = 'IconPurple'; Secao = 'Otimização'; Categorias = @('Latencia') }
+        [pscustomobject]@{ Id = 'Rede'; Nome = 'Rede'; Icone = 'E968'; Cor = 'IconBlue'; Secao = 'Otimização'; Categorias = @('Rede') }
+        [pscustomobject]@{ Id = 'ServicosApps'; Nome = 'Serviços e Apps'; Icone = 'E71D'; Cor = 'IconGray'; Secao = 'Otimização'; Categorias = @('ServicosApps'); Pagina = 'Servico' }
+        [pscustomobject]@{ Id = 'Privacidade'; Nome = 'Privacidade'; Icone = 'EA18'; Cor = 'IconIndigo'; Secao = 'Otimização'; Categorias = @('Privacidade') }
+        [pscustomobject]@{ Id = 'GPU'; Nome = 'GPU'; Icone = 'E7F4'; Cor = 'IconTeal'; Secao = 'Otimização'; Categorias = @('GPU') }
+        [pscustomobject]@{ Id = 'Warzone'; Nome = 'Warzone'; Icone = 'E7C1'; Cor = 'IconRed'; Secao = 'Otimização'; Categorias = @('Warzone') }
+        [pscustomobject]@{ Id = 'Ferramentas'; Nome = 'Ferramentas'; Icone = 'EC7A'; Cor = 'IconGray'; Secao = 'Sistema'; Categorias = @('Ferramentas'); Pagina = 'Ferramenta' }
+        [pscustomobject]@{ Id = 'BIOS'; Nome = 'BIOS'; Icone = 'E950'; Cor = 'IconIndigo'; Secao = 'Sistema'; Categorias = @(); Pagina = 'Firmware' }
+        [pscustomobject]@{ Id = 'Programas'; Nome = 'Programas'; Icone = 'E896'; Cor = 'IconBlue'; Secao = 'Sistema'; Categorias = @(); Pagina = 'Programa' }
+        [pscustomobject]@{ Id = 'Personalizar'; Nome = 'Personalizar'; Icone = 'E771'; Cor = 'IconPink'; Secao = 'Sistema'; Categorias = @('Personalizar', 'Visual') }
+        [pscustomobject]@{ Id = 'Restaurar'; Nome = 'Restaurar'; Icone = 'E777'; Cor = 'IconOrange'; Secao = 'Geral'; Categorias = @() }
+        [pscustomobject]@{ Id = 'Sobre'; Nome = 'Sobre'; Icone = 'E946'; Cor = 'IconGray'; Secao = 'Geral'; Categorias = @() }
     )
 }
 

@@ -75,10 +75,13 @@ foreach ($file in @(Get-ChildItem -Path (Join-Path $repoRoot 'config') -Filter '
     if ($json -match "(?m)^'@") { throw "$($file.Name): uma linha começa com '@ e quebraria o here-string." }
     $parts.Add("`$UTEmbeddedConfig['$($file.BaseName)'] = @'`r`n$json`r`n'@`r`n")
 }
-foreach ($file in @(Get-ChildItem -Path (Join-Path $repoRoot 'xaml') -Filter '*.xaml' -File | Sort-Object Name)) {
+# Subfolders keep their path in the name: xaml\Theme\Claro.xaml is embedded as 'Theme\Claro'.
+$xamlRoot = Join-Path $repoRoot 'xaml'
+foreach ($file in @(Get-ChildItem -Path $xamlRoot -Filter '*.xaml' -File -Recurse | Sort-Object FullName)) {
+    $xamlName = $file.FullName.Substring($xamlRoot.Length + 1) -replace '\.xaml$', ''
     $xaml = ConvertTo-UTAsciiXml (Read-UTSourceFile $file.FullName).Trim()
     if ($xaml -match "(?m)^'@") { throw "$($file.Name): uma linha começa com '@ e quebraria o here-string." }
-    $parts.Add("`$UTEmbeddedXaml['$($file.BaseName)'] = @'`r`n$xaml`r`n'@`r`n")
+    $parts.Add("`$UTEmbeddedXaml['$xamlName'] = @'`r`n$xaml`r`n'@`r`n")
 }
 $parts.Add("#endregion`r`n")
 $parts.Add($body)

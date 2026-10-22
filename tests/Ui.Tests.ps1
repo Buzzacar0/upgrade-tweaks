@@ -27,12 +27,19 @@ Describe 'Janela principal (XAML)' {
         foreach ($n in @($used | Sort-Object -Unique)) { $ui.C.ContainsKey($n) | Should -BeTrue -Because "o código usa o controle $n" }
     }
 
-    It 'tem as cores da Upgrade Store' {
+    It 'usa o design system: roxo da Upgrade Store nos dois temas, superfícies de cada tema' {
         $ui = Initialize-TestWindow
-        $ui.Window.FindResource('BgBrush').Color.ToString() | Should -Be '#FF0B0F1E'
-        $ui.Window.FindResource('CardBrush').Color.ToString() | Should -Be '#FF141A33'
+        Set-UTUiTheme -Janela $ui.Window -Tema escuro | Should -Be 'escuro'
         $ui.Window.FindResource('AccentBrush').Color.ToString() | Should -Be '#FF7C3AED'
-        $ui.Window.FindResource('AccentLightBrush').Color.ToString() | Should -Be '#FFA78BFA'
+        $ui.Window.FindResource('BgBrush').Color.ToString() | Should -Be '#FF1C1C1E'
+        $ui.Window.FindResource('CardBrush').Color.ToString() | Should -Be '#FF2C2C2E'
+        Set-UTUiTheme -Janela $ui.Window -Tema claro | Should -Be 'claro'
+        $ui.Window.FindResource('AccentBrush').Color.ToString() | Should -Be '#FF7C3AED'
+        $ui.Window.FindResource('BgBrush').Color.ToString() | Should -Be '#FFF2F2F7'
+        $ui.Window.FindResource('CardBrush').Color.ToString() | Should -Be '#FFFFFFFF'
+        # The control styles stay; only the token dictionary is replaced.
+        $ui.Window.Resources.MergedDictionaries.Count | Should -Be 2
+        $ui.Window.TryFindResource('Switch') | Should -Not -BeNullOrEmpty
     }
 }
 

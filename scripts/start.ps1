@@ -27,6 +27,9 @@
 .PARAMETER Simular
     Mostra tudo que seria feito, sem alterar nada.
 
+.PARAMETER Galeria
+    Abre a interface na Galeria de componentes (revisão visual do design system).
+
 .EXAMPLE
     irm https://github.com/Buzzacar0/upgrade-tweaks/releases/latest/download/upgradetweaks.ps1 | iex
 
@@ -41,7 +44,8 @@ param(
     [switch]$DesfazerTudo,
     [switch]$Diagnostico,
     [string]$ExportarRelatorio = '',
-    [switch]$Simular
+    [switch]$Simular,
+    [switch]$Galeria
 )
 
 $UTVersion = '#{versao}'
@@ -136,7 +140,7 @@ if (-not $UTParamSummary) { $UTParamSummary = '(nenhum)' }
 Write-UTLog -Level Info -Message "Sessão iniciada. Versão $UTVersion. Parâmetros: $UTParamSummary"
 
 $UTExitCode = Invoke-UTMain -Preset $Preset -Config $Config -DesfazerTudo:$DesfazerTudo `
-    -Diagnostico:$Diagnostico -ExportarRelatorio $ExportarRelatorio -Simular:$Simular
+    -Diagnostico:$Diagnostico -ExportarRelatorio $ExportarRelatorio -Simular:$Simular -Galeria:$Galeria
 
 Write-UTLog -Level Info -Message "Sessão encerrada (código $UTExitCode)."
 if ($UTIsFileProcess) { exit $UTExitCode }

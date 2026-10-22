@@ -16,7 +16,8 @@ function New-UTUiText {
     $tb.Text = $Texto
     $tb.FontSize = $Tamanho
     $tb.FontWeight = [System.Windows.FontWeights]::$Peso
-    $tb.Foreground = Get-UTUiBrush $Cor
+    # By resource reference: a theme switch recolors the text without rebuilding it.
+    $tb.SetResourceReference([System.Windows.Controls.TextBlock]::ForegroundProperty, $Cor)
     $tb.Margin = $Margem
     if ($Quebrar) { $tb.TextWrapping = 'Wrap' }
     return $tb
@@ -30,7 +31,7 @@ function New-UTUiIcon {
     $tb.Text = [string][char][Convert]::ToInt32($Glifo, 16)
     $tb.FontFamily = New-Object System.Windows.Media.FontFamily 'Segoe Fluent Icons, Segoe MDL2 Assets'
     $tb.FontSize = $Tamanho
-    $tb.Foreground = Get-UTUiBrush $Cor
+    $tb.SetResourceReference([System.Windows.Controls.TextBlock]::ForegroundProperty, $Cor)
     $tb.VerticalAlignment = 'Center'
     $tb.Margin = $Margem
     return $tb
@@ -166,9 +167,11 @@ function New-UTUiPageHeader {
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Justification = 'Builds a UI element; nothing changes on the system.')]
     [CmdletBinding()]
     param([Parameter(Mandatory)][string]$Titulo, [string]$Descricao)
-    $items = @((New-UTUiText $Titulo -Tamanho 22 -Peso SemiBold))
-    if ($Descricao) { $items += New-UTUiText $Descricao -Cor MutedBrush -Quebrar -Margem '0,4,0,0' }
-    return (New-UTUiStack -Itens $items -Margem '0,0,0,16')
+    $title = New-UTUiText $Titulo -Tamanho 30 -Peso SemiBold
+    $title.SetResourceReference([System.Windows.Controls.TextBlock]::FontFamilyProperty, 'DisplayFont')
+    $items = @($title)
+    if ($Descricao) { $items += New-UTUiText $Descricao -Cor MutedBrush -Quebrar -Margem '0,6,0,0' }
+    return (New-UTUiStack -Itens $items -Margem '0,4,0,24')
 }
 
 function New-UTUiTable {
@@ -197,8 +200,8 @@ function New-UTUiTable {
         $rd.Height = [System.Windows.GridLength]::Auto
         [void]$grid.RowDefinitions.Add($rd)
         $bg = New-Object System.Windows.Controls.Border
-        if ($r -eq 0) { $bg.BorderBrush = Get-UTUiBrush 'BorderBrush'; $bg.BorderThickness = '0,0,0,1' }
-        elseif ($r % 2 -eq 0) { $bg.Background = New-Object System.Windows.Media.SolidColorBrush ([System.Windows.Media.Color]::FromRgb(0x10, 0x15, 0x2B)) }
+        if ($r -eq 0) { $bg.SetResourceReference([System.Windows.Controls.Border]::BorderBrushProperty, 'SeparatorBrush'); $bg.BorderThickness = '0,0,0,1' }
+        elseif ($r % 2 -eq 0) { $bg.SetResourceReference([System.Windows.Controls.Border]::BackgroundProperty, 'NavHoverBrush') }
         [System.Windows.Controls.Grid]::SetRow($bg, $r)
         [System.Windows.Controls.Grid]::SetColumnSpan($bg, $Colunas.Count)
         [void]$grid.Children.Add($bg)

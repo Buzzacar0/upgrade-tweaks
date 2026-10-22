@@ -10,16 +10,20 @@
     [CmdletBinding()]
     [OutputType([string])]
     param(
-        [ValidateSet('Root', 'Logs', 'Backups', 'State', 'Temp', 'Tools')]
+        [ValidateSet('Root', 'Logs', 'Backups', 'State', 'Temp', 'Tools', 'Usuario')]
         [string]$Name = 'Root'
     )
 
     $root = $env:UPGRADETWEAKS_HOME
     if ([string]::IsNullOrWhiteSpace($root)) {
         $root = Join-Path ([Environment]::GetFolderPath('CommonApplicationData')) 'UpgradeTweaks'
+        # Preferences of the person (window, theme, monitor layouts) live in %AppData%, so they
+        # survive updates and follow the user, not the machine.
+        if ($Name -eq 'Usuario') { return (Join-Path ([Environment]::GetFolderPath('ApplicationData')) 'UpgradeTweaks') }
     }
 
     switch ($Name) {
+        'Usuario' { return (Join-Path $root 'usuario') }
         'Root'    { return $root }
         'Logs'    { return (Join-Path $root 'logs') }
         'Backups' { return (Join-Path $root 'backups') }

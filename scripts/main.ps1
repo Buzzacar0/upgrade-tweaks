@@ -12,7 +12,8 @@
         [switch]$DesfazerTudo,
         [switch]$Diagnostico,
         [string]$ExportarRelatorio = '',
-        [switch]$Simular
+        [switch]$Simular,
+        [switch]$Galeria
     )
 
     if ($Simular) { Write-UTLog -Level Info -Message 'Modo simulação: nada será alterado no sistema.' }
@@ -33,7 +34,7 @@
     }
 
     try {
-        return (Show-UTMainWindow -Simular:$Simular)
+        return (Show-UTMainWindow -Simular:$Simular -Galeria:$Galeria)
     } catch {
         Write-UTLog -Level Erro -Message 'Não foi possível abrir a interface gráfica. Use o modo linha de comando (-Preset, -Diagnostico, -DesfazerTudo).' -Detalhe $_.Exception.ToString()
         return 1

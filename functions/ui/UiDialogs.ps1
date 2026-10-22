@@ -40,7 +40,28 @@ function Get-UTUiDialogIcon {
 function Show-UTUiDialog {
     <#
     .SYNOPSIS
-        Message box of the theme. Returns the text of the button clicked ($null if closed).
+        Message of the interface: a sheet inside the main window when it is open, otherwise a
+        dialog window. Returns the text of the button clicked ($null if closed).
+        -TextoConfirmacao: the first button only enables after the user types that text.
+    #>
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][string]$Titulo,
+        [Parameter(Mandatory)][AllowEmptyString()][string]$Mensagem,
+        [string[]]$Botoes = @('OK'),
+        [ValidateSet('info', 'aviso', 'erro', 'sucesso', 'pergunta')][string]$Tipo = 'info',
+        [string[]]$Itens,
+        [string]$TextoConfirmacao,
+        [double]$Largura = 540
+    )
+    $null = $Largura
+    return (Show-UTUiSheet -Titulo $Titulo -Mensagem $Mensagem -Botoes $Botoes -Tipo $Tipo -Itens $Itens -TextoConfirmacao $TextoConfirmacao)
+}
+
+function Show-UTUiDialogWindow {
+    <#
+    .SYNOPSIS
+        Message box in its own window (used before the main window opens). Returns the text of the button clicked ($null if closed).
         -TextoConfirmacao: the first button only enables after the user types that text.
     #>
     [CmdletBinding()]

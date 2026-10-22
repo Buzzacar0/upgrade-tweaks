@@ -33,6 +33,7 @@ function Initialize-UTUiState {
         LogLinhas   = New-Object System.Collections.Generic.List[string]
         LogMax      = 2000
         Monitor     = $null
+        SheetEstado = $null
     }
     $UTSync['Ui'] = $ui
     if (-not $UTSync.ContainsKey('LogQueue') -or $null -eq $UTSync['LogQueue']) {
@@ -73,6 +74,9 @@ function Get-UTUiWindow {
     $text = Get-UTXamlText -Name $Name
     $reader = New-Object System.Xml.XmlNodeReader ([xml]$text)
     $window = [Windows.Markup.XamlReader]::Load($reader)
+    # Design system (xaml\Theme) with the theme and accent color the person chose.
+    $pref = Get-UTUiPreference
+    [void](Set-UTUiTheme -Janela $window -Tema ([string]$pref.Tema) -Destaque ([string]$pref.Destaque))
     $controls = @{}
     foreach ($m in [regex]::Matches($text, 'x:Name="(\w+)"')) {
         $n = $m.Groups[1].Value

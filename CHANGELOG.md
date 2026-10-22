@@ -5,6 +5,13 @@ O formato segue o [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) e 
 
 ## [Não lançado]
 
+### Adicionado
+- **Design system** em `xaml/Theme/` (`Claro.xaml`, `Escuro.xaml`, `Controles.xaml`): tokens de cor, tipografia Segoe UI Variable, raios e espaçamentos em grade de 8; estilos de switch animado, botões primário/secundário/destrutivo, lista agrupada, card, sheet, campo de busca e selos. Cores sempre por `DynamicResource`.
+- Tema claro e escuro (ou igual ao Windows) e cor de destaque configurável, com o roxo da Upgrade Store como padrão; Mica atrás da barra lateral no Windows 11 e fundo sólido no Windows 10.
+- Janela nova: barra de título integrada com os botões do Windows à direita, barra lateral estilo Ajustes do macOS (seções, ícones em squircle, busca no topo, Ctrl+K), barra de ação flutuante, transição suave entre páginas (respeita "reduzir animações"), confirmações em sheet dentro da janela.
+- A janela lembra tamanho, posição, última página e tema (`%AppData%\UpgradeTweaks\ui.json`).
+- Galeria de componentes: `-Galeria` ou Ctrl+Shift+G.
+
 ### Mudado
 - Plano de energia: o plano personalizado das versões anteriores deu lugar ao **Desempenho Máximo** nativo do Windows (liberado com `powercfg -duplicatescheme` só quando está escondido, sem criar cópias; Alto Desempenho quando a edição não permite). Na primeira execução, o plano antigo é apagado (com o Desempenho Máximo ativado no lugar quando ele era o ativo) e sai do diário de ajustes.
 - Os valores que eram do plano antigo viraram ajustes avulsos e opcionais sobre o plano ativo (`UT_Power_Ajuste_*`), fora dos presets.

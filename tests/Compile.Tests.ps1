@@ -92,7 +92,7 @@ Describe 'scripts\compile.ps1' {
 
     It 'mantém o bloco de parâmetros do start.ps1 no início' {
         $names = $ast.ParamBlock.Parameters | ForEach-Object { $_.Name.VariablePath.UserPath }
-        $names | Should -Be @('Preset', 'Config', 'Silencioso', 'DesfazerTudo', 'Diagnostico', 'ExportarRelatorio', 'Simular')
+        $names | Should -Be @('Preset', 'Config', 'Silencioso', 'DesfazerTudo', 'Diagnostico', 'ExportarRelatorio', 'Simular', 'Galeria')
     }
 
     It 'substitui versão e build e remove o carregador de desenvolvimento' {

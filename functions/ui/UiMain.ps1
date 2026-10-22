@@ -27,7 +27,7 @@ function Show-UTMainWindow {
     #>
     [CmdletBinding()]
     [OutputType([int])]
-    param([switch]$Simular)
+    param([switch]$Simular, [switch]$Galeria)
 
     if ([System.Threading.Thread]::CurrentThread.GetApartmentState() -ne 'STA') {
         # WPF needs an STA thread (PowerShell 7 started with -MTA, some hosts). Run it in one.
@@ -37,7 +37,7 @@ function Show-UTMainWindow {
         $rs.Open()
         $ps = [powershell]::Create()
         $ps.Runspace = $rs
-        [void]$ps.AddCommand('Show-UTMainWindow').AddParameter('Simular', [bool]$Simular)
+        [void]$ps.AddCommand('Show-UTMainWindow').AddParameter('Simular', [bool]$Simular).AddParameter('Galeria', [bool]$Galeria)
         try { return [int]((@($ps.Invoke()) | Select-Object -Last 1)) } finally { $ps.Dispose(); $rs.Dispose() }
     }
 
@@ -50,6 +50,17 @@ function Show-UTMainWindow {
     $version = [string](Get-UTSyncValue -Key 'Versao')
     $ui.Window.Title = "Upgrade Tweaks $version"
     $c['VersionText'].Text = "v$version  ·  Upgrade Store"
+    $pref = Get-UTUiPreference
+    Restore-UTUiWindowPlacement -Janela $ui.Window -Preferencias $pref
+    Update-UTUiThemeIcon -Tema ([string]$pref.Tema)
+    $ui.Window.Add_SourceInitialized({
+            param($w, $e) $null = $e
+            # Mica and the title bar color need the window handle, which exists only now.
+            [void](Enable-UTUiBackdrop -Janela $w)
+            Set-UTUiWindowDarkMode -Janela $w -Escuro ([string]$w.Resources['TemaAtual'] -eq 'escuro')
+        })
+    Initialize-UTUiChrome
+    Initialize-UTUiSheet
 
     if ($Simular -or (Get-UTSyncValue -Key 'Simular')) {
         $UTSync['Simular'] = $true
@@ -70,12 +81,16 @@ function Show-UTMainWindow {
     $ui.Timer = $timer
     $timer.Start()
 
-    Show-UTUiPage -Id 'Inicio'
+    $first = 'Inicio'
+    if (@(Get-UTUiTabDefinition | ForEach-Object Id) -contains [string]$pref.Pagina) { $first = [string]$pref.Pagina }
+    if ($Galeria) { $first = 'Galeria' }
+    Show-UTUiPage -Id $first
     Write-UTLog -Level Info -Message 'Interface aberta.'
     try {
         [void]$ui.Window.ShowDialog()
     } finally {
         $timer.Stop()
+        try { Save-UTUiWindowPlacement -Janela $ui.Window -Pagina ([string]$ui.PaginaAtual) } catch { $null = $_ }
         if ($ui.ContainsKey('Monitor') -and $ui.Monitor -and $ui.Monitor.Timer) { $ui.Monitor.Timer.Stop() }
         try { Stop-UTSensorMonitor -Confirm:$false } catch { Write-UTLog -Level Aviso -Message 'Não foi possível parar a leitura dos sensores.' -Detalhe $_.Exception.Message }
         Close-UTUiPool
@@ -96,20 +111,33 @@ function Initialize-UTUiNavigation {
     param()
     $ui = Get-UTUi
     $list = $ui.C['NavList']
+    $section = $null
+    $headerStyle = $ui.Window.TryFindResource('NavHeader')
     foreach ($tab in @(Get-UTUiTabDefinition)) {
+        $sec = [string](Get-UTField -Objeto $tab -Nome 'Secao' -Padrao '')
+        if ($sec -ne $section) {
+            $section = $sec
+            if ($sec) {
+                # Section title of the sidebar: not selectable, skipped by the keyboard.
+                $header = New-Object System.Windows.Controls.ListBoxItem
+                $header.Content = $sec
+                $header.IsEnabled = $false
+                if ($headerStyle) { $header.Style = $headerStyle }
+                [void]$list.Items.Add($header)
+            }
+        }
         $item = New-Object System.Windows.Controls.ListBoxItem
-        $item.Content = New-UTUiStack -Horizontal -Itens @((New-UTUiIcon -Glifo $tab.Icone -Tamanho 16 -Cor 'AccentLightBrush' -Margem '0,0,12,0'), (New-UTUiText $tab.Nome -Tamanho 13.5))
-        # The text follows the item color (muted, hover, selected).
-        $bind = New-Object System.Windows.Data.Binding 'Foreground'
-        $bind.RelativeSource = New-Object System.Windows.Data.RelativeSource ([System.Windows.Data.RelativeSourceMode]::FindAncestor, [System.Windows.Controls.ListBoxItem], 1)
-        [void]$item.Content.Children[1].SetBinding([System.Windows.Controls.TextBlock]::ForegroundProperty, $bind)
+        $icon = New-UTUiSquircle -Glifo $tab.Icone -Cor ([string](Get-UTField -Objeto $tab -Nome 'Cor' -Padrao 'IconBlue')) -Tamanho 24 -Margem '0,0,10,0'
+        $item.Content = New-UTUiStack -Horizontal -Itens @($icon, (New-UTUiText $tab.Nome -Tamanho 13.5))
+        $item.Content.Children[1].VerticalAlignment = 'Center'
+        [System.Windows.Automation.AutomationProperties]::SetName($item, $tab.Nome)
         $item.Tag = $tab.Id
         [void]$list.Items.Add($item)
     }
     $list.Add_SelectionChanged({
             param($l, $evt) $null = $evt
             $ui2 = Get-UTUi
-            if ($ui2.Navegando -or $null -eq $l.SelectedItem) { return }
+            if ($ui2.Navegando -or $null -eq $l.SelectedItem -or $null -eq $l.SelectedItem.Tag) { return }
             try { Show-UTUiPage -Id ([string]$l.SelectedItem.Tag) } catch { Show-UTUiError -Mensagem $_.Exception.Message }
         })
 }
@@ -134,6 +162,10 @@ function Show-UTUiPage {
         }
     }
     $ui.PaginaAtual = $Id
+    if ($ui.C.ContainsKey('TitleText')) {
+        $tabName = (@(Get-UTUiTabDefinition | Where-Object Id -eq $Id) | Select-Object -First 1)
+        $ui.C['TitleText'].Text = $(if ($tabName) { $tabName.Nome } elseif ($Id -eq 'Galeria') { 'Galeria de componentes' } else { 'Upgrade Tweaks' })
+    }
     Set-UTUiPageContent -Conteudo $ui.Pages[$Id]
     foreach ($row in @($ui.Rows | Where-Object Pagina -eq $Id)) { Sync-UTUiRowState -Linha $row }
 
@@ -154,6 +186,7 @@ function Set-UTUiPageContent {
     $ui.C['PageHost'].Content = $null
     $ui.C['PageHost'].Content = $Conteudo
     $ui.C['PageScroll'].ScrollToTop()
+    if ($ui.Window.IsVisible) { Invoke-UTUiPageTransition -Elemento $ui.C['PageHost'] -Deslocamento $ui.C['PageShift'] }
 }
 
 function Show-UTUiSearch {
@@ -202,7 +235,16 @@ function Register-UTUiHandler {
             $t.Stop()
             try { Show-UTUiSearch -Texto (Get-UTUi).C['SearchBox'].Text } catch { Show-UTUiError -Mensagem $_.Exception.Message }
         })
-    $c['SearchBox'].Tag = 'Buscar ajustes...'
+    $c['SearchBox'].Tag = 'Buscar (Ctrl+K)'
+    $c['ThemeButton'].Add_Click({ try { Switch-UTUiTheme } catch { Show-UTUiError -Mensagem $_.Exception.Message } })
+    $ui.Window.Add_PreviewKeyDown({
+            param($w, $e) $null = $w
+            $mods = [System.Windows.Input.Keyboard]::Modifiers
+            $u = Get-UTUi
+            if ($u.SheetEstado) { return }
+            if ($mods -eq 'Control' -and $e.Key -in 'K', 'F') { [void]$u.C['SearchBox'].Focus(); $u.C['SearchBox'].SelectAll(); $e.Handled = $true }
+            elseif ($mods -eq ([System.Windows.Input.ModifierKeys]::Control -bor [System.Windows.Input.ModifierKeys]::Shift) -and $e.Key -eq 'G') { Show-UTUiPage -Id 'Galeria'; $e.Handled = $true }
+        })
     $c['SearchBox'].DataContext = $search
     $c['SearchBox'].Add_TextChanged({
             param($box, $evt) $null = $evt
