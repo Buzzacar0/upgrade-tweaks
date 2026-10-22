@@ -12,6 +12,7 @@ function Get-UTUiTabDefinition {
     @(
         [pscustomobject]@{ Id = 'Inicio'; Nome = 'Início'; Icone = 'E80F'; Cor = 'IconBlue'; Secao = ''; Categorias = @() }
         [pscustomobject]@{ Id = 'Monitor'; Nome = 'Monitor'; Icone = 'E9D9'; Cor = 'IconGreen'; Secao = ''; Categorias = @() }
+        [pscustomobject]@{ Id = 'Overlay'; Nome = 'Overlay'; Icone = 'E890'; Cor = 'IconYellow'; Secao = ''; Categorias = @() }
         [pscustomobject]@{ Id = 'Energia'; Nome = 'Energia'; Icone = 'E945'; Cor = 'IconOrange'; Secao = 'Otimização'; Categorias = @('Energia') }
         [pscustomobject]@{ Id = 'Gaming'; Nome = 'Gaming'; Icone = 'E7FC'; Cor = 'IconGreen'; Secao = 'Otimização'; Categorias = @('Gaming') }
         [pscustomobject]@{ Id = 'Latencia'; Nome = 'Latência'; Icone = 'E916'; Cor = 'IconPurple'; Secao = 'Otimização'; Categorias = @('Latencia') }

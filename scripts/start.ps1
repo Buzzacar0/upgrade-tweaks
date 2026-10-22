@@ -30,6 +30,9 @@
 .PARAMETER Galeria
     Abre a interface na Galeria de componentes (revisão visual do design system).
 
+.PARAMETER Overlay
+    Abre só o overlay de FPS (ícone ao lado do relógio), sem a janela principal.
+
 .EXAMPLE
     irm https://github.com/Buzzacar0/upgrade-tweaks/releases/latest/download/upgradetweaks.ps1 | iex
 
@@ -45,7 +48,8 @@ param(
     [switch]$Diagnostico,
     [string]$ExportarRelatorio = '',
     [switch]$Simular,
-    [switch]$Galeria
+    [switch]$Galeria,
+    [switch]$Overlay
 )
 
 $UTVersion = '#{versao}'
@@ -122,7 +126,7 @@ $UTSync.ReleaseUrl = $UTReleaseUrl
 [void](Initialize-UTFolder)
 [void](Remove-UTOldLog -Dias 30)
 
-if (-not $Silencioso) { Show-UTBanner -Version $UTVersion }
+if (-not $Silencioso -and -not $Overlay) { Show-UTBanner -Version $UTVersion }
 
 $UTWindows = Get-UTWindowsInfo
 $UTSupport = Get-UTWindowsSupport -Info $UTWindows
@@ -140,7 +144,7 @@ if (-not $UTParamSummary) { $UTParamSummary = '(nenhum)' }
 Write-UTLog -Level Info -Message "Sessão iniciada. Versão $UTVersion. Parâmetros: $UTParamSummary"
 
 $UTExitCode = Invoke-UTMain -Preset $Preset -Config $Config -DesfazerTudo:$DesfazerTudo `
-    -Diagnostico:$Diagnostico -ExportarRelatorio $ExportarRelatorio -Simular:$Simular -Galeria:$Galeria
+    -Diagnostico:$Diagnostico -ExportarRelatorio $ExportarRelatorio -Simular:$Simular -Galeria:$Galeria -Overlay:$Overlay
 
 Write-UTLog -Level Info -Message "Sessão encerrada (código $UTExitCode)."
 if ($UTIsFileProcess) { exit $UTExitCode }

@@ -13,8 +13,12 @@
         [switch]$Diagnostico,
         [string]$ExportarRelatorio = '',
         [switch]$Simular,
-        [switch]$Galeria
+        [switch]$Galeria,
+        [switch]$Overlay
     )
+
+    # Overlay process only (started by the Overlay tab, the Match mode or at logon).
+    if ($Overlay) { return (Start-UTOverlayHost) }
 
     if ($Simular) { Write-UTLog -Level Info -Message 'Modo simulação: nada será alterado no sistema.' }
     else {

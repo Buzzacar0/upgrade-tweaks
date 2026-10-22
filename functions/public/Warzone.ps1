@@ -499,10 +499,17 @@ function Start-UTMatchMode {
     if ($LimparMemoriaEspera) {
         try { Clear-UTStandbyList } catch { Write-UTLog -Level Aviso -Message $_.Exception.Message }
     }
+    # The FPS overlay comes along when the person asked for it (Overlay tab) and it is not open yet.
+    $overlay = $false
+    try {
+        if ((Get-UTOverlayConfig).ModoPartida -and (Test-UTPresentMon) -and -not (Test-UTOverlayRunning) -and $PSCmdlet.ShouldProcess('overlay', 'Ligar durante a partida')) {
+            $overlay = [bool](Start-UTOverlay -Confirm:$false)
+        }
+    } catch { Write-UTLog -Level Aviso -Message 'Não foi possível ligar o overlay no Modo Partida.' -Detalhe $_.Exception.Message }
 
     if (-not $WhatIfPreference) {
         Write-UTJsonFile -Path (Get-UTMatchModeStateFile) -InputObject ([ordered]@{
-                ativo = $true; inicio = (Get-Date).ToString('o'); planoAnterior = $previous.Guid; fechados = @($closed.ToArray())
+                ativo = $true; inicio = (Get-Date).ToString('o'); planoAnterior = $previous.Guid; fechados = @($closed.ToArray()); overlay = $overlay
             })
     }
     Write-UTLog -Level Sucesso -Message ("Modo Partida ligado: {0} programa(s) fechado(s)." -f $closed.Count)
@@ -527,6 +534,9 @@ function Stop-UTMatchMode {
             # Through explorer.exe the program starts as the logged-on user, not elevated.
             Start-Process -FilePath 'explorer.exe' -ArgumentList "`"$($p.caminho)`""
         }
+    }
+    if ((Get-UTField -Objeto $s -Nome 'overlay' -Padrao $false) -and $PSCmdlet.ShouldProcess('overlay', 'Desligar')) {
+        try { Stop-UTOverlay -Confirm:$false } catch { Write-UTLog -Level Aviso -Message 'Não foi possível desligar o overlay.' -Detalhe $_.Exception.Message }
     }
     if (-not $WhatIfPreference) {
         $s.ativo = $false

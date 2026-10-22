@@ -20,6 +20,11 @@ O formato segue o [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) e 
 - Alertas por sensor (acima/abaixo de um valor) e alertas padrão (processador 90 °C, placa de vídeo 85 °C, hotspot 105 °C, SSD 70 °C), com notificação do Windows no máximo uma vez por minuto por sensor e margem de 3 unidades para rearmar.
 - °C ou °F, 0 a 2 casas decimais, atualização de 250 ms a 2 s, relatório CSV (separado por ";", abre direto no Excel) e log CSV com uma linha por leitura.
 - Uso de CPU medido com a janela no Monitor (Ryzen 7 9800X3D): 0,5% no padrão (Essencial, 1 s), 1,3% no Gamer a 250 ms e 1,6% no Completo a 250 ms.
+- **Overlay** (aba nova e processo próprio, `-Overlay`): FPS, 1% e 0,1% low, frametime, gráfico de frametime, CPU/GPU (temperatura e uso), RAM, VRAM, relógio e modo de apresentação por cima do jogo. Os quadros vêm do **PresentMon oficial da Intel** (baixado da Release do GitHub e guardado só com a assinatura digital da Intel), que lê os eventos ETW do Windows: nada é injetado no jogo.
+- Janela do overlay sempre no topo e "clique-através" (`WS_EX_TRANSPARENT | LAYERED | TOOLWINDOW | NOACTIVATE`), DPI por monitor, escolha do monitor (o do jogo, o principal ou um específico) e 8 posições.
+- Editor visual com prévia ao vivo: perfis (novo, duplicar, renomear, excluir), posição, tamanho, opacidade, fundo, cor, layout vertical ou horizontal e os itens na ordem escolhida; perfil automático por jogo (`cod.exe` usa o Competitivo); atalhos globais (mostrar/esconder, próximo perfil, benchmark).
+- Ícone ao lado do relógio com o menu do overlay, opção de abrir com o Windows (tarefa agendada sem UAC), aviso de tela cheia exclusiva, texto opcional pelo RivaTuner (RTSS) e integração com o Modo Partida (liga o overlay e desliga no fim).
+- Uso de CPU medido com um jogo de teste a ~175 FPS e o perfil Completo: overlay 0,35–0,44% e PresentMon 0,01–0,03% da CPU total.
 
 ### Mudado
 - Checklists, a contagem de 15 s da taxa do monitor e as confirmações viraram sheets dentro da janela (janela própria só antes de a interface abrir).

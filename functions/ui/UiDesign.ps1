@@ -390,6 +390,7 @@ function New-UTUiPageGaleria {
                 (New-UTUiRow -Titulo 'Campo de texto' -Icone 'E70F' -IconeCor 'IconBlue' -Direita $text)
                 (New-UTUiRow -Titulo 'Busca' -Icone 'E721' -IconeCor 'IconIndigo' -Direita $search)
                 (New-UTUiRow -Titulo 'Caixa de seleção' -Icone 'E73E' -IconeCor 'IconTeal' -Direita $check)
+                (New-UTUiRow -Titulo 'Slider' -Icone 'E9E9' -IconeCor 'IconPurple' -Direita (New-UTUiGallerySlider))
             )))
 
     $badges = New-UTUiWrap -Itens @((Get-UTUiRiskBadge 'baixo'), (Get-UTUiRiskBadge 'médio'), (Get-UTUiRiskBadge 'alto'), (New-UTUiBadge 'Reinício' -Cor azul), (New-UTUiBadge 'Controverso' -Cor roxo))
@@ -430,6 +431,14 @@ function New-UTUiPageGaleria {
                 (New-UTUiRow -Titulo 'Fundo' -Subtitulo $(if ((Get-UTUiBackdropKind) -eq 'nenhum') { 'Windows 10: fundo sólido.' } else { 'Windows 11: Mica atrás da barra lateral.' }) -Icone 'E7F4' -IconeCor 'IconTeal')
             )))
     return $page
+}
+
+function New-UTUiGallerySlider {
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Justification = 'Builds a UI element; nothing changes on the system.')]
+    param()
+    $s = New-Object System.Windows.Controls.Slider
+    $s.Width = 200; $s.Minimum = 0; $s.Maximum = 100; $s.Value = 40
+    return $s
 }
 
 function New-UTUiRowBox {
