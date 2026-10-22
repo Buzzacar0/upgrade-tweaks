@@ -15,10 +15,17 @@ O formato segue o [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) e 
 - Fluxo revisar → aplicar: ligar ou desligar só cria uma pendência ("Será aplicado" / "Será desfeito"); "Revisar e aplicar" calcula em simulação exatamente o que vai mudar, mostra num sheet e só então aplica e desfaz na mesma rodada, com progresso e resumo.
 - Início novo: anel com a Nota de Otimização, card "Otimizar agora" com o preset, pendências com "Resolver", resumo do PC e o que já está certo.
 - Busca global (Ctrl+K): abas, ajustes, sensores lidos agora e opções da BIOS (quando o mapa já foi carregado), com atalho para cada resultado.
+- **Monitor personalizável** (`%AppData%\UpgradeTweaks\monitor.json`): layouts Essencial, Gamer, Completo e Personalizado (regras em `config/monitor-layouts.json`), exportar/importar o layout em JSON, favoritos no topo, nome próprio por sensor, ocultar e reordenar arrastando os cartões (num layout pronto isso cria o Personalizado a partir do que está na tela).
+- Monitor em cartões com gráfico dos últimos 60 valores ou em tabela com mínimo, máximo e média; resumo dos núcleos (uma linha com a média em vez de uma por núcleo) e sensores que só marcam zero escondidos (as duas coisas opcionais).
+- Alertas por sensor (acima/abaixo de um valor) e alertas padrão (processador 90 °C, placa de vídeo 85 °C, hotspot 105 °C, SSD 70 °C), com notificação do Windows no máximo uma vez por minuto por sensor e margem de 3 unidades para rearmar.
+- °C ou °F, 0 a 2 casas decimais, atualização de 250 ms a 2 s, relatório CSV (separado por ";", abre direto no Excel) e log CSV com uma linha por leitura.
+- Uso de CPU medido com a janela no Monitor (Ryzen 7 9800X3D): 0,5% no padrão (Essencial, 1 s), 1,3% no Gamer a 250 ms e 1,6% no Completo a 250 ms.
 
 ### Mudado
 - Checklists, a contagem de 15 s da taxa do monitor e as confirmações viraram sheets dentro da janela (janela própria só antes de a interface abrir).
 - Programas da inicialização com switch em vez de caixa de seleção.
+- Leitura dos sensores mais leve: um objeto por sensor reaproveitado a cada leitura, nomes calculados uma vez por sessão e discos (SMART) lidos no máximo a cada 5 s. O relatório `.txt` do Monitor deu lugar ao CSV.
+- Nomes de sensores por tipo ("Temperatura da GPU" e "Uso da GPU" em vez de dois "Núcleo da GPU") e da memória ("Memória RAM").
 - Plano de energia: o plano personalizado das versões anteriores deu lugar ao **Desempenho Máximo** nativo do Windows (liberado com `powercfg -duplicatescheme` só quando está escondido, sem criar cópias; Alto Desempenho quando a edição não permite). Na primeira execução, o plano antigo é apagado (com o Desempenho Máximo ativado no lugar quando ele era o ativo) e sai do diário de ajustes.
 - Os valores que eram do plano antigo viraram ajustes avulsos e opcionais sobre o plano ativo (`UT_Power_Ajuste_*`), fora dos presets.
 - Aba Energia: botão "Ativar Desempenho Máximo", seletor com todos os planos instalados e "Restaurar planos padrão do Windows".

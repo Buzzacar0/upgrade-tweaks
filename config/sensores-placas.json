@@ -1,5 +1,5 @@
 {
-  "_comentario": "Nomes dos sensores na aba Monitor. 'placas': rótulos e multiplicadores do chip de monitoramento (Super I/O) de cada placa, conferidos com o CPU-Z/HWMonitor; 'padrao' é uma expressão regular aplicada ao modelo da placa e 'chip' ao nome do chip. 'traducoes': nomes da LibreHardwareMonitor em português.",
+  "_comentario": "Nomes dos sensores na aba Monitor. 'placas': rótulos e multiplicadores do chip de monitoramento (Super I/O) de cada placa, conferidos com o CPU-Z/HWMonitor; 'padrao' é uma expressão regular aplicada ao modelo da placa e 'chip' ao nome do chip. 'traducoes': nomes da LibreHardwareMonitor em português; 'Tipo|Nome' vale só para aquele tipo de sensor (ex.: a temperatura e o uso do 'GPU Core'). 'dispositivos': nomes dos dispositivos.",
   "placas": [
     {
       "padrao": "^X870 GAMING WIFI6",
@@ -21,7 +21,24 @@
       }
     }
   ],
+  "dispositivos": {
+    "Total Memory": "Memória RAM",
+    "Physical Memory": "Memória RAM",
+    "Generic Memory": "Memória RAM",
+    "Virtual Memory": "Memória virtual (RAM + arquivo de paginação)"
+  },
   "traducoes": {
+    "Temperature|GPU Core": "Temperatura da GPU",
+    "Load|GPU Core": "Uso da GPU",
+    "Clock|GPU Core": "Clock da GPU",
+    "Power|GPU Core": "Consumo do núcleo da GPU",
+    "Voltage|GPU Core": "Tensão da GPU",
+    "Clock|GPU Memory": "Clock da memória da GPU",
+    "Load|GPU Memory": "Uso da VRAM",
+    "Load|GPU Memory Controller": "Controlador de memória da GPU",
+    "Load|GPU Video Engine": "Motor de vídeo da GPU",
+    "Load|Memory": "Uso",
+    "Data|Memory Used": "Em uso",
     "+3V Standby": "+3,3 V standby",
     "CMOS Battery": "Bateria da BIOS (CMOS)",
     "Core (Tctl/Tdie)": "Processador (Tctl/Tdie)",

@@ -1,0 +1,39 @@
+{
+  "_comentario": "Layouts prontos da aba Monitor. Cada regra escolhe sensores pelo tipo do hardware ('hardware', expressão regular no tipo da LibreHardwareMonitor: Cpu, GpuNvidia, GpuAmd, GpuIntel, Memory, SuperIO, Storage...), opcionalmente pelo nome do dispositivo ('dispositivo'), pelo tipo do sensor ('tipo': Temperature, Load, Clock, Power, Fan, Data, SmallData...) e pelo nome original em inglês ('nome', expressão regular). 'primeiro': true fica só com o primeiro sensor que casar em cada dispositivo (ex.: a temperatura principal do processador, que muda de nome entre AMD e Intel). Os sensores aparecem na ordem das regras. 'alertasPadrao': avisos que já vêm ligados (valores em °C).",
+  "layouts": {
+    "Essencial": [
+      { "hardware": "^Cpu$", "tipo": "Temperature", "nome": "^(Core \\(Tctl/Tdie\\)|Core \\(Tctl\\)|CPU Package|Core Max|Package)$", "primeiro": true },
+      { "hardware": "^Cpu$", "tipo": "Load", "nome": "^CPU Total$" },
+      { "hardware": "^Cpu$", "tipo": "Power", "nome": "^(Package|CPU Package)$", "primeiro": true },
+      { "hardware": "^Gpu", "tipo": "Temperature", "nome": "^GPU Core$" },
+      { "hardware": "^Gpu", "tipo": "Load", "nome": "^GPU Core$" },
+      { "hardware": "^Memory$", "dispositivo": "^(Total|Generic|Physical) Memory$", "tipo": "Load", "nome": "^Memory$" }
+    ],
+    "Gamer": [
+      { "hardware": "^Cpu$", "tipo": "Temperature", "nome": "^(Core \\(Tctl/Tdie\\)|Core \\(Tctl\\)|CPU Package|Core Max|Package)$", "primeiro": true },
+      { "hardware": "^Cpu$", "tipo": "Load", "nome": "^CPU Total$" },
+      { "hardware": "^Cpu$", "tipo": "Load", "nome": "^CPU Core Max$" },
+      { "hardware": "^Cpu$", "tipo": "Clock", "nome": "^Cores \\(Average Effective\\)$" },
+      { "hardware": "^Cpu$", "tipo": "Power", "nome": "^(Package|CPU Package)$", "primeiro": true },
+      { "hardware": "^Gpu", "tipo": "Temperature", "nome": "^GPU Core$" },
+      { "hardware": "^Gpu", "tipo": "Temperature", "nome": "^GPU Hot ?Spot$" },
+      { "hardware": "^Gpu", "tipo": "Temperature", "nome": "^GPU Memory Junction$" },
+      { "hardware": "^Gpu", "tipo": "Load", "nome": "^GPU Core$" },
+      { "hardware": "^Gpu", "tipo": "Clock", "nome": "^GPU Core$" },
+      { "hardware": "^Gpu", "tipo": "Clock", "nome": "^GPU Memory$" },
+      { "hardware": "^Gpu", "tipo": "Power", "nome": "^(GPU Package|GPU Board Power|GPU Power)$", "primeiro": true },
+      { "hardware": "^Gpu", "tipo": "SmallData", "nome": "^GPU Memory Used$" },
+      { "hardware": "^Gpu", "tipo": "Fan", "nome": "^GPU Fan" },
+      { "hardware": "^Memory$", "dispositivo": "^(Total|Generic|Physical) Memory$", "tipo": "Load", "nome": "^Memory$" },
+      { "hardware": "^Memory$", "dispositivo": "^(Total|Generic|Physical) Memory$", "tipo": "Data", "nome": "^Memory Used$" },
+      { "hardware": "^Memory$", "tipo": "Temperature", "nome": "^DIMM #\\d+$" },
+      { "hardware": "^(SuperIO|Motherboard|EmbeddedController)$", "tipo": "Fan" }
+    ]
+  },
+  "alertasPadrao": [
+    { "hardware": "^Cpu$", "tipo": "Temperature", "nome": "^(Core \\(Tctl/Tdie\\)|Core \\(Tctl\\)|CPU Package|Core Max|Package)$", "acima": 90 },
+    { "hardware": "^Gpu", "tipo": "Temperature", "nome": "^GPU Core$", "acima": 85 },
+    { "hardware": "^Gpu", "tipo": "Temperature", "nome": "^GPU Hot ?Spot$", "acima": 105 },
+    { "hardware": "^Storage$", "tipo": "Temperature", "nome": "^(Composite )?Temperature$", "acima": 70 }
+  ]
+}

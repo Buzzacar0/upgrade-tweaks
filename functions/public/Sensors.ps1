@@ -70,7 +70,9 @@ function Get-UTSensorLoopScript {
     <#
     .SYNOPSIS
         Code of the reading thread. Self-contained (only .NET), it opens the hardware once and
-        publishes a snapshot in $Sync['Sensores'] every -Intervalo ms until $Sync['SensoresParar'].
+        publishes a snapshot in $Sync['Sensores'] every -Intervalo ms (or $Sync['SensoresIntervalo'],
+        changed while it runs) until $Sync['SensoresParar']. Disks are read every 5 s at most:
+        their SMART data is the slowest part and barely changes.
     #>
     return {
         param($LibDir, $Sync, [int]$Intervalo)
@@ -83,7 +85,12 @@ function Get-UTSensorLoopScript {
             $computer.IsPsuEnabled = $true; $computer.IsBatteryEnabled = $true; $computer.IsNetworkEnabled = $false
             $computer.Open()
             $Sync['SensoresEstado'] = 'Rodando'
+            $lastDisk = [datetime]::MinValue
+            $known = New-Object 'System.Collections.Generic.Dictionary[object,object]'
             while (-not $Sync['SensoresParar']) {
+                $started = [datetime]::Now
+                $readDisks = (($started - $lastDisk).TotalMilliseconds -ge 5000)
+                if ($readDisks) { $lastDisk = $started }
                 $reset = [bool]$Sync['SensoresZerar']
                 $Sync['SensoresZerar'] = $false
                 $rows = New-Object System.Collections.Generic.List[object]
@@ -92,20 +99,35 @@ function Get-UTSensorLoopScript {
                 while ($queue.Count -gt 0) {
                     $pair = $queue.Dequeue()
                     $hw = $pair[0]
-                    try { $hw.Update() } catch { continue }
+                    if ($readDisks -or [string]$hw.HardwareType -ne 'Storage') { try { $hw.Update() } catch { continue } }
                     foreach ($s in $hw.Sensors) {
                         if ($reset) { $s.ResetMin(); $s.ResetMax() }
-                        $rows.Add([pscustomobject]@{
+                        # One object per sensor for the whole session; each reading only updates the
+                        # values (creating hundreds of objects 4 times a second costs CPU).
+                        $o = $null
+                        if ($known.TryGetValue($s, [ref]$o)) {
+                            $o.Valor = $s.Value; $o.Min = $s.Min; $o.Max = $s.Max
+                        } else {
+                            $o = [pscustomobject]@{
                                 Hardware = [string]$hw.Name; HardwareTipo = [string]$hw.HardwareType; Pai = $pair[1]
                                 Id = [string]$s.Identifier; Nome = [string]$s.Name; Tipo = [string]$s.SensorType
                                 Valor = $s.Value; Min = $s.Min; Max = $s.Max
-                            })
+                            }
+                            $known[$s] = $o
+                        }
+                        $rows.Add($o)
                     }
                     foreach ($sub in $hw.SubHardware) { $queue.Enqueue(@($sub, [string]$hw.Name)) }
                 }
                 $Sync['Sensores'] = @{ Hora = [datetime]::Now; Itens = $rows.ToArray() }
-                $waited = 0
-                while ($waited -lt $Intervalo -and -not $Sync['SensoresParar']) { Start-Sleep -Milliseconds 100; $waited += 100 }
+                $every = $Intervalo
+                if ($Sync['SensoresIntervalo']) { $every = [int]$Sync['SensoresIntervalo'] }
+                # The wait counts from the start of the reading, so the pace stays steady.
+                while (-not $Sync['SensoresParar']) {
+                    $left = $every - ([datetime]::Now - $started).TotalMilliseconds
+                    if ($left -le 0) { break }
+                    Start-Sleep -Milliseconds ([int][math]::Min(100, [math]::Max(1, $left)))
+                }
             }
         } catch {
             $Sync['SensoresErro'] = $_.Exception.Message
@@ -131,6 +153,7 @@ function Start-UTSensorMonitor {
     $UTSync['SensoresParar'] = $false
     $UTSync['SensoresErro'] = $null
     $UTSync['SensoresEstado'] = 'Iniciando'
+    $UTSync['SensoresIntervalo'] = $IntervaloMs
     $rs = [runspacefactory]::CreateRunspace()
     $rs.ApartmentState = 'MTA'
     $rs.Open()
@@ -174,18 +197,23 @@ function Get-UTSensorGroupName {
 }
 
 function Format-UTSensorValue {
-    # Value with unit in Brazilian format; $null -> '-'.
-    param([AllowNull()][object]$Valor, [string]$Tipo)
+    # Value with unit in Brazilian format; $null -> '-'. -Unidade F shows temperatures in
+    # Fahrenheit; -Casas is the number of decimals of temperatures, usage and power.
+    param([AllowNull()][object]$Valor, [string]$Tipo, [ValidateSet('C', 'F')][string]$Unidade = 'C', [ValidateRange(0, 2)][int]$Casas = 1)
     if ($null -eq $Valor) { return '-' }
     $v = [double]$Valor
     $ci = [Globalization.CultureInfo]::GetCultureInfo('pt-BR')
+    $fmt = $(if ($Casas -eq 0) { '0' } else { '0.' + ('0' * $Casas) })
     switch ($Tipo) {
         'Voltage' { return $v.ToString('0.000', $ci) + ' V' }
         'Current' { return $v.ToString('0.00', $ci) + ' A' }
-        'Power' { return $v.ToString('0.0', $ci) + ' W' }
+        'Power' { return $v.ToString($fmt, $ci) + ' W' }
         'Clock' { return $v.ToString('0', $ci) + ' MHz' }
-        'Temperature' { return $v.ToString('0.0', $ci) + ' °C' }
-        'Load' { return $v.ToString('0.0', $ci) + ' %' }
+        'Temperature' {
+            if ($Unidade -eq 'F') { return ($v * 9 / 5 + 32).ToString($fmt, $ci) + ' °F' }
+            return $v.ToString($fmt, $ci) + ' °C'
+        }
+        'Load' { return $v.ToString($fmt, $ci) + ' %' }
         'Control' { return $v.ToString('0', $ci) + ' %' }
         'Level' { return $v.ToString('0', $ci) + ' %' }
         'Humidity' { return $v.ToString('0', $ci) + ' %' }
@@ -199,6 +227,16 @@ function Format-UTSensorValue {
         'Energy' { return $v.ToString('0', $ci) + ' mWh' }
         'Noise' { return $v.ToString('0', $ci) + ' dBA' }
         default { return $v.ToString('0.##', $ci) }
+    }
+}
+
+function Get-UTSensorDecimal {
+    # Decimals Format-UTSensorValue shows for a sensor type.
+    param([string]$Tipo, [int]$Casas = 1)
+    switch ($Tipo) {
+        'Voltage' { 3 } 'Current' { 2 } 'Data' { 2 } 'Timing' { 2 } 'Factor' { 2 }
+        'Temperature' { $Casas } 'Load' { $Casas } 'Power' { $Casas }
+        default { 0 }
     }
 }
 
@@ -222,9 +260,24 @@ function ConvertTo-UTSensorRow {
     [CmdletBinding()]
     param(
         [Parameter(Mandatory)][AllowEmptyCollection()][object[]]$Itens,
-        [string]$Placa
+        [string]$Placa,
+        [ValidateSet('C', 'F')][string]$Unidade = 'C',
+        [ValidateRange(0, 2)][int]$Casas = 1,
+        # Without the formatted texts (Atual/Minimo/Maximo): the Monitor formats only what it shows.
+        [switch]$SemTexto,
+        # Only these sensor ids (the Monitor between two full readings).
+        [System.Collections.Generic.HashSet[string]]$Ids
     )
     $cfg = Get-UTConfig -Name 'sensores-placas'
+    # Names, groups and multipliers never change for a sensor: worked out once per session and
+    # kept by sensor id, so each reading (up to 4 per second) only copies the values.
+    $cacheKey = "$Placa|$([Runtime.CompilerServices.RuntimeHelpers]::GetHashCode($cfg))"
+    $cache = Get-UTSyncValue -Key 'SensoresMeta'
+    if ($null -eq $cache -or $cache.Chave -ne $cacheKey) {
+        $cache = @{ Chave = $cacheKey; Itens = [hashtable]::Synchronized(@{}) }
+        if (Get-Variable -Name UTSync -ValueOnly -ErrorAction SilentlyContinue) { $UTSync['SensoresMeta'] = $cache }
+    }
+    $meta = $cache.Itens
     $tr = $cfg.traducoes
     $board = $null
     if ($Placa) { $board = (@($cfg.placas | Where-Object { $Placa -match $_.padrao }) | Select-Object -First 1) }
@@ -236,47 +289,69 @@ function ConvertTo-UTSensorRow {
         if ($null -eq $s.Valor -and $null -eq $s.Max) { continue }
         if ($s.Tipo -eq 'Fan' -and ($null -eq $s.Max -or [double]$s.Max -le 0)) { continue }
         if ($s.Tipo -eq 'Control' -and $null -eq $s.Valor) { continue }
-        # Fixed limits of the DIMM thermal sensor and the 3DS timings (always 0) are noise.
-        if ($s.HardwareTipo -eq 'Memory' -and $s.Nome -match 'Resolution|Limit|_dlr') { continue }
-        $name = [string]$s.Nome
-        $factor = 1.0
-        $label = $null
-        if ($board -and $s.HardwareTipo -eq 'SuperIO' -and $s.Hardware -match $board.chip -and $board.sensores.Contains($name)) {
-            $label = $board.sensores[$name]
-            $name = [string]$label.nome
-            $f = Get-UTField -Objeto $label -Nome 'fator'
-            if ($null -ne $f) { $factor = [double]$f }
-        } elseif ($tr.Contains($name)) {
-            $name = [string]$tr[$name]
+        $id = [string]$s.Id
+        if ($null -ne $Ids -and -not $Ids.Contains($id)) { continue }
+        $m = $meta[$id]
+        if ($null -eq $m) {
+            # Fixed limits of the DIMM thermal sensor and the 3DS timings (always 0) are noise.
+            $skip = ($s.HardwareTipo -eq 'Memory' -and $s.Nome -match 'Resolution|Limit|_dlr')
+            $name = [string]$s.Nome
+            $factor = 1.0
+            if ($board -and $s.HardwareTipo -eq 'SuperIO' -and $s.Hardware -match $board.chip -and $board.sensores.Contains($name)) {
+                $label = $board.sensores[$name]
+                $name = [string]$label.nome
+                $f = Get-UTField -Objeto $label -Nome 'fator'
+                if ($null -ne $f) { $factor = [double]$f }
+            } elseif ($tr.Contains("$($s.Tipo)|$name")) {
+                $name = [string]$tr["$($s.Tipo)|$name"]
+            } elseif ($tr.Contains($name)) {
+                $name = [string]$tr[$name]
+            }
+            $hwName = ([string]$s.Hardware -replace '[^ -~ -ɏ]', '').Trim()
+            $devices = Get-UTField -Objeto $cfg -Nome 'dispositivos' -Padrao @{}
+            if ($devices.Contains($hwName)) { $hwName = [string]$devices[$hwName] }
+            if ($s.HardwareTipo -eq 'Memory' -and $hwName -match '\?|\s{3,}') { $hwName = 'Pente de memória ' + ([regex]::Match($hwName, '\(#\d+\)')).Value }
+            $r = 99
+            if ($rank.ContainsKey([string]$s.Tipo)) { $r = $rank[[string]$s.Tipo] }
+            $m = @{
+                Ignorar = $skip; Fator = $factor; Ordem = $r * 100000 + $index; Grupo = Get-UTSensorGroupName ([string]$s.HardwareTipo)
+                Hardware = $(if ($s.Pai) { "$($s.Pai) · $hwName" } else { $hwName }); Tipo = Get-UTSensorTypeName ([string]$s.Tipo); Sensor = $name
+            }
+            $meta[$id] = $m
         }
-        $hwName = ([string]$s.Hardware -replace '[^ -~ -ɏ]', '').Trim()
-        if ($s.HardwareTipo -eq 'Memory' -and $hwName -match '\?|\s{3,}') { $hwName = 'Pente de memória ' + ([regex]::Match($hwName, '\(#\d+\)')).Value }
-        $scale = { param($x) if ($null -eq $x) { $null } else { [double]$x * $factor } }
-        $r = 99
-        if ($rank.ContainsKey([string]$s.Tipo)) { $r = $rank[[string]$s.Tipo] }
-        [pscustomobject]@{
-            Id       = [string]$s.Id
-            Ordem    = $r * 100000 + $index
-            Grupo    = Get-UTSensorGroupName ([string]$s.HardwareTipo)
-            Hardware = $(if ($s.Pai) { "$($s.Pai) · $hwName" } else { $hwName })
-            Tipo     = Get-UTSensorTypeName ([string]$s.Tipo)
-            TipoOriginal = [string]$s.Tipo
-            Sensor   = $name
-            Valor    = (& $scale $s.Valor)
-            Atual    = Format-UTSensorValue -Valor (& $scale $s.Valor) -Tipo ([string]$s.Tipo)
-            Minimo   = Format-UTSensorValue -Valor (& $scale $s.Min) -Tipo ([string]$s.Tipo)
-            Maximo   = Format-UTSensorValue -Valor (& $scale $s.Max) -Tipo ([string]$s.Tipo)
+        if ($m.Ignorar) { continue }
+        $factor = $m.Fator
+        $now = $(if ($null -eq $s.Valor) { $null } else { [double]$s.Valor * $factor })
+        $low = $(if ($null -eq $s.Min) { $null } else { [double]$s.Min * $factor })
+        $high = $(if ($null -eq $s.Max) { $null } else { [double]$s.Max * $factor })
+        if ($SemTexto -and $m.Contains('Linha')) {
+            # The Monitor asks several times a second: same row object, new values.
+            $row = $m.Linha
+            $row.Valor = $now; $row.MinValor = $low; $row.MaxValor = $high
+            $row
+            continue
         }
+        $row = [pscustomobject]@{
+            Id = $id; Ordem = $m.Ordem; Grupo = $m.Grupo; Hardware = $m.Hardware; HardwareNome = [string]$s.Hardware; HardwareTipo = [string]$s.HardwareTipo
+            Tipo = $m.Tipo; TipoOriginal = [string]$s.Tipo; Sensor = $m.Sensor; NomeOriginal = [string]$s.Nome
+            Valor = $now; MinValor = $low; MaxValor = $high; Atual = $null; Minimo = $null; Maximo = $null
+        }
+        if ($SemTexto) { $m['Linha'] = $row }
+        if (-not $SemTexto) {
+            $row.Atual = Format-UTSensorValue -Valor $now -Tipo $row.TipoOriginal -Unidade $Unidade -Casas $Casas
+            $row.Minimo = Format-UTSensorValue -Valor $low -Tipo $row.TipoOriginal -Unidade $Unidade -Casas $Casas
+            $row.Maximo = Format-UTSensorValue -Valor $high -Tipo $row.TipoOriginal -Unidade $Unidade -Casas $Casas
+        }
+        $row
     }
 }
-
 function Get-UTSensorSnapshot {
     <#
     .SYNOPSIS
         Last reading of the sensors, formatted (empty before the first reading).
     #>
     [CmdletBinding()]
-    param()
+    param([ValidateSet('C', 'F')][string]$Unidade = 'C', [ValidateRange(0, 2)][int]$Casas = 1, [switch]$SemTexto, [System.Collections.Generic.HashSet[string]]$Ids)
     $snap = Get-UTSyncValue -Key 'Sensores'
     if ($null -eq $snap) { return @() }
     $board = Get-UTSyncValue -Key 'SensoresPlaca'
@@ -284,7 +359,17 @@ function Get-UTSensorSnapshot {
         $board = [string]((@(Get-CimInstance -ClassName Win32_BaseBoard -ErrorAction SilentlyContinue) | Select-Object -First 1).Product)
         $UTSync['SensoresPlaca'] = $board
     }
-    return @(ConvertTo-UTSensorRow -Itens @($snap.Itens) -Placa $board)
+    return @(ConvertTo-UTSensorRow -Itens @($snap.Itens) -Placa $board -Unidade $Unidade -Casas $Casas -SemTexto:$SemTexto -Ids $Ids)
+}
+
+function Set-UTSensorInterval {
+    <#
+    .SYNOPSIS
+        Time between readings of the running monitor (250 ms to 2 s), effective on the next one.
+    #>
+    [CmdletBinding(SupportsShouldProcess)]
+    param([Parameter(Mandatory)][ValidateRange(250, 2000)][int]$IntervaloMs)
+    if ($PSCmdlet.ShouldProcess('sensores', "Ler a cada $IntervaloMs ms")) { $UTSync['SensoresIntervalo'] = $IntervaloMs }
 }
 
 function Export-UTSensorReport {

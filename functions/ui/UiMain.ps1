@@ -92,6 +92,7 @@ function Show-UTMainWindow {
         $timer.Stop()
         try { Save-UTUiWindowPlacement -Janela $ui.Window -Pagina ([string]$ui.PaginaAtual) } catch { $null = $_ }
         if ($ui.ContainsKey('Monitor') -and $ui.Monitor -and $ui.Monitor.Timer) { $ui.Monitor.Timer.Stop() }
+        if ($ui.ContainsKey('Monitor') -and $ui.Monitor -and $ui.Monitor.Log) { Close-UTMonitorLog -Log $ui.Monitor.Log }
         try { Stop-UTSensorMonitor -Confirm:$false } catch { Write-UTLog -Level Aviso -Message 'Não foi possível parar a leitura dos sensores.' -Detalhe $_.Exception.Message }
         Close-UTUiPool
     }
