@@ -1,0 +1,153 @@
+{
+  "versao": 1,
+  "_comentario": "Ajustes de sistema trazidos do Ghost Toolbox (os que fazem sentido e têm volta). Ficam nas abas de cada categoria.",
+  "tweaks": [
+    {
+      "id": "UT_Sys_SvcHostGroup",
+      "nome": "Agrupar serviços em menos processos (svchost)",
+      "descricao": "Desde o Windows 10 cada serviço roda no seu próprio svchost.exe quando o PC tem mais de 3,5 GB de RAM. Este ajuste volta a agrupar os serviços, como no Windows 7: o Gerenciador de Tarefas mostra dezenas de processos a menos e sobra um pouco de RAM (100 a 300 MB). Não aumenta o FPS. Em troca, se um serviço do grupo travar, leva os outros junto.",
+      "ganhoEsperado": "Pequeno (RAM); nenhum em FPS",
+      "categoria": "ServicosApps",
+      "risco": "médio",
+      "requerReinicio": true,
+      "controverso": true,
+      "observacao": "Vale para PCs com até 64 GB de RAM.",
+      "compatibilidade": { "windows": [ "10", "11" ] },
+      "registro": [
+        { "caminho": "HKLM:\\SYSTEM\\CurrentControlSet\\Control", "nome": "SvcHostSplitThresholdInKB", "tipo": "DWord", "valor": 67108864, "valorOriginal": 3670016 }
+      ],
+      "deteccao": "registro"
+    },
+    {
+      "id": "UT_Custom_StartupDelay_Off",
+      "nome": "Abrir os programas da inicialização sem esperar",
+      "descricao": "Depois do login o Windows segura por uns 10 segundos os programas que iniciam com ele. Sem essa espera, Discord, Steam e afins abrem logo (o login fica um pouco mais pesado nos primeiros segundos).",
+      "ganhoEsperado": "Nenhum em jogo (praticidade)",
+      "categoria": "Personalizar",
+      "risco": "baixo",
+      "requerReinicio": false,
+      "controverso": false,
+      "compatibilidade": { "windows": [ "10", "11" ] },
+      "registro": [
+        { "caminho": "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Serialize", "nome": "StartupDelayInMSec", "tipo": "DWord", "valor": 0, "valorOriginal": null }
+      ],
+      "deteccao": "registro"
+    },
+    {
+      "id": "UT_Visual_LogonBlur_Off",
+      "nome": "Tirar o desfoque do fundo da tela de login",
+      "descricao": "Mostra a imagem de fundo nítida na tela de senha, sem o efeito acrílico.",
+      "ganhoEsperado": "Nenhum (visual)",
+      "categoria": "Visual",
+      "risco": "baixo",
+      "requerReinicio": false,
+      "controverso": false,
+      "compatibilidade": { "windows": [ "10", "11" ] },
+      "registro": [
+        { "caminho": "HKLM:\\SOFTWARE\\Policies\\Microsoft\\Windows\\System", "nome": "DisableAcrylicBackgroundOnLogon", "tipo": "DWord", "valor": 1, "valorOriginal": null }
+      ],
+      "deteccao": "registro"
+    },
+    {
+      "id": "UT_Priv_SearchHighlights_Off",
+      "nome": "Desativar os destaques da pesquisa (Bing)",
+      "descricao": "Tira as imagens, datas comemorativas e sugestões do Bing que aparecem na caixa de pesquisa do menu Iniciar.",
+      "ganhoEsperado": "Nenhum em FPS (menos coisa carregando da internet)",
+      "categoria": "Privacidade",
+      "risco": "baixo",
+      "requerReinicio": false,
+      "controverso": false,
+      "compatibilidade": { "windows": [ "10", "11" ] },
+      "registro": [
+        { "caminho": "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\SearchSettings", "nome": "IsDynamicSearchBoxEnabled", "tipo": "DWord", "valor": 0, "valorOriginal": null },
+        { "caminho": "HKLM:\\SOFTWARE\\Policies\\Microsoft\\Windows\\Windows Search", "nome": "EnableDynamicContentInWSB", "tipo": "DWord", "valor": 0, "valorOriginal": null }
+      ],
+      "deteccao": "registro"
+    },
+    {
+      "id": "UT_Custom_TakeOwnership",
+      "nome": "\"Tomar posse\" no botão direito",
+      "descricao": "Adiciona ao botão direito de arquivos e pastas a opção \"Tomar posse (administrador)\": passa o arquivo para os administradores e libera acesso total. Resolve o \"Você precisa de permissão para executar esta ação\" ao apagar pastas de jogos e drivers antigos.",
+      "ganhoEsperado": "Nenhum (praticidade)",
+      "categoria": "Personalizar",
+      "risco": "baixo",
+      "requerReinicio": false,
+      "controverso": false,
+      "observacao": "Em pastas, a posse é tomada da pasta e o acesso é liberado nela e no que está dentro. Cuidado: tomar posse de pastas do Windows pode quebrar atualizações.",
+      "compatibilidade": { "windows": [ "10", "11" ] },
+      "registro": [
+        { "caminho": "HKLM:\\SOFTWARE\\Classes\\AllFilesystemObjects\\shell\\UTTomarPosse", "nome": "MUIVerb", "tipo": "String", "valor": "Tomar posse (administrador)", "valorOriginal": null },
+        { "caminho": "HKLM:\\SOFTWARE\\Classes\\AllFilesystemObjects\\shell\\UTTomarPosse", "nome": "HasLUAShield", "tipo": "String", "valor": "", "valorOriginal": null },
+        { "caminho": "HKLM:\\SOFTWARE\\Classes\\AllFilesystemObjects\\shell\\UTTomarPosse", "nome": "NoWorkingDirectory", "tipo": "String", "valor": "", "valorOriginal": null },
+        { "caminho": "HKLM:\\SOFTWARE\\Classes\\AllFilesystemObjects\\shell\\UTTomarPosse\\command", "nome": "", "tipo": "String", "valor": "powershell.exe -NoProfile -WindowStyle Hidden -Command \"Start-Process -FilePath cmd.exe -Verb RunAs -WindowStyle Hidden -ArgumentList '/c takeown /f \\\"%1\\\" && icacls \\\"%1\\\" /grant *S-1-5-32-544:F /t /c /q'\"", "valorOriginal": null }
+      ],
+      "deteccao": "registro"
+    },
+    {
+      "id": "UT_Custom_PowerPlanMenu",
+      "nome": "Trocar o plano de energia pelo botão direito da área de trabalho",
+      "descricao": "Adiciona o submenu \"Plano de energia\" ao clicar com o botão direito na área de trabalho: Equilibrado, Alto desempenho, Economia de energia e Opções de energia, sem abrir o Painel de Controle.",
+      "ganhoEsperado": "Nenhum (praticidade)",
+      "categoria": "Personalizar",
+      "risco": "baixo",
+      "requerReinicio": false,
+      "controverso": false,
+      "observacao": "No Windows 11 o submenu fica em \"Mostrar mais opções\" (ou direto, com o menu clássico ligado).",
+      "compatibilidade": { "windows": [ "10", "11" ] },
+      "registro": [
+        { "caminho": "HKLM:\\SOFTWARE\\Classes\\DesktopBackground\\Shell\\UTPlanoEnergia", "nome": "MUIVerb", "tipo": "String", "valor": "Plano de energia", "valorOriginal": null },
+        { "caminho": "HKLM:\\SOFTWARE\\Classes\\DesktopBackground\\Shell\\UTPlanoEnergia", "nome": "Icon", "tipo": "String", "valor": "powercpl.dll", "valorOriginal": null },
+        { "caminho": "HKLM:\\SOFTWARE\\Classes\\DesktopBackground\\Shell\\UTPlanoEnergia", "nome": "SubCommands", "tipo": "String", "valor": "", "valorOriginal": null },
+        { "caminho": "HKLM:\\SOFTWARE\\Classes\\DesktopBackground\\Shell\\UTPlanoEnergia", "nome": "Position", "tipo": "String", "valor": "Bottom", "valorOriginal": null },
+        { "caminho": "HKLM:\\SOFTWARE\\Classes\\DesktopBackground\\Shell\\UTPlanoEnergia\\shell\\1Equilibrado", "nome": "MUIVerb", "tipo": "String", "valor": "Equilibrado", "valorOriginal": null },
+        { "caminho": "HKLM:\\SOFTWARE\\Classes\\DesktopBackground\\Shell\\UTPlanoEnergia\\shell\\1Equilibrado\\command", "nome": "", "tipo": "String", "valor": "powercfg.exe /setactive 381b4222-f694-41f0-9685-ff5bb260df2e", "valorOriginal": null },
+        { "caminho": "HKLM:\\SOFTWARE\\Classes\\DesktopBackground\\Shell\\UTPlanoEnergia\\shell\\2AltoDesempenho", "nome": "MUIVerb", "tipo": "String", "valor": "Alto desempenho", "valorOriginal": null },
+        { "caminho": "HKLM:\\SOFTWARE\\Classes\\DesktopBackground\\Shell\\UTPlanoEnergia\\shell\\2AltoDesempenho\\command", "nome": "", "tipo": "String", "valor": "powercfg.exe /setactive 8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c", "valorOriginal": null },
+        { "caminho": "HKLM:\\SOFTWARE\\Classes\\DesktopBackground\\Shell\\UTPlanoEnergia\\shell\\3Economia", "nome": "MUIVerb", "tipo": "String", "valor": "Economia de energia", "valorOriginal": null },
+        { "caminho": "HKLM:\\SOFTWARE\\Classes\\DesktopBackground\\Shell\\UTPlanoEnergia\\shell\\3Economia\\command", "nome": "", "tipo": "String", "valor": "powercfg.exe /setactive a1841308-3541-4fab-bc81-f71556f20b4a", "valorOriginal": null },
+        { "caminho": "HKLM:\\SOFTWARE\\Classes\\DesktopBackground\\Shell\\UTPlanoEnergia\\shell\\4Opcoes", "nome": "MUIVerb", "tipo": "String", "valor": "Opções de energia", "valorOriginal": null },
+        { "caminho": "HKLM:\\SOFTWARE\\Classes\\DesktopBackground\\Shell\\UTPlanoEnergia\\shell\\4Opcoes\\command", "nome": "", "tipo": "String", "valor": "control.exe powercfg.cpl", "valorOriginal": null }
+      ],
+      "deteccao": "registro"
+    },
+    {
+      "id": "UT_Custom_GodMode",
+      "nome": "Atalho \"Modo Deus\" na área de trabalho",
+      "descricao": "Cria na área de trabalho a pasta especial do Windows com todas as configurações do Painel de Controle numa lista só (mais de 200 itens).",
+      "ganhoEsperado": "Nenhum (praticidade)",
+      "categoria": "Personalizar",
+      "risco": "baixo",
+      "requerReinicio": false,
+      "controverso": false,
+      "compatibilidade": { "windows": [ "10", "11" ] },
+      "scriptAplicar": [
+        "$p = Join-Path $env:PUBLIC 'Desktop\\Modo Deus.{ED7BA470-8E54-465E-825C-99712043E01C}'",
+        "if (-not (Test-Path -LiteralPath $p)) { New-Item -ItemType Directory -Path $p -Force | Out-Null }"
+      ],
+      "scriptDesfazer": [
+        "$p = Join-Path $env:PUBLIC 'Desktop\\Modo Deus.{ED7BA470-8E54-465E-825C-99712043E01C}'",
+        "if (Test-Path -LiteralPath $p) { [IO.Directory]::Delete($p, $false) }"
+      ],
+      "scriptDetectar": [ "Test-Path -LiteralPath (Join-Path $env:PUBLIC 'Desktop\\Modo Deus.{ED7BA470-8E54-465E-825C-99712043E01C}')" ],
+      "scriptSimular": [ "'Cria a pasta \"Modo Deus\" na área de trabalho pública'" ],
+      "deteccao": "script"
+    },
+    {
+      "id": "UT_Gaming_NetFx35",
+      "nome": "Instalar o .NET Framework 3.5 (jogos e programas antigos)",
+      "descricao": "Liga o recurso do Windows que jogos antigos, alguns anti-cheats e ferramentas pedem (\"este aplicativo precisa do .NET Framework 3.5\"). Baixa os arquivos pelo Windows Update.",
+      "ganhoEsperado": "Nenhum em FPS (compatibilidade)",
+      "categoria": "Gaming",
+      "risco": "baixo",
+      "requerReinicio": false,
+      "controverso": false,
+      "observacao": "Precisa de internet e pode levar alguns minutos.",
+      "compatibilidade": { "windows": [ "10", "11" ] },
+      "scriptAplicar": [ "Enable-WindowsOptionalFeature -Online -FeatureName 'NetFx3' -All -NoRestart -ErrorAction Stop | Out-Null" ],
+      "scriptDesfazer": [ "Disable-WindowsOptionalFeature -Online -FeatureName 'NetFx3' -NoRestart -ErrorAction Stop | Out-Null" ],
+      "scriptDetectar": [ "[string](Get-WindowsOptionalFeature -Online -FeatureName 'NetFx3').State -eq 'Enabled'" ],
+      "scriptSimular": [ "'Liga o recurso do Windows NetFx3 (.NET Framework 3.5)'" ],
+      "deteccao": "script"
+    }
+  ]
+}

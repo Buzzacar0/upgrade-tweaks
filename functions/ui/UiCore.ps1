@@ -32,6 +32,7 @@ function Initialize-UTUiState {
         EstadosPedidos = $false
         LogLinhas   = New-Object System.Collections.Generic.List[string]
         LogMax      = 2000
+        Monitor     = $null
     }
     $UTSync['Ui'] = $ui
     if (-not $UTSync.ContainsKey('LogQueue') -or $null -eq $UTSync['LogQueue']) {

@@ -4,7 +4,11 @@
     "Overclock e monitoramento",
     "GPU e driver",
     "Latência e sistema",
-    "Utilitários"
+    "Utilitários",
+    "Componentes para jogos",
+    "Launchers de jogos",
+    "Upscaling e FPS",
+    "Navegadores, mídia e comunicação"
   ],
   "programas": [
     {
@@ -202,6 +206,250 @@
       "winget": "CrystalDewWorld.CrystalDiskMark",
       "executaveis": [ "DiskMark64.exe", "DiskMark32.exe" ],
       "pastas": [ "%ProgramFiles%\\CrystalDiskMark*" ]
+    },
+    {
+      "id": "vcredist2015x64",
+      "nome": "Visual C++ 2015-2022 (x64)",
+      "categoria": "Componentes para jogos",
+      "descricao": "Biblioteca exigida pela maioria dos jogos e programas atuais. Erro \"VCRUNTIME140.dll não encontrado\" se resolve com ela.",
+      "site": "https://learn.microsoft.com/cpp/windows/latest-supported-vc-redist",
+      "winget": "Microsoft.VCRedist.2015+.x64"
+    },
+    {
+      "id": "vcredist2015x86",
+      "nome": "Visual C++ 2015-2022 (x86)",
+      "categoria": "Componentes para jogos",
+      "descricao": "A versão 32 bits da mesma biblioteca. Launchers e jogos antigos de 32 bits precisam dela mesmo no Windows 64 bits.",
+      "site": "https://learn.microsoft.com/cpp/windows/latest-supported-vc-redist",
+      "winget": "Microsoft.VCRedist.2015+.x86"
+    },
+    {
+      "id": "vcredist2013x64",
+      "nome": "Visual C++ 2013 (x64)",
+      "categoria": "Componentes para jogos",
+      "descricao": "Para jogos de 2013 a 2016 que pedem MSVCR120.dll.",
+      "site": "https://learn.microsoft.com/cpp/windows/latest-supported-vc-redist",
+      "winget": "Microsoft.VCRedist.2013.x64"
+    },
+    {
+      "id": "vcredist2013x86",
+      "nome": "Visual C++ 2013 (x86)",
+      "categoria": "Componentes para jogos",
+      "descricao": "Versão 32 bits do Visual C++ 2013.",
+      "site": "https://learn.microsoft.com/cpp/windows/latest-supported-vc-redist",
+      "winget": "Microsoft.VCRedist.2013.x86"
+    },
+    {
+      "id": "vcredist2012x64",
+      "nome": "Visual C++ 2012 (x64)",
+      "categoria": "Componentes para jogos",
+      "descricao": "Para jogos que pedem MSVCR110.dll.",
+      "site": "https://learn.microsoft.com/cpp/windows/latest-supported-vc-redist",
+      "winget": "Microsoft.VCRedist.2012.x64"
+    },
+    {
+      "id": "vcredist2010x64",
+      "nome": "Visual C++ 2010 (x64)",
+      "categoria": "Componentes para jogos",
+      "descricao": "Para jogos antigos que pedem MSVCR100.dll.",
+      "site": "https://learn.microsoft.com/cpp/windows/latest-supported-vc-redist",
+      "winget": "Microsoft.VCRedist.2010.x64"
+    },
+    {
+      "id": "vcredist2008x64",
+      "nome": "Visual C++ 2008 (x64)",
+      "categoria": "Componentes para jogos",
+      "descricao": "Para jogos bem antigos que pedem MSVCR90.dll.",
+      "site": "https://learn.microsoft.com/cpp/windows/latest-supported-vc-redist",
+      "winget": "Microsoft.VCRedist.2008.x64"
+    },
+    {
+      "id": "vcredist2005x64",
+      "nome": "Visual C++ 2005 (x64)",
+      "categoria": "Componentes para jogos",
+      "descricao": "Para jogos bem antigos que pedem MSVCR80.dll.",
+      "site": "https://learn.microsoft.com/cpp/windows/latest-supported-vc-redist",
+      "winget": "Microsoft.VCRedist.2005.x64"
+    },
+    {
+      "id": "directx",
+      "nome": "DirectX (bibliotecas antigas)",
+      "categoria": "Componentes para jogos",
+      "descricao": "Instala as DLLs do DirectX 9/10/11 (d3dx9_43.dll, xinput1_3.dll...) que jogos antigos procuram. O DirectX 12 já vem no Windows.",
+      "site": "https://www.microsoft.com/download/details.aspx?id=35",
+      "winget": "Microsoft.DirectX"
+    },
+    {
+      "id": "dotnetdesktop8",
+      "nome": ".NET Desktop Runtime 8",
+      "categoria": "Componentes para jogos",
+      "descricao": "Necessário para vários launchers, mods e ferramentas (inclusive alguns programas desta lista).",
+      "site": "https://dotnet.microsoft.com/download/dotnet/8.0",
+      "winget": "Microsoft.DotNet.DesktopRuntime.8"
+    },
+    {
+      "id": "dotnetdesktop9",
+      "nome": ".NET Desktop Runtime 9",
+      "categoria": "Componentes para jogos",
+      "descricao": "Versão mais nova do .NET Desktop, pedida por programas recentes.",
+      "site": "https://dotnet.microsoft.com/download/dotnet/9.0",
+      "winget": "Microsoft.DotNet.DesktopRuntime.9"
+    },
+    {
+      "id": "steam",
+      "nome": "Steam",
+      "categoria": "Launchers de jogos",
+      "descricao": "Loja e launcher da Valve.",
+      "site": "https://store.steampowered.com/about/",
+      "winget": "Valve.Steam",
+      "executaveis": [ "steam.exe" ],
+      "pastas": [ "%ProgramFiles(x86)%\\Steam" ]
+    },
+    {
+      "id": "battlenet",
+      "nome": "Battle.net",
+      "categoria": "Launchers de jogos",
+      "descricao": "Launcher da Blizzard, por onde também se joga Call of Duty.",
+      "site": "https://download.battle.net/",
+      "winget": "Blizzard.BattleNet",
+      "executaveis": [ "Battle.net Launcher.exe", "Battle.net.exe" ],
+      "pastas": [ "%ProgramFiles(x86)%\\Battle.net" ]
+    },
+    {
+      "id": "epic",
+      "nome": "Epic Games Launcher",
+      "categoria": "Launchers de jogos",
+      "descricao": "Loja e launcher da Epic (Fortnite e os jogos grátis da semana).",
+      "site": "https://store.epicgames.com/download",
+      "winget": "EpicGames.EpicGamesLauncher"
+    },
+    {
+      "id": "eaapp",
+      "nome": "EA app",
+      "categoria": "Launchers de jogos",
+      "descricao": "Launcher da Electronic Arts (substituiu o Origin).",
+      "site": "https://www.ea.com/ea-app",
+      "winget": "ElectronicArts.EADesktop"
+    },
+    {
+      "id": "ubisoftconnect",
+      "nome": "Ubisoft Connect",
+      "categoria": "Launchers de jogos",
+      "descricao": "Launcher da Ubisoft.",
+      "site": "https://www.ubisoft.com/ubisoft-connect",
+      "winget": "Ubisoft.Connect"
+    },
+    {
+      "id": "goggalaxy",
+      "nome": "GOG GALAXY",
+      "categoria": "Launchers de jogos",
+      "descricao": "Launcher da GOG, também junta as bibliotecas das outras lojas.",
+      "site": "https://www.gog.com/galaxy",
+      "winget": "GOG.Galaxy"
+    },
+    {
+      "id": "magpie",
+      "nome": "Magpie",
+      "categoria": "Upscaling e FPS",
+      "descricao": "Upscaling (FSR, NIS e outros) para qualquer jogo em modo janela: rode o jogo numa resolução menor em janela e o Magpie amplia para a tela inteira. Gratuito.",
+      "site": "https://github.com/Blinue/Magpie",
+      "winget": "Blinue.Magpie"
+    },
+    {
+      "id": "losslessscaling",
+      "nome": "Lossless Scaling",
+      "categoria": "Upscaling e FPS",
+      "descricao": "Upscaling e geração de quadros para qualquer jogo em janela. É pago e vendido só na Steam, então o programa abre a página da loja.",
+      "site": "https://store.steampowered.com/app/993090/Lossless_Scaling/",
+      "somentePagina": true
+    },
+    {
+      "id": "capframex",
+      "nome": "CapFrameX",
+      "categoria": "Upscaling e FPS",
+      "descricao": "Mede FPS, 1% low e frametime com gráficos e compara antes/depois de um ajuste. Ótimo para provar se uma mudança ajudou de verdade.",
+      "site": "https://www.capframex.com/",
+      "winget": "CXWorld.CapFrameX"
+    },
+    {
+      "id": "brave",
+      "nome": "Brave",
+      "categoria": "Navegadores, mídia e comunicação",
+      "descricao": "Navegador com bloqueador de anúncios embutido.",
+      "site": "https://brave.com/",
+      "winget": "Brave.Brave"
+    },
+    {
+      "id": "firefox",
+      "nome": "Mozilla Firefox",
+      "categoria": "Navegadores, mídia e comunicação",
+      "descricao": "Navegador da Mozilla.",
+      "site": "https://www.mozilla.org/firefox/",
+      "winget": "Mozilla.Firefox"
+    },
+    {
+      "id": "chrome",
+      "nome": "Google Chrome",
+      "categoria": "Navegadores, mídia e comunicação",
+      "descricao": "Navegador do Google.",
+      "site": "https://www.google.com/chrome/",
+      "winget": "Google.Chrome"
+    },
+    {
+      "id": "vlc",
+      "nome": "VLC",
+      "categoria": "Navegadores, mídia e comunicação",
+      "descricao": "Toca qualquer vídeo ou música sem instalar codecs.",
+      "site": "https://www.videolan.org/vlc/",
+      "winget": "VideoLAN.VLC"
+    },
+    {
+      "id": "mpchc",
+      "nome": "MPC-HC",
+      "categoria": "Navegadores, mídia e comunicação",
+      "descricao": "Player de vídeo leve e sem anúncios.",
+      "site": "https://github.com/clsid2/mpc-hc",
+      "winget": "clsid2.mpc-hc"
+    },
+    {
+      "id": "potplayer",
+      "nome": "PotPlayer",
+      "categoria": "Navegadores, mídia e comunicação",
+      "descricao": "Player de vídeo com muitos recursos.",
+      "site": "https://potplayer.daum.net/",
+      "winget": "Daum.PotPlayer"
+    },
+    {
+      "id": "nanazip",
+      "nome": "NanaZip",
+      "categoria": "Utilitários",
+      "descricao": "Compactador baseado no 7-Zip, integrado ao menu do botão direito do Windows 11.",
+      "site": "https://github.com/M2Team/NanaZip",
+      "winget": "M2Team.NanaZip"
+    },
+    {
+      "id": "winrar",
+      "nome": "WinRAR",
+      "categoria": "Utilitários",
+      "descricao": "Compactador para arquivos .rar.",
+      "site": "https://www.win-rar.com/",
+      "winget": "RARLab.WinRAR"
+    },
+    {
+      "id": "obs",
+      "nome": "OBS Studio",
+      "categoria": "Navegadores, mídia e comunicação",
+      "descricao": "Gravação e transmissão ao vivo. Use o codificador da placa de vídeo (NVENC/AMF) para não pesar no jogo.",
+      "site": "https://obsproject.com/",
+      "winget": "OBSProject.OBSStudio"
+    },
+    {
+      "id": "discord",
+      "nome": "Discord",
+      "categoria": "Navegadores, mídia e comunicação",
+      "descricao": "Chat de voz e texto.",
+      "site": "https://discord.com/",
+      "winget": "Discord.Discord"
     }
   ]
 }

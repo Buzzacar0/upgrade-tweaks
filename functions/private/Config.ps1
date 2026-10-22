@@ -27,6 +27,7 @@ function Add-UTConfigDefault {
         'programs' { $lists += , @(@($Config['programas']), @{ cpu = @(); gpu = @(); winget = ''; github = $null; somentePagina = $false; aviso = ''; pastas = @(); executaveis = @(); site = '' }) }
         'nvidia-drs' { $lists += , @(@($Config['configuracoes']), @{ tipo = ''; recomendado = $null; opcoes = $null; naoDocumentado = $false; ids = @(); nomeApp = ''; explicacao = '' }) }
         'bios-guia' { $lists += , @(@($Config['itens']), @{ cpu = @(); x3d = $false; verificacao = ''; aviso = '' }) }
+        'bios-ajustes' { $lists += , @(@($Config['itens']), @{ cpu = @(); verificacao = ''; recomendado = '' }) }
         'presets' { $lists += , @(@($Config['presets']), @{ herda = ''; exigeConfirmacao = $false; textoConfirmacao = ''; aviso = ''; recomendado = $false; ajustes = @() }) }
         'cpu-x3d' { $lists += , @(@($Config['modelos']), @{ vcacheNosDois = $false }) }
         'powerplan' { $lists += , @(@($Config['configuracoes']), @{ configuravel = $false; opcional = $false; pularX3DDuplo = $false }) }

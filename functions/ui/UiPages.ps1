@@ -826,12 +826,14 @@ function New-UTUiPageFerramenta {
     }
 
     $tools = @(
-        (New-UTUiCard -Titulo 'Limpar temporários' -Icone 'E74D' -Subtitulo 'Arquivos em uso são pulados. Limpar o Prefetch ou "limpar a RAM" não ajuda, por isso não está aqui.' -Conteudo @($temp))
+        (New-UTUiCard -Titulo 'Limpar temporários' -Icone 'E74D' -Subtitulo 'Arquivos em uso são pulados. Limpar o Prefetch não ajuda, por isso não está aqui.' -Conteudo @($temp))
         (New-UTUiCard -Titulo 'Limpeza e reparo do Windows' -Icone 'E90F' -Subtitulo 'Podem levar de 5 a 30 minutos. A saída completa fica no log.' -Conteudo @($repair))
         (New-UTUiCard -Titulo 'Otimizar unidades' -Icone 'EDA2' -Subtitulo 'TRIM em SSD/NVMe. Desfragmentação só em HD: SSD nunca é desfragmentado.' -Conteudo @($drives))
         (New-UTUiCard -Titulo 'Arquivo de paginação' -Icone 'E964' -Conteudo @($paging))
         (New-UTUiCard -Titulo 'Pausar o Windows Update' -Icone 'E895' -Subtitulo 'No máximo 35 dias, igual ao app Configurações. Nunca é desligado de vez.' -Conteudo @($wu))
         (New-UTUiCard -Titulo 'Atalhos do sistema' -Icone 'E8A7' -Conteudo @($shortcuts))
+        (New-UTUiSystemExtrasCard)
+        (New-UTUiMemoryCleanCard)
         (New-UTUiCard -Titulo 'Guia de BIOS e hardware' -Icone 'E950' -Subtitulo 'O que não dá para fazer por script, personalizado para o seu processador e placa-mãe.' -Conteudo @($bios))
     )
     return (New-UTUiTweakPage -Aba Ferramentas -Descricao 'Limpeza, reparo do Windows, discos, paginação, pausa de atualizações e guia de BIOS.' -Ferramentas $tools)

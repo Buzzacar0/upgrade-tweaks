@@ -163,6 +163,10 @@
     "UT_Net_DNS_Google",
     "UT_Net_DNS_Quad9",
     "UT_Net_DNS_OpenDNS",
-    "UT_Net_DNS_AdGuard"
+    "UT_Net_DNS_AdGuard",
+    "UT_Sys_SvcHostGroup",
+    "UT_Gaming_NetFx35",
+    "UT_Visual_LogonBlur_Off",
+    "UT_Priv_SearchHighlights_Off"
   ]
 }

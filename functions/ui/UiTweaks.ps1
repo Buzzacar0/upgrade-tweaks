@@ -10,6 +10,7 @@ function Get-UTUiTabDefinition {
     param()
     @(
         [pscustomobject]@{ Id = 'Inicio'; Nome = 'Início'; Icone = 'E80F'; Categorias = @() }
+        [pscustomobject]@{ Id = 'Monitor'; Nome = 'Monitor'; Icone = 'E9D9'; Categorias = @() }
         [pscustomobject]@{ Id = 'Energia'; Nome = 'Energia'; Icone = 'E945'; Categorias = @('Energia') }
         [pscustomobject]@{ Id = 'Gaming'; Nome = 'Gaming'; Icone = 'E7FC'; Categorias = @('Gaming') }
         [pscustomobject]@{ Id = 'Latencia'; Nome = 'Latência'; Icone = 'E916'; Categorias = @('Latencia') }
@@ -19,6 +20,7 @@ function Get-UTUiTabDefinition {
         [pscustomobject]@{ Id = 'GPU'; Nome = 'GPU'; Icone = 'E7F4'; Categorias = @('GPU') }
         [pscustomobject]@{ Id = 'Warzone'; Nome = 'Warzone'; Icone = 'E7C1'; Categorias = @('Warzone') }
         [pscustomobject]@{ Id = 'Ferramentas'; Nome = 'Ferramentas'; Icone = 'EC7A'; Categorias = @('Ferramentas'); Pagina = 'Ferramenta' }
+        [pscustomobject]@{ Id = 'BIOS'; Nome = 'BIOS'; Icone = 'E950'; Categorias = @(); Pagina = 'Firmware' }
         [pscustomobject]@{ Id = 'Programas'; Nome = 'Programas'; Icone = 'E896'; Categorias = @(); Pagina = 'Programa' }
         [pscustomobject]@{ Id = 'Personalizar'; Nome = 'Personalizar'; Icone = 'E771'; Categorias = @('Personalizar', 'Visual') }
         [pscustomobject]@{ Id = 'Restaurar'; Nome = 'Restaurar'; Icone = 'E777'; Categorias = @() }

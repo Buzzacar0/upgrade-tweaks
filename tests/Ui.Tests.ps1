@@ -38,7 +38,7 @@ Describe 'Janela principal (XAML)' {
 
 Describe 'Abas' {
     It 'segue a ordem pedida (com Latência como aba avançada)' {
-        (Get-UTUiTabDefinition).Nome | Should -Be @('Início', 'Energia', 'Gaming', 'Latência', 'Rede', 'Serviços e Apps', 'Privacidade', 'GPU', 'Warzone', 'Ferramentas', 'Programas', 'Personalizar', 'Restaurar', 'Sobre')
+        (Get-UTUiTabDefinition).Nome | Should -Be @('Início', 'Monitor', 'Energia', 'Gaming', 'Latência', 'Rede', 'Serviços e Apps', 'Privacidade', 'GPU', 'Warzone', 'Ferramentas', 'BIOS', 'Programas', 'Personalizar', 'Restaurar', 'Sobre')
     }
 
     It 'cada aba tem a função que monta a página' {

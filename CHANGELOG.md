@@ -5,6 +5,17 @@ O formato segue o [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) e 
 
 ## [Não lançado]
 
+## [0.2.0] - 2026-10-22
+
+### Adicionado
+- Aba **Monitor**: sensores em tempo real (LibreHardwareMonitorLib + driver PawnIO, instalados sob demanda), com mínimo/máximo, filtro por dispositivo, relatório `.txt`, rótulos e multiplicadores do chip da placa (`config/sensores-placas.json`) e resumo do hardware no estilo CPU-Z.
+- Aba **BIOS**: reiniciar direto na BIOS (`shutdown /r /fw`), backup/restauração da NVRAM e editor de opções da BIOS pelo Windows. O mapa (`state\bios\<placa>_<versão>.json`) é criado do arquivo oficial da BIOS com UEFIExtract e IFRExtractor-RS; as condições SuppressIf/GrayOutIf são avaliadas com os valores atuais; menus de outras famílias AMD são filtrados; cópias que divergem do Windows são marcadas; gravação só com backup, confirmação "EU ENTENDO" e leitura de volta. Opções destacadas em `config/bios-ajustes.json`.
+- Ferramentas do Ghost Toolbox que fazem sentido: limpar logs de eventos, recriar índice de pesquisa, redefinir o Explorer, CompactOS, teste de disco (winsat) e limpeza automática da memória em espera por tarefa agendada (opcional, só abaixo de 1 GB livre).
+- Ajustes novos (`config/tweaks-sistema.json`): agrupar serviços do svchost, abrir programas da inicialização sem espera, tirar o desfoque do login, destaques da pesquisa do Bing, "Tomar posse" e plano de energia no botão direito, Modo Deus e .NET Framework 3.5.
+- Programas novos: Visual C++ 2005–2022, DirectX, .NET Desktop 8/9, Steam, Battle.net, Epic, EA app, Ubisoft Connect, GOG GALAXY, Magpie, Lossless Scaling (página), CapFrameX, Brave, Firefox, Chrome, VLC, MPC-HC, PotPlayer, NanaZip, WinRAR, OBS e Discord.
+
+## [0.1.0] - 2026-10-22
+
 ### Adicionado
 - Pesquisa de referências (WinUtil, vídeos, NVAPI, winget) em `docs/pesquisa.md`.
 - Estrutura do repositório.

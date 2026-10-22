@@ -32,6 +32,7 @@ irm https://github.com/Buzzacar0/upgrade-tweaks/releases/latest/download/upgrade
 | Aba | O que tem |
 |---|---|
 | **Início** | Diagnóstico do hardware com **Nota de Otimização (0–100)**, pendências ordenadas por impacto (com a aba que resolve), relatório em HTML/TXT e os presets. |
+| **Monitor** | **Sensores em tempo real** como o HWMonitor (temperatura do Tctl/CCD, clock, VID e consumo por núcleo, tensões e ventoinhas da placa-mãe, temperatura e timings dos pentes de memória, GPU, SSDs) com mínimo/máximo e relatório `.txt`, e o **resumo do hardware** como o CPU-Z (codinome, instruções, microcódigo, BIOS, memória, pentes, placas de vídeo). Usa a LibreHardwareMonitor com o driver PawnIO, instalados só quando você pede. |
 | **Energia** | Plano **"Upgrade Warzone"** (processador a 100%, sem estacionamento de núcleos, sem economia em USB/PCIe/disco). Ryzen X3D de dois CCDs mantém o Equilibrado de propósito; notebook ganha um plano só para quando está na tomada. Exportar/importar `.pow`. |
 | **Gaming** | Game DVR, Modo de Jogo, aceleração do mouse, HAGS, MMCSS, otimizações para jogos em janela, MPO. |
 | **Latência** | Ajustes avançados e opcionais: modo MSI da placa de vídeo e de rede, tick dinâmico, Power Throttling, compressão de memória, mitigações de CPU. Cada um diz com franqueza o quanto ajuda (muitas vezes, pouco). |
@@ -40,8 +41,9 @@ irm https://github.com/Buzzacar0/upgrade-tweaks/releases/latest/download/upgrade
 | **Privacidade** | Telemetria, ID de anúncios, histórico de atividades, Copilot, Recall, widgets, pesquisa do Bing e afins. |
 | **GPU** | Configurações do driver gravadas direto, com atual × recomendado e desfazer: **NVIDIA** (perfil do Call of Duty e global, pela NVAPI), **AMD** (Anti-Lag, Chill, Boost, AFMF, Super Resolution, Enhanced Sync, V-Sync, FreeSync, filtragem de textura, pela ADLX oficial da AMD) e **Intel Arc** (baixa latência, V-Sync, Endurance Gaming, limitador, shaders pré-compilados, pela Control Library oficial da Intel). Faixa de cor Completa, taxa máxima do monitor, power limit, cache de shaders, "só o driver de vídeo" da NVIDIA e **DDU automático** em Modo de Segurança. |
 | **Warzone** | **Modo Partida** (fecha o que pesa e ativa o plano Upgrade Warzone; ao sair, volta tudo), **configurações de gráficos gravadas direto no arquivo do jogo** (para a sua placa e VRAM, só valores que o próprio jogo aceita, com backup), exclusão no Defender. |
-| **Ferramentas** | Limpeza de temporários, Limpeza de Disco, `sfc`/`DISM`, TRIM (nunca desfragmenta SSD), arquivo de paginação, pausar o Windows Update por até 35 dias, atalhos do sistema e **guia de BIOS** personalizado para o seu processador e placa-mãe. |
-| **Programas** | MSI Afterburner, RTSS, HWiNFO64, OCCT, CPU-Z, GPU-Z, NVIDIA Profile Inspector, DDU, NVCleanstall, Autoruns, Process Lasso, O&O ShutUp10, 7-Zip, Everything, CrystalDiskInfo/Mark e outros: instalar, abrir (como administrador), atualizar e desinstalar pelo winget ou pela versão oficial no GitHub. |
+| **Ferramentas** | Limpeza de temporários, Limpeza de Disco, `sfc`/`DISM`, TRIM (nunca desfragmenta SSD), arquivo de paginação, pausar o Windows Update por até 35 dias, atalhos do sistema, **guia de BIOS** personalizado, limpar logs de eventos, recriar o índice de pesquisa, consertar o Explorer lento, CompactOS, teste de disco (winsat) e **limpeza automática da RAM** agendada (opcional, só com pouca RAM livre). |
+| **BIOS** | Placa-mãe e versão da BIOS, **reiniciar direto na BIOS**, **backup e restauração da NVRAM** e o **editor de opções da BIOS pelo Windows**: o mapa sai do arquivo oficial da BIOS do fabricante (UEFIExtract + IFRExtractor, código aberto), os valores são lidos e gravados na NVRAM pela API do Windows, com backup antes, avaliação das condições da própria BIOS e conferência com o que o Windows enxerga. Opções que só existem durante o boot aparecem como "só dentro da BIOS". |
+| **Programas** | MSI Afterburner, RTSS, HWiNFO64, OCCT, CPU-Z, GPU-Z, NVIDIA Profile Inspector, DDU, NVCleanstall, Autoruns, Process Lasso, O&O ShutUp10, 7-Zip, Everything, CrystalDiskInfo/Mark, Visual C++ (2005 a 2022), DirectX, .NET Desktop, launchers (Steam, Battle.net, Epic, EA, Ubisoft, GOG), Magpie, Lossless Scaling, CapFrameX, navegadores, players, OBS, Discord e outros: instalar, abrir (como administrador), atualizar e desinstalar pelo winget ou pela versão oficial no GitHub. |
 | **Personalizar** | Tema escuro, barra de tarefas, extensões de arquivo, menu de contexto clássico, efeitos visuais. |
 | **Restaurar** | **Desfazer TUDO**, backups por sessão, backups do driver NVIDIA, Restauração do Sistema. |
 | **Sobre** | Versão, verificação de versão nova, aviso legal e créditos. |
@@ -94,7 +96,7 @@ Código de saída: `0` ok, `1` algum ajuste falhou, `2` parâmetros inválidos, 
 ## Todos os ajustes
 
 <!-- TABELA-AJUSTES:INICIO -->
-Total: **154 ajustes**, todos com desfazer e detecção do estado atual. A coluna Preset mostra o primeiro preset que inclui o ajuste (Seguro está dentro do Competitivo, que está dentro do Extremo).
+Total: **162 ajustes**, todos com desfazer e detecção do estado atual. A coluna Preset mostra o primeiro preset que inclui o ajuste (Seguro está dentro do Competitivo, que está dentro do Extremo).
 
 <details><summary><b>Energia</b> (5 ajustes)</summary>
 
@@ -108,7 +110,7 @@ Total: **154 ajustes**, todos com desfazer e detecção do estado atual. A colun
 
 </details>
 
-<details><summary><b>Gaming</b> (11 ajustes)</summary>
+<details><summary><b>Gaming</b> (12 ajustes)</summary>
 
 | Ajuste | Risco | Ganho esperado | Reinício | Preset |
 |---|---|---|---|---|
@@ -117,6 +119,7 @@ Total: **154 ajustes**, todos com desfazer e detecção do estado atual. A colun
 | Desativar gravação em segundo plano (Game DVR) | baixo | Pequeno a médio (maior se a gravação em segundo plano estava ligada) | não | Seguro |
 | Desativar os atalhos de Teclas de Aderência, Filtragem e Alternância | baixo | Nenhum em FPS; evita sair do jogo sem querer | não | Seguro |
 | Desligar o Agendamento de GPU acelerado por hardware (HAGS) *(controverso)* | baixo | Depende do PC; teste caso a caso | sim | — |
+| Instalar o .NET Framework 3.5 (jogos e programas antigos) | baixo | Nenhum em FPS (compatibilidade) | não | — |
 | Ligar o Agendamento de GPU acelerado por hardware (HAGS) | baixo | Pequeno (necessário para Frame Generation nas RTX 40/50) | sim | Competitivo |
 | Otimizações para jogos em janela | baixo | Pequeno a médio em jogos DX11 em janela; nenhum no Warzone (DirectX 12) | não | Seguro |
 | Multiplane Overlay (MPO): desativar (compatibilidade) *(controverso)* | médio | Resolve flicker/stutter quando o MPO é o culpado; nenhum caso contrário | sim | — |
@@ -168,7 +171,7 @@ Total: **154 ajustes**, todos com desfazer e detecção do estado atual. A colun
 
 </details>
 
-<details><summary><b>Serviços e Apps</b> (59 ajustes)</summary>
+<details><summary><b>Serviços e Apps</b> (60 ajustes)</summary>
 
 | Ajuste | Risco | Ganho esperado | Reinício | Preset |
 |---|---|---|---|---|
@@ -222,6 +225,7 @@ Total: **154 ajustes**, todos com desfazer e detecção do estado atual. A colun
 | Serviço Serviço do Programa Windows Insider: Desativado | baixo | Pequeno (menos atividade em segundo plano) | não | Competitivo |
 | Serviço SysMain (Superfetch): Desativado | baixo | Pequeno (menos atividade em segundo plano) | não | Extremo |
 | Serviço Windows Search (indexação): Manual | baixo | Pequeno (menos atividade em segundo plano) | não | Extremo |
+| Agrupar serviços em menos processos (svchost) *(controverso)* | médio | Pequeno (RAM); nenhum em FPS | sim | — |
 | Bloquear a instalação automática do Razer Synapse | médio | Nenhum em FPS; evita software pesado em segundo plano | não | Extremo |
 | Remover o OneDrive | médio | Pequeno (um programa de sincronização a menos em segundo plano) | não | Extremo |
 | Remover os Widgets | médio | Pequeno (menos memória e processos em segundo plano) | não | Extremo |
@@ -234,7 +238,7 @@ Total: **154 ajustes**, todos com desfazer e detecção do estado atual. A colun
 
 </details>
 
-<details><summary><b>Privacidade</b> (16 ajustes)</summary>
+<details><summary><b>Privacidade</b> (17 ajustes)</summary>
 
 | Ajuste | Risco | Ganho esperado | Reinício | Preset |
 |---|---|---|---|---|
@@ -248,6 +252,7 @@ Total: **154 ajustes**, todos com desfazer e detecção do estado atual. A colun
 | Desativar o Recall | baixo | Pequeno (sem capturas de tela em segundo plano); privacidade | sim | Seguro |
 | Desativar o WPBT (programas do fabricante no boot) | baixo | Nenhum em FPS; evita software do fabricante instalado à força | sim | Competitivo |
 | Desativar os "recursos de consumidor" (apps promovidos) | baixo | Nenhum em FPS; menos apps instalados sem pedir | não | Seguro |
+| Desativar os destaques da pesquisa (Bing) | baixo | Nenhum em FPS (menos coisa carregando da internet) | não | — |
 | Desativar sugestões, dicas e apps instalados sem pedir | baixo | Nenhum em FPS; menos apps e notificações indesejadas | não | Seguro |
 | Esconder os Widgets / Notícias e Interesses | baixo | Pequeno (um processo a menos em segundo plano) | não | Seguro |
 | Limpar o Brave (recompensas, carteira, VPN, IA) | baixo | Nenhum em FPS; navegador mais leve | não | Competitivo |
@@ -290,11 +295,14 @@ Total: **154 ajustes**, todos com desfazer e detecção do estado atual. A colun
 
 </details>
 
-<details><summary><b>Personalizar</b> (23 ajustes)</summary>
+<details><summary><b>Personalizar</b> (28 ajustes)</summary>
 
 | Ajuste | Risco | Ganho esperado | Reinício | Preset |
 |---|---|---|---|---|
 | "Finalizar tarefa" no botão direito da barra de tarefas | baixo | Nenhum (praticidade) | não | — |
+| "Tomar posse" no botão direito | baixo | Nenhum (praticidade) | não | — |
+| Abrir os programas da inicialização sem esperar | baixo | Nenhum em jogo (praticidade) | não | — |
+| Atalho "Modo Deus" na área de trabalho | baixo | Nenhum (praticidade) | não | — |
 | Barra de tarefas alinhada à esquerda | baixo | Nenhum (personalização) | não | — |
 | Barras de rolagem sempre visíveis | baixo | Nenhum (personalização) | não | — |
 | Desativar a transparência | baixo | Nenhum no jogo com GPU dedicada; pequeno em vídeo integrado | não | Extremo |
@@ -316,6 +324,8 @@ Total: **154 ajustes**, todos com desfazer e detecção do estado atual. A colun
 | Pular a tela de bloqueio | baixo | Nenhum (praticidade) | não | — |
 | Tela azul com detalhes técnicos | baixo | Nenhum (diagnóstico) | não | — |
 | Tema escuro no Windows e nos apps | baixo | Nenhum (personalização) | não | — |
+| Tirar o desfoque do fundo da tela de login | baixo | Nenhum (visual) | não | — |
+| Trocar o plano de energia pelo botão direito da área de trabalho | baixo | Nenhum (praticidade) | não | — |
 | Esconder a seção "Recomendados" do Iniciar *(controverso)* | médio | Nenhum (personalização) | sim | — |
 
 </details>
