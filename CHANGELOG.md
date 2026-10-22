@@ -3,7 +3,7 @@
 Todas as mudanças relevantes do Upgrade Tweaks ficam registradas aqui.
 O formato segue o [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) e o projeto usa [versionamento semântico](https://semver.org/lang/pt-BR/).
 
-## [Não lançado]
+## [0.3.0] - 2026-10-22
 
 ### Adicionado
 - **Design system** em `xaml/Theme/` (`Claro.xaml`, `Escuro.xaml`, `Controles.xaml`): tokens de cor, tipografia Segoe UI Variable, raios e espaçamentos em grade de 8; estilos de switch animado, botões primário/secundário/destrutivo, lista agrupada, card, sheet, campo de busca e selos. Cores sempre por `DynamicResource`.
@@ -28,7 +28,7 @@ O formato segue o [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) e 
 - **Benchmark** (aba nova): grava os frametimes de um jogo pela aba (com tempo para voltar ao jogo) ou com **Ctrl+Shift+F12** dentro do jogo (o overlay mostra "● REC"); resumo com FPS médio, 1% e 0,1% low, P1, mínimo, máximo, frametime e engasgos; gráfico de frametime; CSV para o Excel; **comparação de duas gravações** com a diferença em % de cada métrica. Gravações em `%AppData%\UpgradeTweaks\benchmarks`.
 - README com as medições de CPU, como cada número é calculado e a seção nova do anti-cheat sobre o overlay; roteiro de teste manual do Monitor, overlay e benchmark.
 
-> **[Print: Início]** `docs/img/inicio.png` · **[Print: Gaming]** `docs/img/gaming.png` · **[Print: Monitor]** `docs/img/monitor.png` · **[Print: Overlay]** `docs/img/overlay.png` · **[Print: Benchmark]** `docs/img/benchmark.png`
+<!-- Prints a colocar: docs/img/inicio.png (Início), docs/img/gaming.png (Gaming), docs/img/monitor.png (Monitor), docs/img/overlay.png (overlay em jogo), docs/img/benchmark.png (comparação do Benchmark). -->
 
 ### Mudado
 - Checklists, a contagem de 15 s da taxa do monitor e as confirmações viraram sheets dentro da janela (janela própria só antes de a interface abrir).
