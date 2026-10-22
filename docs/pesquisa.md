@@ -97,7 +97,7 @@ Legenda da decisão: **Portar** (entra no nosso catálogo), **Adaptar** (entra c
 | Game Mode | Portar | `UT_Gaming_GameMode_On` | Gaming | |
 | O&O ShutUp10++ | Adaptar | catálogo de programas | Programas | winget `OO-Software.ShutUp10` (verificado na Fase 8; hoje se chama "O&O ShutUp10" v3) |
 | DNS | Adaptar | seletor de DNS | Rede | Mesma lista (Cloudflare, Google, Quad9, OpenDNS, AdGuard) + DHCP |
-| Ultimate Performance | Adaptar | `Invoke-UTPowerPlan` | Energia | Base do plano "Upgrade Warzone" |
+| Ultimate Performance | Usar o nativo | `Invoke-UTMaxPerformanceCore` | Energia | Desempenho Máximo do Windows (desde a v0.3) |
 | Fixes (rede, winget, Windows Update) | Portar | ações da aba Ferramentas | Ferramentas | Reset Winsock/TCP-IP, reparo do winget |
 
 ### 2.3 Erros encontrados no WinUtil que não vamos repetir
@@ -127,7 +127,7 @@ O vídeo é a instalação de uma ISO modificada (não fazemos isso). O que apro
 | NVCleanstall: desativar telemetria do instalador e do driver, instalação limpa, desativar Ansel, desativar HDCP, timer de suspensão do HD Audio, opção "MPO off", método compatível com anti-cheat, prioridade de interrupção normal | Mesmo fluxo; vamos documentar cada opção em PT-BR. **Não** usar "prioridade de interrupção alta" |
 | Configurações NVIDIA: baixa latência On (Ultra só com CPU forte), desempenho máximo, filtragem "alto desempenho", V-Sync off, cache de shader 10 GB/ilimitado | Coincide com a tabela do pedido; entra no `nvidia-drs.json` |
 | Ajustar Hz do monitor para o máximo | Já previsto no diagnóstico |
-| Planos "Game Turbo"/"Dynamic Boost" | Plano "Upgrade Warzone" |
+| Planos "Game Turbo"/"Dynamic Boost" | Desempenho Máximo nativo + ajustes avulsos |
 | **"Limpar memória a cada 5 minutos"** | **Não entra** — é limpador de RAM, mito proibido pela regra 4 |
 
 **Achado importante do vídeo:** o autor diz que o driver NVIDIA mais novo (6xx) não traz mais o
@@ -266,7 +266,7 @@ com `EnableOverlay` na Fase 6 antes de incluí-la.
 
 | Grupo | Modelos | Tratamento |
 |---|---|---|
-| CCD único | 5500X3D, 5600X3D, 5700X3D, 5800X3D, 7600X3D, 7800X3D, 9800X3D, 9850X3D* | Plano "Upgrade Warzone" normal |
+| CCD único | 5500X3D, 5600X3D, 5700X3D, 5800X3D, 7600X3D, 7800X3D, 9800X3D, 9850X3D* | Desempenho Máximo normal |
 | CCD duplo, V-Cache em um só | 7900X3D, 7950X3D, 9900X3D, 9950X3D; notebook 7945HX3D, 9955HX3D* | Manter Equilibrado, Game Bar ligado, driver de chipset AMD |
 | CCD duplo, V-Cache nos dois | 9950X3D2 (lançado em abril/2026) | **Tratar como CCD duplo** por segurança: uma fonte diz que o core parking ainda importa para limitar a comunicação entre os CCDs; nenhuma fonte oficial sobre o driver |
 

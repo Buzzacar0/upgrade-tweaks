@@ -203,10 +203,14 @@ Describe 'Linha de comando' {
         . (Join-Path $UTTestRepoRoot 'scripts\main.ps1')
         Mock Invoke-UTCommandLine { 0 }
         Mock Show-UTMainWindow { 0 }
+        Mock Invoke-UTPowerPlanMigration { $null }
         Invoke-UTMain -Preset Seguro | Should -Be 0
         Should -Invoke Invoke-UTCommandLine -Times 1 -ParameterFilter { $Preset -eq 'Seguro' }
         Should -Invoke Show-UTMainWindow -Times 0
+        Should -Invoke Invoke-UTPowerPlanMigration -Times 1
         Invoke-UTMain -Simular | Out-Null
         Should -Invoke Show-UTMainWindow -Times 1 -ParameterFilter { $Simular }
+        # Simulation changes nothing, not even the migration.
+        Should -Invoke Invoke-UTPowerPlanMigration -Times 1
     }
 }

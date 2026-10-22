@@ -6,25 +6,25 @@
     $ultimate = 'e9a42b02-d5df-448d-aa00-03f14749eb61'
     $proc = '54533251-82be-4824-96c1-47b60b740d00'
     $procMin = '893dee8e-2bef-41e0-89c6-b55d0929964c'
-    $parking = '0cc5b647-c1df-4637-891a-dec35c318583'
     $idle = '5d76a2ca-e8c0-402f-a133-2158492d58ad'
-    $videoSub = '7516b95f-f776-4464-8c53-06167f40cc99'
-    $video = '3c0bc021-c8a8-4e07-a973-6b14cbcb2b7e'
-    $nvmeIdle = '0012ee47-9041-4b5d-9b77-535fba8b1442|d639518a-e56d-4345-8af2-b9f32fb26109'
+    $storage = '0012ee47-9041-4b5d-9b77-535fba8b1442'
 
     function New-FakeScheme([string]$Name) {
-        # Every setting of powerplan.json, starting at a "Balanced-like" value.
+        # Every setting of the optional adjustments, starting at a "Balanced-like" value.
         $settings = @{}
-        foreach ($s in (Get-Content (Join-Path $UTTestRepoRoot 'config\powerplan.json') -Raw -Encoding UTF8 | ConvertFrom-Json).configuracoes) {
-            $settings["$($s.subgrupo)|$($s.configuracao)"] = @{ ac = 5; dc = 3 }
+        foreach ($a in (Get-Content (Join-Path $UTTestRepoRoot 'config\powerplan.json') -Raw -Encoding UTF8 | ConvertFrom-Json).ajustes) {
+            foreach ($i in $a.itens) { $settings["$($i.subgrupo)|$($i.configuracao)"] = @{ ac = 5; dc = 3 } }
         }
         $settings["$proc|$idle"] = @{ ac = 0; dc = 0 }
         return @{ nome = $Name; settings = $settings }
     }
 
     function Reset-FakePowerCfg {
+        # Maximum Performance starts hidden (not listed), as on most Windows 11 PCs; it can still
+        # be duplicated because Windows keeps it as a template.
         $script:pc = @{
-            schemes   = [ordered]@{ $balanced = (New-FakeScheme 'Equilibrado'); $high = (New-FakeScheme 'Alto desempenho'); $ultimate = (New-FakeScheme 'Desempenho Máximo') }
+            schemes   = [ordered]@{ $balanced = (New-FakeScheme 'Equilibrado'); $high = (New-FakeScheme 'Alto desempenho') }
+            templates = @{ $ultimate = 'Desempenho Máximo' }
             active    = $balanced
             refuse    = @()
             calls     = New-Object System.Collections.Generic.List[string]
@@ -46,17 +46,20 @@
             }
             '/getactivescheme' { return (& $ok "GUID do Esquema de Energia: $($script:pc.active)  ($($script:pc.schemes[$script:pc.active].nome))") }
             '/duplicatescheme' {
-                if ($script:pc.refuse -contains $a[1] -or -not $script:pc.schemes.Contains($a[1])) { return (& $fail 'Não é possível executar a operação.') }
+                $source = $a[1]
+                if ($script:pc.refuse -contains $source) { return (& $fail 'Não é possível executar a operação.') }
+                $name = $null
+                if ($script:pc.schemes.Contains($source)) { $name = $script:pc.schemes[$source].nome }
+                elseif ($script:pc.templates.ContainsKey($source)) { $name = $script:pc.templates[$source] }
+                else { return (& $fail 'Não é possível executar a operação.') }
                 $g = '00000000-0000-0000-0000-{0:D12}' -f $script:pc.nextGuid
                 $script:pc.nextGuid++
-                $copy = New-FakeScheme $script:pc.schemes[$a[1]].nome
-                foreach ($k in @($script:pc.schemes[$a[1]].settings.Keys)) { $copy.settings[$k] = $script:pc.schemes[$a[1]].settings[$k].Clone() }
-                $script:pc.schemes[$g] = $copy
-                return (& $ok "GUID do Esquema de Energia: $g  ($($copy.nome))")
+                $script:pc.schemes[$g] = New-FakeScheme $name
+                return (& $ok "GUID do Esquema de Energia: $g  ($name)")
             }
             '/changename' { $script:pc.schemes[$a[1]].nome = $a[2]; return (& $ok '') }
             '/setactive' { if (-not $script:pc.schemes.Contains($a[1])) { return (& $fail 'inválido') }; $script:pc.active = $a[1]; return (& $ok '') }
-            '/delete' { $script:pc.schemes.Remove($a[1]); return (& $ok '') }
+            '/delete' { if ($a[1] -eq $script:pc.active) { return (& $fail 'plano ativo') }; $script:pc.schemes.Remove($a[1]); return (& $ok '') }
             { $_ -in '/setacvalueindex', '/setdcvalueindex' } {
                 $key = "$($a[2])|$($a[3])"
                 $setting = $script:pc.schemes[$a[1]].settings[$key]
@@ -88,128 +91,202 @@
         $UTSync.Contexto = [pscustomobject]$c
     }
 
-    function Get-Upgrade { @($script:pc.schemes.Keys | Where-Object { $script:pc.schemes[$_].nome -like 'Upgrade Warzone*' }) }
-}
-AfterAll { Clear-UTTestEnvironment }
+    function Get-MaxCopy { @($script:pc.schemes.Keys | Where-Object { $script:pc.schemes[$_].nome -eq 'Desempenho Máximo' }) }
+    function Get-DuplicateCount { @($script:pc.calls | Where-Object { $_ -like '/duplicatescheme*' }).Count }
 
-Describe 'Plano Upgrade Warzone' {
-    BeforeEach {
+    function Initialize-PowerTest([hashtable]$Ctx = @{}) {
         Reset-UTTestEnvironment
         Reset-FakePowerCfg
-        Set-Ctx
+        Set-Ctx $Ctx
         Mock Invoke-UTNative { Invoke-FakePowerCfg $ArgumentList } -ParameterFilter { $FilePath -eq 'powercfg.exe' }
         Mock Assert-UTAdmin {}
         Mock Invoke-UTPreApplySafety { [pscustomobject]@{ PastaBackup = 'x'; PontoRestauracao = $null } }
     }
+}
+AfterAll { Clear-UTTestEnvironment }
 
-    It 'desktop: duplica o Desempenho Máximo, aplica tudo na tomada e na bateria e ativa' {
-        (Invoke-UTTweak -Id 'UT_Power_UpgradeWarzone').Status | Should -Be 'Aplicado'
-        $g = @(Get-Upgrade)
-        $g.Count | Should -Be 1
-        $script:pc.active | Should -Be $g[0]
-        $plan = $script:pc.schemes[$g[0]]
-        $plan.nome | Should -Be 'Upgrade Warzone'
-        $plan.settings["$proc|$procMin"].ac | Should -Be 100
-        $plan.settings["$proc|$procMin"].dc | Should -Be 100
-        $plan.settings["$proc|$parking"].ac | Should -Be 100
-        $plan.settings["$videoSub|$video"].ac | Should -Be 900
+Describe 'Desempenho Máximo do Windows' {
+    BeforeEach { Initialize-PowerTest }
+
+    It 'já na lista: só ativa, sem duplicar' {
+        $script:pc.schemes[$ultimate] = New-FakeScheme 'Desempenho Máximo'
+        (Invoke-UTTweak -Id 'UT_Power_DesempenhoMaximo').Status | Should -Be 'Aplicado'
+        $script:pc.active | Should -Be $ultimate
+        Get-DuplicateCount | Should -Be 0
+        (Get-UTTweakState -Id 'UT_Power_DesempenhoMaximo').Estado | Should -Be 'Aplicado'
+    }
+
+    It 'escondido: libera uma vez com o nome do Windows e ativa a cópia' {
+        (Invoke-UTTweak -Id 'UT_Power_DesempenhoMaximo').Status | Should -Be 'Aplicado'
         $script:pc.calls | Should -Contain "/duplicatescheme $ultimate"
-        (Get-UTTweakState -Id 'UT_Power_UpgradeWarzone').Estado | Should -Be 'Aplicado'
+        $copies = @(Get-MaxCopy)
+        $copies.Count | Should -Be 1
+        $script:pc.active | Should -Be $copies[0]
+        @($script:pc.calls | Where-Object { $_ -like '/changename*' }).Count | Should -Be 0
+        (Get-UTTweakState -Id 'UT_Power_DesempenhoMaximo').Estado | Should -Be 'Aplicado'
     }
 
-    It 'desfazer volta ao plano anterior e apaga o plano criado' {
-        $script:pc.active = $high
-        Invoke-UTTweak -Id 'UT_Power_UpgradeWarzone' | Out-Null
-        (Undo-UTTweak -Id 'UT_Power_UpgradeWarzone').Status | Should -Be 'Desfeito'
-        $script:pc.active | Should -Be $high
-        @(Get-Upgrade).Count | Should -Be 0
-        (Get-UTTweakState -Id 'UT_Power_UpgradeWarzone').Estado | Should -Be 'NaoAplicado'
+    It 'clicar de novo não cria outra cópia' {
+        Invoke-UTTweak -Id 'UT_Power_DesempenhoMaximo' | Out-Null
+        $script:pc.active = $balanced   # the user switched by hand
+        (Get-UTTweakState -Id 'UT_Power_DesempenhoMaximo').Estado | Should -Be 'NaoAplicado'
+        (Invoke-UTTweak -Id 'UT_Power_DesempenhoMaximo').Status | Should -Be 'Aplicado'
+        Get-DuplicateCount | Should -Be 1
+        @(Get-MaxCopy).Count | Should -Be 1
     }
 
-    It 'sem Desempenho Máximo, usa o Alto Desempenho' {
+    It 'cópia liberada por fora (mesmo nome) é reaproveitada' {
+        $script:pc.schemes['aaaaaaaa-0000-0000-0000-000000000001'] = New-FakeScheme 'Ultimate Performance'
+        (Invoke-UTTweak -Id 'UT_Power_DesempenhoMaximo').Status | Should -Be 'Aplicado'
+        $script:pc.active | Should -Be 'aaaaaaaa-0000-0000-0000-000000000001'
+        Get-DuplicateCount | Should -Be 0
+    }
+
+    It 'Windows que não libera: usa o Alto Desempenho e conta como aplicado' {
         $script:pc.refuse = @($ultimate)
-        (Invoke-UTTweak -Id 'UT_Power_UpgradeWarzone').Status | Should -Be 'Aplicado'
-        $script:pc.calls | Should -Contain "/duplicatescheme $high"
+        (Invoke-UTTweak -Id 'UT_Power_DesempenhoMaximo').Status | Should -Be 'Aplicado'
+        $script:pc.active | Should -Be $high
+        (Get-UTTweakState -Id 'UT_Power_DesempenhoMaximo').Estado | Should -Be 'Aplicado'
     }
 
-    It 'reaplicar reaproveita o plano e mantém o plano anterior original' {
-        Invoke-UTTweak -Id 'UT_Power_UpgradeWarzone' | Out-Null
-        $script:pc.active = $high   # the user switched by hand
-        (Invoke-UTTweak -Id 'UT_Power_UpgradeWarzone').Status | Should -Be 'Aplicado'
-        @(Get-Upgrade).Count | Should -Be 1
-        @($script:pc.calls | Where-Object { $_ -like '/duplicatescheme*' }).Count | Should -Be 1
-        Undo-UTTweak -Id 'UT_Power_UpgradeWarzone' | Out-Null
+    It 'desfazer volta ao plano anterior e apaga a cópia criada' {
+        $script:pc.active = $high
+        Invoke-UTTweak -Id 'UT_Power_DesempenhoMaximo' | Out-Null
+        (Undo-UTTweak -Id 'UT_Power_DesempenhoMaximo').Status | Should -Be 'Desfeito'
+        $script:pc.active | Should -Be $high
+        @(Get-MaxCopy).Count | Should -Be 0
+    }
+
+    It 'desfazer não apaga o plano que já existia' {
+        $script:pc.schemes[$ultimate] = New-FakeScheme 'Desempenho Máximo'
+        Invoke-UTTweak -Id 'UT_Power_DesempenhoMaximo' | Out-Null
+        Undo-UTTweak -Id 'UT_Power_DesempenhoMaximo' | Out-Null
+        $script:pc.active | Should -Be $balanced
+        $script:pc.schemes.Contains($ultimate) | Should -BeTrue
+    }
+
+    It 'simular diz o que vai fazer sem mexer em nada' {
+        $r = Invoke-UTTweak -Id 'UT_Power_DesempenhoMaximo' -WhatIf
+        $r.Status | Should -Be 'Simulado'
+        ($r.Acoes -join ' ') | Should -Match 'Libera o Desempenho Máximo'
+        $r.Acoes | Should -Contain 'Hoje está ativo: Equilibrado'
+        Get-DuplicateCount | Should -Be 0
+        @($script:pc.calls | Where-Object { $_ -like '/setactive*' }).Count | Should -Be 0
+    }
+
+    It 'notebook pode usar, e o status avisa da bateria' {
+        Set-Ctx @{ EhNotebook = $true }
+        (Invoke-UTTweak -Id 'UT_Power_DesempenhoMaximo').Status | Should -Be 'Aplicado'
+        (Get-UTPowerPlanStatus).Mensagem | Should -Match 'bateria'
+    }
+}
+
+Describe 'Migração do plano antigo' {
+    BeforeEach { Initialize-PowerTest }
+
+    It 'plano antigo ativo: ativa o Desempenho Máximo, apaga o antigo e limpa o diário' {
+        $old = '11111111-2222-3333-4444-555555555555'
+        $script:pc.schemes[$old] = New-FakeScheme ((Get-UTConfig -Name 'powerplan').migracao.planos[0])
+        $script:pc.active = $old
+        $oldId = (Get-UTConfig -Name 'powerplan').migracao.tweaks[0]
+        Add-UTAppliedRecord -TweakId $oldId
+        [void](Save-UTOriginalItem -Chave 'energia|planoUpgrade' -Dados ([ordered]@{ guid = $old; criado = $true }) -TweakId $oldId)
+        $r = Invoke-UTPowerPlanMigration -Confirm:$false
+        @($r.Removidos).Count | Should -Be 1
+        $script:pc.schemes.Contains($old) | Should -BeFalse
+        $script:pc.active | Should -Be (@(Get-MaxCopy)[0])
+        @(Get-UTAppliedRecord | ForEach-Object tweakId) | Should -Not -Contain $oldId
+        @(Get-UTAppliedRecord | ForEach-Object tweakId) | Should -Contain 'UT_Power_DesempenhoMaximo'
+        Get-UTOriginalItem -Chave 'generico|energia|planoupgrade' | Should -BeNullOrEmpty
+        # Runs once.
+        Invoke-UTPowerPlanMigration -Confirm:$false | Should -BeNullOrEmpty
+    }
+
+    It 'plano antigo inativo só é apagado; o plano ativo não muda' {
+        $old = '11111111-2222-3333-4444-555555555555'
+        $script:pc.schemes[$old] = New-FakeScheme ((Get-UTConfig -Name 'powerplan').migracao.planos[1])
+        Invoke-UTPowerPlanMigration -Confirm:$false | Out-Null
+        $script:pc.schemes.Contains($old) | Should -BeFalse
+        $script:pc.active | Should -Be $balanced
+        Get-DuplicateCount | Should -Be 0
+    }
+
+    It 'Ryzen X3D de dois CCDs volta para o Equilibrado' {
+        Set-Ctx @{ X3D = 'duplo' }
+        $old = '11111111-2222-3333-4444-555555555555'
+        $script:pc.schemes[$old] = New-FakeScheme ((Get-UTConfig -Name 'powerplan').migracao.planos[0])
+        $script:pc.active = $old
+        (Invoke-UTPowerPlanMigration -Confirm:$false).Ativado | Should -Be 'Equilibrado'
         $script:pc.active | Should -Be $balanced
     }
 
-    It 'configuração opcional que não existe no Windows é pulada sem falhar' {
-        foreach ($s in $script:pc.schemes.Values) { $s.settings.Remove($nvmeIdle) }
-        (Invoke-UTTweak -Id 'UT_Power_UpgradeWarzone').Status | Should -Be 'Aplicado'
+    It 'sem plano antigo, só marca como feita' {
+        (Invoke-UTPowerPlanMigration -Confirm:$false).Removidos.Count | Should -Be 0
+        @($script:pc.calls | Where-Object { $_ -match '^/(delete|setactive|duplicatescheme)' }).Count | Should -Be 0
+        Invoke-UTPowerPlanMigration -Confirm:$false | Should -BeNullOrEmpty
+    }
+}
+
+Describe 'Ajustes avulsos sobre o plano ativo' {
+    BeforeEach { Initialize-PowerTest }
+
+    It 'ficam fora dos presets e desmarcados' {
+        $ids = @(Get-UTTweak | Where-Object { $_.id -like 'UT_Power_Ajuste_*' } | ForEach-Object id)
+        $ids.Count | Should -Be 8
+        $never = @((Get-UTConfig -Name 'presets').nuncaEmPreset)
+        foreach ($id in $ids) { $never | Should -Contain $id }
     }
 
-    It 'respeita os minutos escolhidos para desligar o vídeo' {
-        $UTSync.OpcoesEnergia = @{ MinutosVideo = 5 }
-        Invoke-UTTweak -Id 'UT_Power_UpgradeWarzone' | Out-Null
-        $script:pc.schemes[@(Get-Upgrade)[0]].settings["$videoSub|$video"].ac | Should -Be 300
+    It 'aplica no plano ativo (tomada e bateria) e o desfazer volta o valor' {
+        (Invoke-UTTweak -Id 'UT_Power_Ajuste_ProcMin').Status | Should -Be 'Aplicado'
+        $script:pc.schemes[$balanced].settings["$proc|$procMin"].ac | Should -Be 100
+        $script:pc.schemes[$balanced].settings["$proc|$procMin"].dc | Should -Be 100
+        (Undo-UTTweak -Id 'UT_Power_Ajuste_ProcMin').Status | Should -Be 'Desfeito'
+        $script:pc.schemes[$balanced].settings["$proc|$procMin"].ac | Should -Be 5
+        $script:pc.schemes[$balanced].settings["$proc|$procMin"].dc | Should -Be 3
     }
 
-    It 'notebook: parte do Equilibrado, nome "(na tomada)" e não mexe na bateria' {
+    It 'notebook: só o valor na tomada' {
         Set-Ctx @{ EhNotebook = $true }
-        (Invoke-UTTweak -Id 'UT_Power_UpgradeWarzone').Status | Should -Be 'Aplicado'
-        $script:pc.calls | Should -Contain "/duplicatescheme $balanced"
-        $plan = $script:pc.schemes[@(Get-Upgrade)[0]]
-        $plan.nome | Should -Be 'Upgrade Warzone (na tomada)'
-        $plan.settings["$proc|$procMin"].ac | Should -Be 100
-        $plan.settings["$proc|$procMin"].dc | Should -Be 3
-        @($script:pc.calls | Where-Object { $_ -like '/setdcvalueindex*' }).Count | Should -Be 0
+        Invoke-UTTweak -Id 'UT_Power_Ajuste_ProcMin' | Out-Null
+        $script:pc.schemes[$balanced].settings["$proc|$procMin"].ac | Should -Be 100
+        $script:pc.schemes[$balanced].settings["$proc|$procMin"].dc | Should -Be 3
     }
 
-    It 'X3D de um CCD usa o plano normalmente e não vê o ajuste de dois CCDs' {
-        Set-Ctx @{ X3D = 'unico' }
-        (Get-UTTweakState -Id 'UT_Power_X3DDuplo_Equilibrado').Estado | Should -Be 'Incompativel'
-        (Invoke-UTTweak -Id 'UT_Power_UpgradeWarzone').Status | Should -Be 'Aplicado'
-        (Invoke-UTTweak -Id 'UT_Power_X3DDuplo_Equilibrado').Status | Should -Be 'Ignorado'
+    It 'pula a configuração que o Windows não tem e falha quando não tem nenhuma' {
+        foreach ($s in $script:pc.schemes.Values) { $s.settings.Remove("$storage|d639518a-e56d-4345-8af2-b9f32fb26109") }
+        (Invoke-UTTweak -Id 'UT_Power_Ajuste_Armazenamento').Status | Should -Be 'Aplicado'
+        foreach ($s in $script:pc.schemes.Values) { $s.settings.Remove("$storage|6738e2c4-e8a5-4a42-b16a-e040e769756e") }
+        (Invoke-UTTweak -Id 'UT_Power_Ajuste_Disco').Status | Should -Not -Be 'Aplicado'
     }
 
-    It 'simular mostra o plano que será criado e cada valor atual -> novo' {
-        $r = Invoke-UTTweak -Id 'UT_Power_UpgradeWarzone' -WhatIf
-        $r.Status | Should -Be 'Simulado'
-        $r.Acoes | Should -Contain "Cria o plano 'Upgrade Warzone' a partir do Desempenho Máximo (Ultimate Performance)"
-        $r.Acoes | Should -Contain 'Estado mínimo do processador: 5 -> 100'
-        $r.Acoes | Should -Contain 'Ativa o plano (hoje está ativo: Equilibrado)'
-        @(Get-Upgrade).Count | Should -Be 0
-        @($script:pc.calls | Where-Object { $_ -match '^/(duplicatescheme|setactive|setacvalueindex)' }).Count | Should -Be 0
+    It 'estacionamento de núcleos fica bloqueado em X3D de dois CCDs' {
+        Set-Ctx @{ X3D = 'duplo' }
+        (Invoke-UTTweak -Id 'UT_Power_Ajuste_CoreParking').Status | Should -Be 'Ignorado'
     }
 
-    It 'simular o desfazer diz para qual plano volta e que apaga o criado' {
-        Invoke-UTTweak -Id 'UT_Power_UpgradeWarzone' | Out-Null
-        $u = Undo-UTTweak -Id 'UT_Power_UpgradeWarzone' -WhatIf
-        $u.Acoes | Should -Contain "Ativa de novo o plano 'Equilibrado'"
-        $u.Acoes | Should -Contain "Apaga o plano 'Upgrade Warzone' criado pelo Upgrade Tweaks"
+    It 'simular mostra valor atual -> novo no plano ativo' {
+        $r = Invoke-UTTweak -Id 'UT_Power_Ajuste_ProcMin' -WhatIf
+        $r.Acoes | Should -Contain "Estado mínimo do processador no plano 'Equilibrado': 5 -> 100"
     }
 }
 
 Describe 'Ryzen X3D de dois CCDs' {
     BeforeEach {
-        Reset-UTTestEnvironment
-        Reset-FakePowerCfg
-        Set-Ctx @{ X3D = 'duplo' }
-        Mock Invoke-UTNative { Invoke-FakePowerCfg $ArgumentList } -ParameterFilter { $FilePath -eq 'powercfg.exe' }
-        Mock Assert-UTAdmin {}
-        Mock Invoke-UTPreApplySafety { [pscustomobject]@{ PastaBackup = 'x'; PontoRestauracao = $null } }
+        Initialize-PowerTest @{ X3D = 'duplo' }
         Mock Get-UTServiceState { [pscustomobject]@{ Nome = $Name; Existe = $true; StartType = 'Automatic'; Status = 'Running' } }
         Mock Get-AppxPackage { [pscustomobject]@{ Name = 'Microsoft.XboxGamingOverlay' } }
     }
 
-    It 'NÃO aplica o Upgrade Warzone (nem com tudo selecionado)' {
-        $r = Invoke-UTTweak -Id 'UT_Power_UpgradeWarzone'
+    It 'NÃO aplica o Desempenho Máximo (nem com tudo selecionado)' {
+        $r = Invoke-UTTweak -Id 'UT_Power_DesempenhoMaximo'
         $r.Status | Should -Be 'Ignorado'
         $r.Mensagem | Should -Match 'dois CCDs'
-        @(Get-Upgrade).Count | Should -Be 0
+        Get-DuplicateCount | Should -Be 0
     }
 
     It 'a função do plano também recusa se for chamada direto' {
-        { Invoke-UTPowerPlanCore -TweakId 'x' -Contexto $UTSync.Contexto } | Should -Throw '*dois CCDs*'
+        { Invoke-UTMaxPerformanceCore -TweakId 'x' -Contexto $UTSync.Contexto } | Should -Throw '*dois CCDs*'
     }
 
     It 'volta para o Equilibrado e o desfazer devolve o plano anterior' {
@@ -223,7 +300,7 @@ Describe 'Ryzen X3D de dois CCDs' {
     It 'o status da aba Energia explica e confere driver, Game Bar, Modo de Jogo e plano' {
         $s = Get-UTPowerPlanStatus
         $s.Modo | Should -Be 'x3dDuplo'
-        $s.Mensagem | Should -Match 'NÃO deve usar o plano Upgrade Warzone'
+        $s.Mensagem | Should -Match 'NÃO deve usar o Desempenho Máximo'
         @($s.ChecagensX3D).Count | Should -Be 4
         @($s.ChecagensX3D | Where-Object { -not $_.Ok }).Count | Should -Be 0
     }
@@ -242,14 +319,7 @@ Describe 'Ryzen X3D de dois CCDs' {
 }
 
 Describe 'IDLEDISABLE (risco alto)' {
-    BeforeEach {
-        Reset-UTTestEnvironment
-        Reset-FakePowerCfg
-        Set-Ctx
-        Mock Invoke-UTNative { Invoke-FakePowerCfg $ArgumentList } -ParameterFilter { $FilePath -eq 'powercfg.exe' }
-        Mock Assert-UTAdmin {}
-        Mock Invoke-UTPreApplySafety { [pscustomobject]@{ PastaBackup = 'x'; PontoRestauracao = $null } }
-    }
+    BeforeEach { Initialize-PowerTest }
 
     It 'pede confirmação, aplica no plano ativo e o desfazer volta o valor' {
         (Invoke-UTTweak -Id 'UT_Power_IdleDisable').Status | Should -Be 'PrecisaConfirmacao'
@@ -266,14 +336,7 @@ Describe 'IDLEDISABLE (risco alto)' {
 }
 
 Describe 'Ferramentas da aba Energia' {
-    BeforeEach {
-        Reset-UTTestEnvironment
-        Reset-FakePowerCfg
-        Set-Ctx
-        Mock Invoke-UTNative { Invoke-FakePowerCfg $ArgumentList } -ParameterFilter { $FilePath -eq 'powercfg.exe' }
-        Mock Assert-UTAdmin {}
-        Mock Invoke-UTPreApplySafety { [pscustomobject]@{ PastaBackup = 'x'; PontoRestauracao = $null } }
-    }
+    BeforeEach { Initialize-PowerTest }
 
     It 'exporta o plano ativo e importa ativando' {
         $p = Join-Path $TestDrive 'meu.pow'
@@ -283,17 +346,25 @@ Describe 'Ferramentas da aba Energia' {
         $script:pc.active | Should -Be $g
     }
 
-    It '"Voltar para o plano anterior" desfaz o Upgrade Warzone' {
+    It '"Voltar ao plano anterior" desfaz o Desempenho Máximo' {
         $script:pc.active = $high
-        Invoke-UTTweak -Id 'UT_Power_UpgradeWarzone' | Out-Null
+        Invoke-UTTweak -Id 'UT_Power_DesempenhoMaximo' | Out-Null
         (Restore-UTPreviousPowerPlan).Status | Should -Be 'Desfeito'
         $script:pc.active | Should -Be $high
     }
 
-    It 'status padrão e de notebook' {
+    It 'o seletor lista todos os planos com o ativo marcado e ativa o escolhido' {
+        $s = Get-UTPowerPlanStatus
+        @($s.Planos).Count | Should -Be 2
+        @($s.Planos | Where-Object Ativo).Guid | Should -Be $balanced
+        $s.MaximoAtivo | Should -BeFalse
+        Set-UTActivePowerScheme -Guid $high -Confirm:$false
+        $script:pc.active | Should -Be $high
+        { Set-UTActivePowerScheme -Guid '99999999-9999-9999-9999-999999999999' -Confirm:$false } | Should -Throw '*não existe*'
+    }
+
+    It 'status padrão' {
         (Get-UTPowerPlanStatus).Modo | Should -Be 'padrao'
-        Set-Ctx @{ EhNotebook = $true }
-        (Get-UTPowerPlanStatus).Mensagem | Should -Match 'bateria'
     }
 }
 

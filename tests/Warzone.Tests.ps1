@@ -202,7 +202,7 @@ Describe 'Modo Partida' {
         Mock Stop-Process { $n = $(if ($InputObject) { @($InputObject)[0].Name } else { @($Name)[0] }); $script:running = @($script:running | Where-Object { $_ -ne $n }) }
         $script:active = '381b4222-f694-41f0-9685-ff5bb260df2e'
         Mock Get-UTActivePowerScheme { [pscustomobject]@{ Guid = $script:active; Nome = 'x' } }
-        Mock Find-UTUpgradePowerScheme { '11111111-1111-1111-1111-111111111111' }
+        Mock Find-UTMaxPerformanceScheme { '11111111-1111-1111-1111-111111111111' }
         Mock Invoke-UTPowerCfg { if ($Argumentos[0] -eq '/setactive') { $script:active = $Argumentos[1] }; '' }
         Mock Test-UTPowerScheme { $true }
         Mock Test-Path { $true } -ParameterFilter { $LiteralPath -like 'C:\Apps\*' }
@@ -216,7 +216,7 @@ Describe 'Modo Partida' {
         ($list | Where-Object Processo -eq 'Spotify').Marcado | Should -BeFalse
     }
 
-    It 'liga: fecha só os marcados, ativa o plano Upgrade Warzone; desliga: volta o plano e reabre' {
+    It 'liga: fecha só os marcados, ativa o Desempenho Máximo; desliga: volta o plano e reabre' {
         $s = Start-UTMatchMode
         $s.Ativo | Should -BeTrue
         $script:running | Should -Be @('Spotify', 'steam', 'Discord')
@@ -227,7 +227,7 @@ Describe 'Modo Partida' {
         (Get-UTMatchModeStatus).Ativo | Should -BeFalse
     }
 
-    It 'X3D de dois CCDs: usa o Equilibrado em vez do Upgrade Warzone' {
+    It 'X3D de dois CCDs: usa o Equilibrado em vez do Desempenho Máximo' {
         Set-Ctx @{ X3D = 'duplo' }
         $script:active = '8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c'
         Start-UTMatchMode | Out-Null

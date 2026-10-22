@@ -24,7 +24,7 @@ Para testar sem Release publicada, copie `dist\upgradetweaks.ps1` (gerado por `s
 - [ ] **Otimizar agora com o preset Seguro**: confirma, aplica, mostra o resumo.
 - [ ] Foi criado um ponto de restauração (`rstrui.exe`) e uma pasta em `%ProgramData%\UpgradeTweaks\backups`.
 - [ ] Os ajustes aplicados mostram "Aplicado"; reiniciar e conferir que continuam.
-- [ ] Aplicar o Competitivo por cima: o plano "Upgrade Warzone" aparece em Opções de Energia e fica ativo.
+- [ ] Aplicar o Competitivo por cima: o plano "Desempenho Máximo" aparece em Opções de Energia e fica ativo; aplicar de novo não cria outra cópia.
 - [ ] Ajuste de risco alto (ex.: IDLEDISABLE): pede confirmação um por um.
 - [ ] **Restaurar → Desfazer TUDO**: tudo volta; conferir plano de energia, uma chave de registro e um serviço (ex.: DiagTrack volta a Automático).
 - [ ] Desfazer de novo não quebra nada ("nada para desfazer").
@@ -34,7 +34,7 @@ Para testar sem Release publicada, copie `dist\upgradetweaks.ps1` (gerado por `s
 - [ ] VM com Xbox App / Game Pass instalado: serviços do Xbox aparecem como "não se aplica".
 - [ ] Taxa do monitor (precisa de monitor real com mais Hz disponível): aplicar mostra o aviso de 15 s e, sem clicar, volta sozinho.
 - [ ] Modo Partida: entrar fecha os programas marcados e troca o plano; sair volta o plano e reabre o que foi fechado (sem administrador).
-- [ ] Notebook (se tiver um para testar): o plano vira "Upgrade Warzone (na tomada)".
+- [ ] Notebook (se tiver um para testar): o Desempenho Máximo ativa e a aba Energia avisa para usar só na tomada.
 
 ## 5. Programas e ferramentas
 

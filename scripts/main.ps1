@@ -16,6 +16,10 @@
     )
 
     if ($Simular) { Write-UTLog -Level Info -Message 'Modo simulação: nada será alterado no sistema.' }
+    else {
+        # v2: the custom power plan of the old versions gives way to Windows' Maximum Performance.
+        try { [void](Invoke-UTPowerPlanMigration -Confirm:$false) } catch { Write-UTLog -Level Aviso -Message 'Não foi possível migrar o plano de energia antigo.' -Detalhe $_.Exception.Message }
+    }
 
     $cliMode = [bool]($Preset -or $Config -or $DesfazerTudo -or $Diagnostico -or $ExportarRelatorio)
     if ($cliMode) {

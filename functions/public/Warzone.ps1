@@ -467,7 +467,7 @@ function Get-UTMatchModeStatus {
 function Start-UTMatchMode {
     <#
     .SYNOPSIS
-        Before playing: closes the checked processes, activates the "Upgrade Warzone" plan (or
+        Before playing: closes the checked processes, activates Windows' Maximum Performance plan (or
         Balanced on dual-CCD X3D) and, optionally, empties the standby memory list.
     #>
     [CmdletBinding(SupportsShouldProcess)]
@@ -491,9 +491,9 @@ function Start-UTMatchMode {
         if ($Contexto.X3D -eq 'duplo') {
             [void](Invoke-UTPowerCfg -Argumentos @('/setactive', (Get-UTConfig -Name 'powerplan').equilibrado))
         } else {
-            $upgrade = Find-UTUpgradePowerScheme
-            if ($upgrade) { [void](Invoke-UTPowerCfg -Argumentos @('/setactive', $upgrade)) }
-            else { [void](Invoke-UTTweak -Id 'UT_Power_UpgradeWarzone') }
+            $max = Find-UTMaxPerformanceScheme
+            if ($max) { [void](Invoke-UTPowerCfg -Argumentos @('/setactive', $max)) }
+            else { [void](Invoke-UTTweak -Id 'UT_Power_DesempenhoMaximo') }
         }
     }
     if ($LimparMemoriaEspera) {

@@ -37,10 +37,10 @@
     },
     {
       "nome": "Competitivo",
-      "descricao": "Seguro + ajustes de risco médio sem efeitos colaterais conhecidos: plano de energia Upgrade Warzone, MMCSS, rede, modo MSI da placa de vídeo, serviços em Manual, exclusão do Defender e debloat moderado (apps que ninguém usa para jogar).",
+      "descricao": "Seguro + ajustes de risco médio sem efeitos colaterais conhecidos: Desempenho Máximo do Windows, MMCSS, rede, modo MSI da placa de vídeo, serviços em Manual, exclusão do Defender e debloat moderado (apps que ninguém usa para jogar).",
       "herda": "Seguro",
       "ajustes": [
-        "UT_Power_UpgradeWarzone",
+        "UT_Power_DesempenhoMaximo",
         "UT_Power_Hibernation_Off",
         "UT_Gaming_HAGS_On",
         "UT_Gaming_MMCSS_Games",
@@ -167,6 +167,14 @@
     "UT_Sys_SvcHostGroup",
     "UT_Gaming_NetFx35",
     "UT_Visual_LogonBlur_Off",
-    "UT_Priv_SearchHighlights_Off"
+    "UT_Priv_SearchHighlights_Off",
+    "UT_Power_Ajuste_ProcMin",
+    "UT_Power_Ajuste_CoreParking",
+    "UT_Power_Ajuste_Boost",
+    "UT_Power_Ajuste_UsbSuspensao",
+    "UT_Power_Ajuste_Aspm",
+    "UT_Power_Ajuste_Disco",
+    "UT_Power_Ajuste_Armazenamento",
+    "UT_Power_Ajuste_Suspensao"
   ]
 }

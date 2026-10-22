@@ -263,10 +263,58 @@ function New-UTUiPageEnergia {
         $pairs = @(, @('Plano ativo', $s.Ativo.Nome))
         $pairs += , @('Situação', $s.Mensagem)
         $box = New-UTUiStack -Itens @((New-UTUiKeyValue -Pares $pairs))
-        $btns = New-UTUiWrap -Margem '0,10,0,0'
+        $main = New-UTUiWrap -Margem '0,10,0,0'
+        if ($s.Modo -ne 'x3dDuplo') {
+            if ($s.MaximoAtivo) {
+                [void]$main.Children.Add((New-UTUiStatusLine -Status 'OK' -Titulo 'Desempenho Máximo ativo' -Texto 'O processador não baixa o clock durante o jogo.'))
+            } else {
+                [void]$main.Children.Add((New-UTUiButton 'Ativar Desempenho Máximo' -Estilo Primario -Icone 'E945' -Dados $D -AoClicar {
+                            param($b, $d) $null = $b
+                            $sim = [bool](Get-UTSyncValue -Key 'Simular')
+                            Invoke-UTUiAction -Nome 'Ativar Desempenho Máximo' -Exclusivo -Argumentos @{ Sim = $sim } -Script { param([bool]$Sim) Invoke-UTTweak -Id 'UT_Power_DesempenhoMaximo' -WhatIf:$Sim } -Dados $d -Depois {
+                                param($r, $dd)
+                                Show-UTUiRunSummary -Resultados @($r) -Titulo 'Desempenho Máximo'
+                                Sync-UTUiAsyncPanel -Painel $dd.Painel
+                                Invoke-UTUiStateRefresh -Id @('UT_Power_DesempenhoMaximo')
+                            }
+                        }))
+            }
+        }
+        [void]$box.Children.Add($main)
+
+        $pick = New-UTUiWrap -Margem '0,10,0,0'
+        $combo = New-Object System.Windows.Controls.ComboBox
+        $combo.MinWidth = 260
+        $combo.Margin = '0,0,8,8'
+        foreach ($plan in @($s.Planos)) {
+            $item = New-Object System.Windows.Controls.ComboBoxItem
+            $item.Content = $(if ($plan.Ativo) { "$($plan.Nome)  (ativo)" } else { [string]$plan.Nome })
+            $item.Tag = [string]$plan.Guid
+            if ($plan.Ativo) { $item.FontWeight = [System.Windows.FontWeights]::SemiBold; $combo.SelectedItem = $item }
+            [void]$combo.Items.Add($item)
+        }
+        [void]$pick.Children.Add((New-UTUiText 'Planos instalados:' -Cor MutedBrush -Margem '0,6,10,0'))
+        [void]$pick.Children.Add($combo)
+        [void]$pick.Children.Add((New-UTUiButton 'Ativar este plano' -Dados @{ Combo = $combo; Painel = $D.Painel } -AoClicar {
+                    param($b, $d) $null = $b
+                    $sel = $d.Combo.SelectedItem
+                    if ($null -eq $sel) { return }
+                    if (Test-UTUiSimulacao -Acao "ativar o plano '$($sel.Content)'.") { return }
+                    Invoke-UTUiAction -Nome 'Ativar plano de energia' -Argumentos @{ Guid = [string]$sel.Tag } -Script { param($Guid) Set-UTActivePowerScheme -Guid $Guid -Confirm:$false } -Dados $d -Depois { param($r, $dd) $null = $r; Sync-UTUiAsyncPanel -Painel $dd.Painel; Invoke-UTUiStateRefresh -Id @('UT_Power_DesempenhoMaximo') }
+                }))
+        [void]$box.Children.Add($pick)
+
+        $btns = New-UTUiWrap -Margem '0,6,0,0'
         [void]$btns.Children.Add((New-UTUiButton 'Voltar ao plano anterior' -Icone 'E7A7' -Dados $D -AoClicar {
                     param($b, $d) $null = $b
-                    Invoke-UTUiAction -Nome 'Voltar ao plano anterior' -Script { Restore-UTPreviousPowerPlan } -Dados $d -Depois { param($r, $dd) $null = $r; Sync-UTUiAsyncPanel -Painel $dd.Painel }
+                    Invoke-UTUiAction -Nome 'Voltar ao plano anterior' -Script { Restore-UTPreviousPowerPlan } -Dados $d -Depois { param($r, $dd) $null = $r; Sync-UTUiAsyncPanel -Painel $dd.Painel; Invoke-UTUiStateRefresh -Id @('UT_Power_DesempenhoMaximo') }
+                }))
+        [void]$btns.Children.Add((New-UTUiButton 'Restaurar planos padrão do Windows' -Icone 'E777' -Dados $D -AoClicar {
+                    param($b, $d) $null = $b
+                    if ((Show-UTUiDialog -Titulo 'Restaurar planos padrão?' -Mensagem 'Recria os planos de energia originais do Windows (Equilibrado etc.) e apaga os planos personalizados, inclusive a cópia liberada do Desempenho Máximo.' -Tipo pergunta -Botoes @('Restaurar', 'Cancelar')) -eq 'Restaurar') {
+                        if (Test-UTUiSimulacao -Acao 'powercfg -restoredefaultschemes.') { return }
+                        Invoke-UTUiAction -Nome 'Restaurar planos padrão' -Script { Restore-UTDefaultPowerScheme -Confirm:$false } -Dados $d -Depois { param($r, $dd) $null = $r; Sync-UTUiAsyncPanel -Painel $dd.Painel; Invoke-UTUiStateRefresh -Id @('UT_Power_DesempenhoMaximo') }
+                    }
                 }))
         [void]$btns.Children.Add((New-UTUiButton 'Exportar plano ativo (.pow)' -Icone 'E74E' -AoClicar {
                     param($b, $d) $null = $b, $d
@@ -277,12 +325,6 @@ function New-UTUiPageEnergia {
                     param($b, $d) $null = $b
                     $p = Get-UTUiFileDialog -Modo Abrir -Filtro 'Plano de energia (*.pow)|*.pow'
                     if ($p) { Invoke-UTUiAction -Nome 'Importar plano' -Argumentos @{ Caminho = $p } -Script { param($Caminho) Import-UTPowerPlan -Path $Caminho -Ativar } -Dados $d -Depois { param($r, $dd) $null = $r; Sync-UTUiAsyncPanel -Painel $dd.Painel } }
-                }))
-        [void]$btns.Children.Add((New-UTUiButton 'Restaurar planos padrão do Windows' -Icone 'E777' -AoClicar {
-                    param($b, $d) $null = $b, $d
-                    if ((Show-UTUiDialog -Titulo 'Restaurar planos padrão?' -Mensagem 'Recria os planos de energia originais do Windows (Equilibrado etc.). Planos personalizados continuam lá.' -Tipo pergunta -Botoes @('Restaurar', 'Cancelar')) -eq 'Restaurar') {
-                        Invoke-UTUiAction -Nome 'Restaurar planos padrão' -Script { Restore-UTDefaultPowerScheme } -Sucesso 'Planos padrão restaurados.'
-                    }
                 }))
         [void]$box.Children.Add($btns)
         return $box
@@ -295,9 +337,9 @@ function New-UTUiPageEnergia {
             param($R, $D) $null = $D
             New-UTUiStack -Itens @(@($R) | ForEach-Object { New-UTUiStatusLine -Status $(if ($_.Ok) { 'OK' } else { 'Aviso' }) -Titulo ([string]$_.Item) -Texto ([string]$_.Mensagem) })
         }
-        $tools += New-UTUiCard -Titulo 'Ryzen X3D com dois CCDs' -Subtitulo 'Nestes processadores o plano Equilibrado + driver de chipset da AMD + Game Bar colocam o jogo no CCD com 3D V-Cache. Por isso o plano Upgrade Warzone não é usado.' -Icone 'E950' -Conteudo @($x3d)
+        $tools += New-UTUiCard -Titulo 'Ryzen X3D com dois CCDs' -Subtitulo 'Nestes processadores o plano Equilibrado + driver de chipset da AMD + Game Bar colocam o jogo no CCD com 3D V-Cache. Por isso o Desempenho Máximo não é usado.' -Icone 'E950' -Conteudo @($x3d)
     }
-    return (New-UTUiTweakPage -Aba Energia -Descricao 'Plano de energia "Upgrade Warzone" e ajustes de energia do processador. Notebooks e Ryzen X3D de dois CCDs são tratados à parte.' -Ferramentas $tools)
+    return (New-UTUiTweakPage -Aba Energia -Descricao 'Desempenho Máximo do próprio Windows e ajustes avulsos de energia sobre o plano ativo (todos opcionais e desmarcados). Notebooks e Ryzen X3D de dois CCDs são tratados à parte.' -Ferramentas $tools)
 }
 
 function New-UTUiPageGaming {
@@ -708,7 +750,7 @@ function New-UTUiPageWarzone {
         }
     }
     $tools = @(
-        (New-UTUiCard -Titulo 'Modo Partida' -Icone 'E7FC' -Subtitulo 'Antes de jogar: fecha programas pesados e ativa o plano Upgrade Warzone. Ao sair, volta o plano anterior e reabre o que foi fechado.' -Conteudo @($match))
+        (New-UTUiCard -Titulo 'Modo Partida' -Icone 'E7FC' -Subtitulo 'Antes de jogar: fecha programas pesados e ativa o Desempenho Máximo. Ao sair, volta o plano anterior e reabre o que foi fechado.' -Conteudo @($match))
         (New-UTUiCard -Titulo 'Arquivo de configuração do jogo' -Icone 'E713' -Subtitulo 'O programa só altera chaves que já existem e sempre faz backup antes. Feche o jogo antes de mexer.' -Conteudo @($cfg))
         (New-UTUiCard -Titulo 'Configurações recomendadas dentro do jogo' -Icone 'E7FC' -Subtitulo 'Ajustadas para a sua placa de vídeo e VRAM. O botão grava direto no arquivo de configuração do jogo (com backup).' -Conteudo @($combo, $applyGuide, $guideHost))
     )

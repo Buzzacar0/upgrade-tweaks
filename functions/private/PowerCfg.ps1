@@ -26,7 +26,8 @@ function Get-UTPowerSchemeList {
 
     $out = Invoke-UTPowerCfg -Argumentos @('/list')
     foreach ($line in ($out -split "`r?`n")) {
-        $m = [regex]::Match($line, '([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})\s*\(([^)]*)\)\s*(\*)?')
+        # The name runs to the last ')' of the line: plan names may have parentheses themselves.
+        $m = [regex]::Match($line, '([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})\s*\((.*)\)\s*(\*)?\s*$')
         if (-not $m.Success) { continue }
         [pscustomobject]@{
             Guid  = $m.Groups[1].Value.ToLowerInvariant()
@@ -100,25 +101,4 @@ function Copy-UTPowerScheme {
     $m = [regex]::Match($out, '[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}')
     if (-not $m.Success) { throw "powercfg /duplicatescheme não devolveu o GUID do novo plano: $out" }
     return $m.Value.ToLowerInvariant()
-}
-
-function Find-UTUpgradePowerScheme {
-    <#
-    .SYNOPSIS
-        GUID of the "Upgrade Warzone" plan if it exists: first the one recorded in the original
-        state, then any plan with that name (left from an earlier install).
-    #>
-    [CmdletBinding()]
-    [OutputType([string])]
-    param()
-
-    $schemes = @(Get-UTPowerSchemeList)
-    $saved = Get-UTOriginalItem -Chave 'generico|energia|planoupgrade'
-    if ($saved -and $saved.dados.guid -and @($schemes | Where-Object { $_.Guid -eq $saved.dados.guid }).Count -gt 0) {
-        return [string]$saved.dados.guid
-    }
-    $cfg = Get-UTConfig -Name 'powerplan'
-    $byName = (@($schemes | Where-Object { $_.Nome -eq $cfg.nome -or $_.Nome -eq $cfg.nomeNotebook }) | Select-Object -First 1)
-    if ($byName) { return $byName.Guid }
-    return $null
 }

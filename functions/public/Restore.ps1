@@ -151,7 +151,7 @@ function Restore-UTDefaultPowerScheme {
     <#
     .SYNOPSIS
         powercfg -restoredefaultschemes: brings back Windows' default plans.
-        Warning: this deletes every custom plan, including "Upgrade Warzone".
+        Warning: this deletes every custom plan, including the unlocked copy of Maximum Performance.
     #>
     [CmdletBinding(SupportsShouldProcess, ConfirmImpact = 'High')]
     param()

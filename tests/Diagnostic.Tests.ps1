@@ -24,7 +24,7 @@
             Seguranca     = [pscustomobject]@{ SecureBoot = $true; Tpm = [pscustomobject]@{ Presente = $true; Versao = '2.0'; Ativo = $true }; Vbs = $true; Hvci = $false }
             Plataforma    = [pscustomobject]@{ EhNotebook = $false; TemBateria = $false; PlacaMae = 'ASUS TUF B650' }
             Sistema       = [pscustomobject]@{ Hags = 'ligado'; ModoJogo = $true; GameDvr = $false
-                PlanoEnergia = [pscustomobject]@{ Guid = '11111111-2222-3333-4444-555555555555'; Nome = 'Upgrade Warzone' }
+                PlanoEnergia = [pscustomobject]@{ Guid = '11111111-2222-3333-4444-555555555555'; Nome = 'Desempenho Máximo' }
                 Paginacao = [pscustomobject]@{ Automatica = $true; Arquivos = @(); EmUso = $true } }
             Jogo          = [pscustomobject]@{ Instalacoes = @([pscustomobject]@{ Launcher = 'steam'; Caminho = 'C:\Steam\Call of Duty HQ'; Executaveis = @('C:\Steam\Call of Duty HQ\cod.exe')
                         Disco = [pscustomobject]@{ Letra = 'C'; LivreGB = 400; TotalGB = 1000; TipoDisco = 'NVMe' } }); Launchers = @('steam') }

@@ -5,6 +5,11 @@ O formato segue o [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) e 
 
 ## [Não lançado]
 
+### Mudado
+- Plano de energia: o plano personalizado das versões anteriores deu lugar ao **Desempenho Máximo** nativo do Windows (liberado com `powercfg -duplicatescheme` só quando está escondido, sem criar cópias; Alto Desempenho quando a edição não permite). Na primeira execução, o plano antigo é apagado (com o Desempenho Máximo ativado no lugar quando ele era o ativo) e sai do diário de ajustes.
+- Os valores que eram do plano antigo viraram ajustes avulsos e opcionais sobre o plano ativo (`UT_Power_Ajuste_*`), fora dos presets.
+- Aba Energia: botão "Ativar Desempenho Máximo", seletor com todos os planos instalados e "Restaurar planos padrão do Windows".
+
 ## [0.2.0] - 2026-10-22
 
 ### Adicionado

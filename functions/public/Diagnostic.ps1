@@ -229,9 +229,9 @@ function Get-UTDiagnosticCheck {
                 $msg = $(if ($balanced) { 'Plano Equilibrado, como o Ryzen X3D de dois CCDs precisa.' } else { "Plano '$($plan.Nome)'. Nos Ryzen X3D de dois CCDs use o Equilibrado: o driver da AMD depende dele para usar o CCD com V-Cache." })
                 $checks.Add((New-UTCheck -Id 'energia' -Titulo 'Plano de energia' -Status $st -Mensagem $msg -Peso 5 -Aba 'Energia'))
             } elseif ($isLaptop) {
-                $checks.Add((New-UTCheck -Id 'energia' -Titulo 'Plano de energia' -Status Info -Mensagem "Plano '$($plan.Nome)'. Em notebook, use o plano Upgrade Warzone só na tomada." -Aba 'Energia'))
+                $checks.Add((New-UTCheck -Id 'energia' -Titulo 'Plano de energia' -Status Info -Mensagem "Plano '$($plan.Nome)'. Em notebook, use o Desempenho Máximo só na tomada." -Aba 'Energia'))
             } elseif ($balanced -or $plan.Guid -eq 'a1841308-3541-4fab-bc81-f71556f20b4a') {
-                $checks.Add((New-UTCheck -Id 'energia' -Titulo 'Plano de energia' -Status Aviso -Mensagem "Plano '$($plan.Nome)'. Aplique o plano Upgrade Warzone na aba Energia." -Peso 5 -Aba 'Energia'))
+                $checks.Add((New-UTCheck -Id 'energia' -Titulo 'Plano de energia' -Status Aviso -Mensagem "Plano '$($plan.Nome)'. Ative o Desempenho Máximo na aba Energia." -Peso 5 -Aba 'Energia'))
             } else {
                 $checks.Add((New-UTCheck -Id 'energia' -Titulo 'Plano de energia' -Status OK -Mensagem "Plano '$($plan.Nome)'." -Peso 5 -Aba 'Energia'))
             }
@@ -313,7 +313,7 @@ function Get-UTDiagnosticCheck {
         $text = $(if ($cpu.X3D.Tipo -eq 'duplo') {
                 "$($cpu.Nome): Ryzen X3D de dois CCDs. Mantenha o plano Equilibrado, o Game Bar e o driver de chipset da AMD atualizado; o programa respeita isso automaticamente."
             } else {
-                "$($cpu.Nome): Ryzen X3D de um CCD. Pode usar o plano Upgrade Warzone normalmente; mantenha o driver de chipset da AMD atualizado."
+                "$($cpu.Nome): Ryzen X3D de um CCD. Pode usar o Desempenho Máximo normalmente; mantenha o driver de chipset da AMD atualizado."
             })
         $checks.Add((New-UTCheck -Id 'x3d' -Titulo 'Processador X3D' -Status Info -Mensagem $text -Aba 'Energia'))
     }

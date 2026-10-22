@@ -33,14 +33,14 @@ irm https://github.com/Buzzacar0/upgrade-tweaks/releases/latest/download/upgrade
 |---|---|
 | **Início** | Diagnóstico do hardware com **Nota de Otimização (0–100)**, pendências ordenadas por impacto (com a aba que resolve), relatório em HTML/TXT e os presets. |
 | **Monitor** | **Sensores em tempo real** como o HWMonitor (temperatura do Tctl/CCD, clock, VID e consumo por núcleo, tensões e ventoinhas da placa-mãe, temperatura e timings dos pentes de memória, GPU, SSDs) com mínimo/máximo e relatório `.txt`, e o **resumo do hardware** como o CPU-Z (codinome, instruções, microcódigo, BIOS, memória, pentes, placas de vídeo). Usa a LibreHardwareMonitor com o driver PawnIO, instalados só quando você pede. |
-| **Energia** | Plano **"Upgrade Warzone"** (processador a 100%, sem estacionamento de núcleos, sem economia em USB/PCIe/disco). Ryzen X3D de dois CCDs mantém o Equilibrado de propósito; notebook ganha um plano só para quando está na tomada. Exportar/importar `.pow`. |
+| **Energia** | **Desempenho Máximo** do próprio Windows (liberado uma vez quando está escondido, sem criar cópias; Alto Desempenho quando a edição não permite), seletor com todos os planos instalados, voltar ao plano anterior, restaurar os planos padrão e exportar/importar `.pow`. Ajustes avulsos e opcionais sobre o plano ativo (estado mínimo do processador, estacionamento de núcleos, boost, USB, PCIe, discos, SATA/NVMe, suspensão, IDLEDISABLE), todos desmarcados por padrão. Ryzen X3D de dois CCDs mantém o Equilibrado de propósito; notebook é avisado para usar só na tomada. |
 | **Gaming** | Game DVR, Modo de Jogo, aceleração do mouse, HAGS, MMCSS, otimizações para jogos em janela, MPO. |
 | **Latência** | Ajustes avançados e opcionais: modo MSI da placa de vídeo e de rede, tick dinâmico, Power Throttling, compressão de memória, mitigações de CPU. Cada um diz com franqueza o quanto ajuda (muitas vezes, pouco). |
 | **Rede** | Teste de latência, jitter e perda (roteador e internet), comparação de DNS, QoS para o Call of Duty, economia de energia da placa de rede, Nagle, IPv4 preferido, limpar DNS e resetar a rede. |
 | **Serviços e Apps** | Serviços em Manual, remoção de apps que não são de jogo, **Modo Lite** (debloat agressivo mostrado em lista antes) e gerenciador de inicialização. |
 | **Privacidade** | Telemetria, ID de anúncios, histórico de atividades, Copilot, Recall, widgets, pesquisa do Bing e afins. |
 | **GPU** | Configurações do driver gravadas direto, com atual × recomendado e desfazer: **NVIDIA** (perfil do Call of Duty e global, pela NVAPI), **AMD** (Anti-Lag, Chill, Boost, AFMF, Super Resolution, Enhanced Sync, V-Sync, FreeSync, filtragem de textura, pela ADLX oficial da AMD) e **Intel Arc** (baixa latência, V-Sync, Endurance Gaming, limitador, shaders pré-compilados, pela Control Library oficial da Intel). Faixa de cor Completa, taxa máxima do monitor, power limit, cache de shaders, "só o driver de vídeo" da NVIDIA e **DDU automático** em Modo de Segurança. |
-| **Warzone** | **Modo Partida** (fecha o que pesa e ativa o plano Upgrade Warzone; ao sair, volta tudo), **configurações de gráficos gravadas direto no arquivo do jogo** (para a sua placa e VRAM, só valores que o próprio jogo aceita, com backup), exclusão no Defender. |
+| **Warzone** | **Modo Partida** (fecha o que pesa e ativa o Desempenho Máximo; ao sair, volta tudo), **configurações de gráficos gravadas direto no arquivo do jogo** (para a sua placa e VRAM, só valores que o próprio jogo aceita, com backup), exclusão no Defender. |
 | **Ferramentas** | Limpeza de temporários, Limpeza de Disco, `sfc`/`DISM`, TRIM (nunca desfragmenta SSD), arquivo de paginação, pausar o Windows Update por até 35 dias, atalhos do sistema, **guia de BIOS** personalizado, limpar logs de eventos, recriar o índice de pesquisa, consertar o Explorer lento, CompactOS, teste de disco (winsat) e **limpeza automática da RAM** agendada (opcional, só com pouca RAM livre). |
 | **BIOS** | Placa-mãe e versão da BIOS, **reiniciar direto na BIOS**, **backup e restauração da NVRAM** e o **editor de opções da BIOS pelo Windows**: o mapa sai do arquivo oficial da BIOS do fabricante (UEFIExtract + IFRExtractor, código aberto), os valores são lidos e gravados na NVRAM pela API do Windows, com backup antes, avaliação das condições da própria BIOS e conferência com o que o Windows enxerga. Opções que só existem durante o boot aparecem como "só dentro da BIOS". |
 | **Programas** | MSI Afterburner, RTSS, HWiNFO64, OCCT, CPU-Z, GPU-Z, NVIDIA Profile Inspector, DDU, NVCleanstall, Autoruns, Process Lasso, O&O ShutUp10, 7-Zip, Everything, CrystalDiskInfo/Mark, Visual C++ (2005 a 2022), DirectX, .NET Desktop, launchers (Steam, Battle.net, Epic, EA, Ubisoft, GOG), Magpie, Lossless Scaling, CapFrameX, navegadores, players, OBS, Discord e outros: instalar, abrir (como administrador), atualizar e desinstalar pelo winget ou pela versão oficial no GitHub. |
@@ -55,7 +55,7 @@ Cada ajuste mostra o **risco** (baixo, médio, alto), se **requer reinício**, s
 | Preset | O que marca |
 |---|---|
 | **Seguro** (recomendado) | Só ajustes de risco baixo com ganho comprovado: Game DVR, Modo de Jogo, mouse, perfil NVIDIA do jogo, GPU dedicada, paginação e telemetria básica. |
-| **Competitivo** | Seguro + risco médio sem efeitos colaterais conhecidos: plano Upgrade Warzone, MMCSS, rede, modo MSI, serviços em Manual, exclusão do Defender e debloat moderado. |
+| **Competitivo** | Seguro + risco médio sem efeitos colaterais conhecidos: Desempenho Máximo do Windows, MMCSS, rede, modo MSI, serviços em Manual, exclusão do Defender e debloat moderado. |
 | **Extremo** | Competitivo + todo o resto de desempenho, inclusive risco alto. Pede para digitar **EU ENTENDO**. |
 
 O que não se aplica ao hardware (X3D de dois CCDs, notebook, Xbox/Game Pass, fabricante da placa) é pulado sozinho. Personalização, escolha de DNS, serviços do Xbox e o Spooler de impressão nunca entram em preset. A lista exata de cada um está em [`config/presets.json`](config/presets.json).
@@ -96,16 +96,24 @@ Código de saída: `0` ok, `1` algum ajuste falhou, `2` parâmetros inválidos, 
 ## Todos os ajustes
 
 <!-- TABELA-AJUSTES:INICIO -->
-Total: **162 ajustes**, todos com desfazer e detecção do estado atual. A coluna Preset mostra o primeiro preset que inclui o ajuste (Seguro está dentro do Competitivo, que está dentro do Extremo).
+Total: **170 ajustes**, todos com desfazer e detecção do estado atual. A coluna Preset mostra o primeiro preset que inclui o ajuste (Seguro está dentro do Competitivo, que está dentro do Extremo).
 
-<details><summary><b>Energia</b> (5 ajustes)</summary>
+<details><summary><b>Energia</b> (13 ajustes)</summary>
 
 | Ajuste | Risco | Ganho esperado | Reinício | Preset |
 |---|---|---|---|---|
+| Boost do processador agressivo | baixo | Pequeno | não | — |
 | Desativar a hibernação | baixo | Nenhum em FPS; libera espaço em disco | não | Competitivo |
+| Desligar a economia de energia do SATA e do NVMe | baixo | Pequeno | não | — |
+| Desligar a economia do link PCI Express (ASPM) | baixo | Pequeno | não | — |
+| Desligar a suspensão seletiva de USB | baixo | Pequeno (evita engasgos de periféricos) | não | — |
+| Desligar o estacionamento de núcleos | baixo | Pequeno | não | — |
 | Manter o plano Equilibrado (Ryzen X3D de dois CCDs) | baixo | Médio a alto (o jogo roda no CCD com V-Cache) | não | Seguro |
 | Mostrar configurações ocultas nas Opções de Energia | baixo | Nenhum por si só (permite ajuste manual) | não | — |
-| Plano de energia Upgrade Warzone | médio | Pequeno a médio (frametime mais estável; maior em PCs que estavam no Equilibrado ou Economia) | não | Competitivo |
+| Nunca desligar os discos | baixo | Nenhum em SSD; evita travadas em HD | não | — |
+| Nunca suspender nem hibernar sozinho | baixo | Nenhum em FPS (evita interrupções) | não | — |
+| Ativar o Desempenho Máximo do Windows | médio | Pequeno a médio (frametime mais estável; maior em PCs que estavam no Equilibrado ou Economia) | não | Competitivo |
+| Processador sempre no clock máximo (estado mínimo 100%) | médio | Pequeno (frametime um pouco mais estável) | não | — |
 | Desativar o estado ocioso do processador (IDLEDISABLE) *(controverso)* | alto | Muito pequeno, quase sempre imperceptível no Warzone | não | Extremo |
 
 </details>
@@ -359,7 +367,7 @@ Logs ficam em `%ProgramData%\UpgradeTweaks\logs` (30 dias), com data, ajuste e v
 
 **E em notebook?** Sim. Os ajustes que fariam mal na bateria são marcados como "não se aplica" e o plano de energia só vale na tomada.
 
-**Tenho Ryzen X3D.** Os de um CCD (7800X3D, 9800X3D) usam o plano Upgrade Warzone normalmente. Os de dois CCDs (7900X3D, 7950X3D, 9900X3D, 9950X3D) ficam no plano Equilibrado de propósito: é ele, junto com o driver de chipset da AMD e o Game Bar, que coloca o jogo no CCD com 3D V-Cache.
+**Tenho Ryzen X3D.** Os de um CCD (7800X3D, 9800X3D) usam o Desempenho Máximo normalmente. Os de dois CCDs (7900X3D, 7950X3D, 9900X3D, 9950X3D) ficam no plano Equilibrado de propósito: é ele, junto com o driver de chipset da AMD e o Game Bar, que coloca o jogo no CCD com 3D V-Cache.
 
 **Jogo pelo Xbox App / Game Pass.** O programa detecta e nunca mexe em Gaming Services, serviços do Xbox, Store ou Game Bar.
 

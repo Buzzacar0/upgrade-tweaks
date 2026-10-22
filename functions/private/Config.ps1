@@ -30,7 +30,7 @@ function Add-UTConfigDefault {
         'bios-ajustes' { $lists += , @(@($Config['itens']), @{ cpu = @(); verificacao = ''; recomendado = '' }) }
         'presets' { $lists += , @(@($Config['presets']), @{ herda = ''; exigeConfirmacao = $false; textoConfirmacao = ''; aviso = ''; recomendado = $false; ajustes = @() }) }
         'cpu-x3d' { $lists += , @(@($Config['modelos']), @{ vcacheNosDois = $false }) }
-        'powerplan' { $lists += , @(@($Config['configuracoes']), @{ configuravel = $false; opcional = $false; pularX3DDuplo = $false }) }
+        'powerplan' { $lists += , @(@($Config['ajustes']), @{ itens = @() }) }
         'modo-partida' { $lists += , @(@($Config['processos']), @{ marcado = $false; reabrir = $false; grupo = '' }) }
         'warzone-guia' {
             if ($Config['perfis'] -is [System.Collections.IDictionary]) {
