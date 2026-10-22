@@ -254,11 +254,44 @@ namespace UpgradeTweaks.Overlay {
             reader.Start();
         }
 
+        // Benchmark: every frame of one process between StartRecording and StopRecording (the ring
+        // keeps only the last frames).
+        List<double> recording;
+        int recordingPid;
+        public bool IsRecording { get { lock (gate) { return recording != null; } } }
+        public int RecordingPid { get { lock (gate) { return recordingPid; } } }
+        public int RecordedFrames { get { lock (gate) { return recording == null ? 0 : recording.Count; } } }
+        public void StartRecording(int pid) { lock (gate) { recording = new List<double>(65536); recordingPid = pid; } }
+        public double[] StopRecording() {
+            lock (gate) {
+                double[] r = recording == null ? new double[0] : recording.ToArray();
+                recording = null;
+                recordingPid = 0;
+                return r;
+            }
+        }
+
+        // The process that drew the most frames in the last `withinSeconds` (the game being played).
+        public int BusiestProcess(double withinSeconds, int[] exclude) {
+            lock (gate) {
+                int best = 0; long most = 0;
+                foreach (ProcessFrames pf in byPid.Values) {
+                    if ((DateTime.UtcNow - pf.LastFrameUtc).TotalSeconds > withinSeconds) continue;
+                    if (exclude != null && Array.IndexOf(exclude, pf.ProcessId) >= 0) continue;
+                    if (pf.Frames > most) { most = pf.Frames; best = pf.ProcessId; }
+                }
+                return best;
+            }
+        }
+
+        public string ApplicationOf(int pid) { lock (gate) { ProcessFrames pf; return byPid.TryGetValue(pid, out pf) ? pf.Application : ""; } }
+
         public void Feed(string line) {
             Interlocked.Increment(ref Lines);
             FrameSample s = parser.Parse(line);
             if (s == null) return;
             lock (gate) {
+                if (recording != null && s.ProcessId == recordingPid) recording.Add(s.FrameMs);
                 ProcessFrames pf;
                 if (!byPid.TryGetValue(s.ProcessId, out pf)) { pf = new ProcessFrames(s.Application, s.ProcessId, Capacity); byPid[s.ProcessId] = pf; }
                 pf.Ring.Add(s.FrameMs);

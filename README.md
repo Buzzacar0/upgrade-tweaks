@@ -18,21 +18,32 @@ Otimizador de Windows da **Upgrade Store** (Porto Alegre/RS), focado em desempen
 irm https://github.com/Buzzacar0/upgrade-tweaks/releases/latest/download/upgradetweaks.ps1 | iex
 ```
 
-3. A janela do Upgrade Tweaks abre na tela **Início** com o diagnóstico do seu PC. Para começar sem pensar muito, clique em **Otimizar agora com o preset Seguro**.
+3. A janela do Upgrade Tweaks abre na tela **Início** com o diagnóstico do seu PC e a **Nota de Otimização**. Para começar sem pensar muito, escolha o preset **Seguro** e clique em **Otimizar agora**: antes de aplicar, você vê exatamente o que vai mudar.
 
 > **Precisa ser administrador.** O programa mexe em registro do sistema, serviços, plano de energia e configurações do driver. Se for aberto sem privilégio, ele mesmo pede a permissão do Windows (UAC); se a permissão for negada, avisa e fecha sem alterar nada.
 
-<p align="center">
-  <img src="docs/img/gaming.png" alt="Aba Gaming" width="49%">
-  <img src="docs/img/warzone.png" alt="Aba Warzone" width="49%">
-</p>
+> **[Print: Início]** tela Início com o anel da Nota de Otimização e o card "Otimizar agora" (`docs/img/inicio.png`).
+
+> **[Print: aba de ajustes]** aba Gaming com os switches, "Será aplicado" e o botão ⓘ (`docs/img/gaming.png`).
+
+> **[Print: overlay]** overlay em jogo com FPS, 1%/0,1% low, frametime e sensores (`docs/img/overlay.png`).
+
+## A interface
+
+- Visual no estilo dos Ajustes do macOS: barra lateral com seções e ícones, listas agrupadas, **tema claro, escuro ou igual ao Windows**, cor de destaque (roxo da Upgrade Store por padrão) e Mica no Windows 11.
+- Cada ajuste é uma linha com **switch** (ligado = aplicado), o ganho esperado e o botão **ⓘ** com descrição, risco, aviso e o que muda no registro e nos serviços.
+- Ligar ou desligar só cria uma **pendência**. **Revisar e aplicar** calcula em simulação exatamente o que vai mudar, mostra a lista e só então aplica (e desfaz o que você desligou) com progresso e resumo no fim.
+- **Busca global (Ctrl+K)**: abas, ajustes, sensores e opções da BIOS.
+- Preferências da janela, do Monitor e do overlay ficam em `%AppData%\UpgradeTweaks` (`ui.json`, `monitor.json`, `overlay.json`); benchmarks em `%AppData%\UpgradeTweaks\benchmarks`.
 
 ## O que o programa faz, aba por aba
 
 | Aba | O que tem |
 |---|---|
-| **Início** | Diagnóstico do hardware com **Nota de Otimização (0–100)**, pendências ordenadas por impacto (com a aba que resolve), relatório em HTML/TXT e os presets. |
-| **Monitor** | **Sensores em tempo real** como o HWMonitor (temperatura do Tctl/CCD, clock, VID e consumo por núcleo, tensões e ventoinhas da placa-mãe, temperatura e timings dos pentes de memória, GPU, SSDs) com mínimo/máximo e relatório `.txt`, e o **resumo do hardware** como o CPU-Z (codinome, instruções, microcódigo, BIOS, memória, pentes, placas de vídeo). Usa a LibreHardwareMonitor com o driver PawnIO, instalados só quando você pede. |
+| **Início** | Diagnóstico do hardware com o anel da **Nota de Otimização (0–100)**, **Otimizar agora** com o preset escolhido (revisão antes de aplicar), pendências ordenadas por impacto com **Resolver**, resumo do PC, relatório em HTML/TXT e exportar/importar a seleção. |
+| **Monitor** | **Sensores em tempo real** como o HWMonitor (temperaturas, clocks, uso, consumo, tensões e ventoinhas da placa-mãe, memória, GPU, SSDs) em **cartões com gráfico** ou **tabela com mínimo, máximo e média**. Layouts **Essencial, Gamer, Completo e Personalizado** (exportar/importar em JSON), favoritos no topo, nome próprio, ocultar e **reordenar arrastando**, resumo dos núcleos, sensores zerados escondidos, **alertas** com notificação do Windows, °C/°F, casas decimais, atualização de 250 ms a 2 s, relatório e log em **CSV**. Também o **resumo do hardware** como o CPU-Z. Usa a LibreHardwareMonitor com o driver PawnIO, instalados só quando você pede. |
+| **Overlay** | **FPS, 1% e 0,1% low, frametime, gráfico de frametime** e sensores (CPU, GPU, RAM, VRAM) por cima do jogo, medidos pelo **PresentMon oficial da Intel** (sem injetar nada no jogo). Editor visual com **prévia ao vivo**, perfis, **perfil automático por jogo**, atalhos globais, ícone ao lado do relógio, abrir com o Windows, aviso de tela cheia exclusiva, RTSS opcional e integração com o Modo Partida. |
+| **Benchmark** | Grava os frametimes de uma partida (pela aba, com tempo para voltar ao jogo, ou com **Ctrl+Shift+F12** dentro do jogo): FPS médio, 1% e 0,1% low, P1, mínimo, máximo e engasgos, gráfico, **CSV** e **comparação de duas gravações** (antes e depois de um ajuste). |
 | **Energia** | **Desempenho Máximo** do próprio Windows (liberado uma vez quando está escondido, sem criar cópias; Alto Desempenho quando a edição não permite), seletor com todos os planos instalados, voltar ao plano anterior, restaurar os planos padrão e exportar/importar `.pow`. Ajustes avulsos e opcionais sobre o plano ativo (estado mínimo do processador, estacionamento de núcleos, boost, USB, PCIe, discos, SATA/NVMe, suspensão, IDLEDISABLE), todos desmarcados por padrão. Ryzen X3D de dois CCDs mantém o Equilibrado de propósito; notebook é avisado para usar só na tomada. |
 | **Gaming** | Game DVR, Modo de Jogo, aceleração do mouse, HAGS, MMCSS, otimizações para jogos em janela, MPO. |
 | **Latência** | Ajustes avançados e opcionais: modo MSI da placa de vídeo e de rede, tick dinâmico, Power Throttling, compressão de memória, mitigações de CPU. Cada um diz com franqueza o quanto ajuda (muitas vezes, pouco). |
@@ -88,6 +99,7 @@ Direto da internet (o `irm | iex` não aceita parâmetros, então o script vira 
 | `-Diagnostico` / `-ExportarRelatorio caminho` | Mostra a nota e as pendências; o relatório pode ser `.html` ou `.txt`. |
 | `-Simular` | Mostra tudo que seria feito sem alterar nada (sozinho, abre a interface em modo simulação). |
 | `-Silencioso` | Sem saída no console e sem perguntas; tudo fica no log. |
+| `-Overlay` | Abre só o overlay de FPS (ícone ao lado do relógio), sem a janela principal. |
 
 A taxa de atualização do monitor nunca é alterada pela linha de comando: na interface ela tem 15 segundos para ser confirmada e volta sozinha se a tela apagar.
 
@@ -339,11 +351,36 @@ Total: **170 ajustes**, todos com desfazer e detecção do estado atual. A colun
 </details>
 <!-- TABELA-AJUSTES:FIM -->
 
+## Medições
+
+Uso de CPU medido num **Ryzen 7 9800X3D** (16 threads), Windows 11 25H2, RTX 5070. Porcentagem da CPU inteira (como o Gerenciador de Tarefas mostra), média de 30 segundos depois de 12 segundos de aquecimento, contando o processo todo (a interface e a leitura dos sensores).
+
+| O quê | Configuração | CPU |
+|---|---|---|
+| Monitor | Essencial, cartões, a cada 1 s (padrão) | **0,48%** |
+| Monitor | Gamer, cartões, a cada 250 ms | 1,29% |
+| Monitor | Completo (202 sensores), tabela, a cada 250 ms | 1,56% |
+| Monitor | Completo, tabela, a cada 1 s | 0,69% |
+| Só a leitura dos sensores | a cada 250 ms, sem janela | 0,51% |
+| Overlay | perfil Completo (com sensores), jogo de teste a ~175 FPS | **0,35% a 0,44%** |
+| PresentMon 2.6.0 | durante o overlay | 0,01% a 0,03% |
+
+Como os números do overlay e do benchmark são calculados:
+
+- **FPS** = quadros ÷ tempo, no último segundo (overlay) ou na gravação inteira (benchmark).
+- **1% low** e **0,1% low** = FPS médio do 1% e do 0,1% de quadros mais lentos (no overlay, dos últimos 30 s). É o número que mostra as travadas que o FPS médio esconde.
+- **P1** = FPS no percentil 99 dos frametimes (99% dos quadros foram mais rápidos que isso).
+- **Engasgos** = quadros que levaram mais que o dobro da mediana.
+
+> **[Print: Monitor]** aba Monitor no layout Gamer, em cartões (`docs/img/monitor.png`).
+
+> **[Print: Benchmark]** comparação de duas gravações na aba Benchmark (`docs/img/benchmark.png`).
+
 ## Anti-cheat (RICOCHET)
 
 O Upgrade Tweaks **só muda configurações do Windows e do driver**: registro, serviços, plano de energia, perfis do driver NVIDIA, adaptador de rede e apps instalados. Ele:
 
-- **não** abre, injeta nem lê a memória do jogo e não roda nada junto com ele;
+- **não** abre, injeta nem lê a memória do jogo. O overlay e o benchmark leem os quadros pelo **PresentMon** da Intel, que usa os eventos de diagnóstico do próprio Windows (ETW), os mesmos do Gerenciador de Tarefas e do Visualizador de Eventos; a janela do overlay é uma janela comum do Windows por cima do jogo. A opção do **RTSS** é desligada por padrão: o RivaTuner entra no jogo por conta própria, e o Upgrade Tweaks só escreve o texto nele;
 - **não** altera arquivos do jogo; o único arquivo do Call of Duty que pode mudar é o de **configuração** em `Documentos\Call of Duty\players`, e só em chaves que já existem, com backup antes;
 - **nunca desliga Secure Boot nem TPM 2.0**, que o Call of Duty **exige** ligados (o diagnóstico avisa se estiverem desligados e o guia de BIOS mostra como ligar);
 - não desliga o Windows Defender, o Windows Update nem o UAC.
@@ -400,6 +437,8 @@ Requisitos: Windows PowerShell 5.1, Pester 5.7.1 e PSScriptAnalyzer (`Install-Mo
 | Só atualizar a tabela de ajustes | `powershell -File scripts\build-docs.ps1` |
 | Corrigir codificação (UTF-8 com BOM) | `powershell -File scripts\fix-encoding.ps1` |
 | Abrir a interface sem alterar nada | `powershell -File scripts\start.ps1 -Simular` |
+| Abrir só o overlay | `powershell -STA -File scripts\start.ps1 -Overlay` |
+| Galeria de componentes | `powershell -File scripts\start.ps1 -Simular -Galeria` (ou Ctrl+Shift+G) |
 | Publicar uma versão | siga o [roteiro de teste manual](docs/teste-manual.md) numa VM, atualize `VERSION` e o `CHANGELOG.md`, depois `git tag v0.1.0` e `git push --tags`: o GitHub Actions testa, compila e cria a Release com `upgradetweaks.ps1` e o SHA256 |
 
 Estrutura: `scripts/start.ps1` (elevação e entrada), `functions/` (privadas, públicas e `ui/`), `config/` (catálogo de ajustes e listas em JSON, editáveis sem mexer no código), `xaml/` (janela), `tests/` (Pester). O esquema do catálogo está em [`docs/esquema-tweaks.md`](docs/esquema-tweaks.md).

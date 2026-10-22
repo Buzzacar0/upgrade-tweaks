@@ -93,6 +93,8 @@ function Show-UTMainWindow {
         try { Save-UTUiWindowPlacement -Janela $ui.Window -Pagina ([string]$ui.PaginaAtual) } catch { $null = $_ }
         if ($ui.ContainsKey('Monitor') -and $ui.Monitor -and $ui.Monitor.Timer) { $ui.Monitor.Timer.Stop() }
         if ($ui.ContainsKey('Monitor') -and $ui.Monitor -and $ui.Monitor.Log) { Close-UTMonitorLog -Log $ui.Monitor.Log }
+        if ($ui.ContainsKey('Benchmark') -and $ui.Benchmark -and $ui.Benchmark.Sessao) { $ui.Benchmark.Sessao.Stop() }
+        if ($ui.ContainsKey('OverlayEditor') -and $ui.OverlayEditor -and $ui.OverlayEditor.Timer) { $ui.OverlayEditor.Timer.Stop() }
         try { Stop-UTSensorMonitor -Confirm:$false } catch { Write-UTLog -Level Aviso -Message 'Não foi possível parar a leitura dos sensores.' -Detalhe $_.Exception.Message }
         Close-UTUiPool
     }

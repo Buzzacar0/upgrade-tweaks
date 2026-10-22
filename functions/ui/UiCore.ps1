@@ -40,6 +40,7 @@ function Initialize-UTUiState {
         SheetEstado = $null
         BiosBusca   = $null
         OverlayEditor = $null
+        Benchmark   = $null
     }
     $UTSync['Ui'] = $ui
     if (-not $UTSync.ContainsKey('LogQueue') -or $null -eq $UTSync['LogQueue']) {

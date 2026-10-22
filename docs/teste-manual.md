@@ -48,7 +48,17 @@ Para testar sem Release publicada, copie `dist\upgradetweaks.ps1` (gerado por `s
 - [ ] Aplicar "Configurações NVIDIA recomendadas no perfil do Call of Duty", conferir no NVIDIA Profile Inspector, e desfazer.
 - [ ] Faixa dinâmica Completa no monitor que está Limitada, e desfazer.
 
-## 7. Linha de comando
+## 7. Monitor, overlay e benchmark (só leem; podem ser testados no PC real)
+
+- [ ] Monitor: trocar Essencial, Gamer, Completo e Personalizado; cartões e tabela; arrastar um cartão muda a ordem e cria o Personalizado; °F e 0 casas decimais; fechar e abrir o programa mantém tudo (`%AppData%\UpgradeTweaks\monitor.json`).
+- [ ] Monitor: alerta de 40 °C na CPU dispara uma notificação do Windows uma vez só; "Relatório CSV" abre certo no Excel.
+- [ ] Overlay: baixar o PresentMon, "Ligar o overlay", abrir um jogo em tela cheia sem bordas: o overlay aparece no canto escolhido, o clique passa para o jogo, Ctrl+Shift+F10 esconde e mostra.
+- [ ] Overlay: `cod.exe` troca sozinho para o perfil Competitivo; mudar a posição no editor muda o overlay aberto em até 1 segundo; num monitor de 150% o texto fica nítido.
+- [ ] Overlay: com o jogo em tela cheia exclusiva aparece o aviso ao lado do relógio.
+- [ ] Benchmark: Ctrl+Shift+F12 dentro do jogo mostra "REC", e de novo salva; a gravação aparece na aba Benchmark; marcar duas mostra a comparação; CSV abre no Excel.
+- [ ] Modo Partida com "Ligar junto com o Modo Partida": o overlay abre ao entrar e fecha ao sair.
+
+## 8. Linha de comando
 
 ```powershell
 .\upgradetweaks.ps1 -Diagnostico -ExportarRelatorio C:\relatorio.html
@@ -59,7 +69,7 @@ Para testar sem Release publicada, copie `dist\upgradetweaks.ps1` (gerado por `s
 
 - [ ] Códigos de saída: `0`, ou `3010` quando precisa reiniciar.
 
-## 8. Publicar
+## 9. Publicar
 
 1. Renomeie `## [Não lançado]` do `CHANGELOG.md` para `## [0.1.0] - AAAA-MM-DD`.
 2. `git tag v0.1.0` e `git push --tags`.

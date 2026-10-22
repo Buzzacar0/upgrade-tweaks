@@ -43,6 +43,11 @@ function New-UTOverlayVisual {
     $panel = New-Object System.Windows.Controls.StackPanel
     if ($Perfil.Horizontal) { $panel.Orientation = 'Horizontal' }
     $values = @{}
+    # Shown only while a benchmark records.
+    $rec = & $text 'REC' 11 (ConvertTo-UTOverlayBrush '#FF453A') 'SemiBold'
+    $rec.Visibility = 'Collapsed'
+    $rec.Margin = $(if ($Perfil.Horizontal) { '0,0,12,0' } else { '0,0,0,2' })
+    [void]$panel.Children.Add($rec)
     $graph = $null; $canvas = $null
     $gw = 210.0; $gh = 38.0
     foreach ($item in @($Perfil.Itens)) {
@@ -83,7 +88,7 @@ function New-UTOverlayVisual {
         [void]$panel.Children.Add($row)
     }
     $root.Child = $panel
-    return @{ Raiz = $root; Valores = $values; Grafico = $graph; Canvas = $canvas; Perfil = $Perfil; Escala = 0 }
+    return @{ Raiz = $root; Valores = $values; Grafico = $graph; Canvas = $canvas; Perfil = $Perfil; Escala = 0; Gravando = $rec }
 }
 
 function Update-UTOverlayVisual {
@@ -347,6 +352,14 @@ function Update-UTOverlayHost {
         $lines = @(Get-UTOverlayLine -Perfil $cfg.Perfis[$o.PerfilNome] -Quadros $(if ($inGame) { $stats } else { $null }) -Sensores $sensors)
     }
     $win = $o.Janela
+    if ($o.Sessao -and $o.Sessao.IsRecording -and $o.Benchmark) {
+        $secs = [int]([datetime]::Now - $o.Benchmark).TotalSeconds
+        $o.Visual.Gravando.Text = ("● REC {0}:{1:00}" -f [int][math]::Floor($secs / 60), ($secs % 60))
+        $o.Visual.Gravando.Visibility = 'Visible'
+        $show = $o.Visivel
+    } elseif ($o.Visual.Gravando.Visibility -ne 'Collapsed') {
+        $o.Visual.Gravando.Visibility = 'Collapsed'
+    }
     if ($show) {
         Update-UTOverlayVisual -Visual $o.Visual -Linhas $lines -Quadros $(if ($inGame) { $stats } else { $null })
         if ($win.Visibility -ne 'Visible') { $win.Visibility = 'Visible' }
@@ -360,6 +373,35 @@ function Update-UTOverlayHost {
         [void][UpgradeTweaks.Overlay.Rtss]::Release('UpgradeTweaks')
         $o.RtssAtivo = $false
     }
+}
+
+function Switch-UTOverlayBenchmark {
+    <#
+    .SYNOPSIS
+        Benchmark hotkey inside the game: the first press starts recording the frames of the game
+        in the foreground, the second stops and saves it (Benchmark tab).
+    #>
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Justification = 'Records frame times (read only) and saves a file of the person.')]
+    [CmdletBinding()]
+    param()
+    $o = Get-UTOverlayHost
+    $tip = { param($t, $kind) if ($o.Bandeja) { $o.Bandeja.ShowBalloonTip(5000, 'Upgrade Tweaks: benchmark', $t, $kind) } }
+    if ($null -eq $o.Sessao -or -not $o.Sessao.Running) { & $tip 'O PresentMon não está rodando; instale na aba Overlay.' 'Warning'; return }
+    if ($o.Sessao.IsRecording) {
+        $mode = [string]$o.Sessao.GetStats($o.Sessao.RecordingPid, 1000, 1000, 0).PresentMode
+        $run = Stop-UTBenchmarkRecording -Sessao $o.Sessao -Inicio $o.Benchmark -ModoApresentacao $mode -Confirm:$false
+        $o.Benchmark = $null
+        if ($run) {
+            $r = $run.Resumo
+            & $tip ("{0}: FPS médio {1}, 1% low {2}, 0,1% low {3} em {4} s. Veja e compare na aba Benchmark." -f $run.Jogo, (Format-UTOverlayNumber $r.FpsMedio), (Format-UTOverlayNumber $r.Low1), (Format-UTOverlayNumber $r.Low01), (Format-UTOverlayNumber $r.DuracaoS)) 'Info'
+        } else { & $tip 'Gravação muito curta (menos de 1 segundo de jogo); nada foi salvo.' 'Warning' }
+        return
+    }
+    $game = $(if ($o.Sessao.GetStats($o.FgPid, 1000, 1000, 0).SecondsSinceLastFrame -lt 2) { $o.FgPid } else { 0 })
+    $p = Start-UTBenchmarkRecording -Sessao $o.Sessao -ProcessoId $game -Confirm:$false
+    if ($p -le 0) { & $tip 'Nenhum jogo está desenhando quadros agora.' 'Warning'; return }
+    $o.Benchmark = [datetime]::Now
+    & $tip ("Gravando {0}. Aperte {1} de novo para parar." -f $o.Sessao.ApplicationOf($p), $o.Config.Atalhos.Benchmark) 'Info'
 }
 
 function Set-UTOverlayWindowPosition {

@@ -25,6 +25,10 @@ O formato segue o [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) e 
 - Editor visual com prévia ao vivo: perfis (novo, duplicar, renomear, excluir), posição, tamanho, opacidade, fundo, cor, layout vertical ou horizontal e os itens na ordem escolhida; perfil automático por jogo (`cod.exe` usa o Competitivo); atalhos globais (mostrar/esconder, próximo perfil, benchmark).
 - Ícone ao lado do relógio com o menu do overlay, opção de abrir com o Windows (tarefa agendada sem UAC), aviso de tela cheia exclusiva, texto opcional pelo RivaTuner (RTSS) e integração com o Modo Partida (liga o overlay e desliga no fim).
 - Uso de CPU medido com um jogo de teste a ~175 FPS e o perfil Completo: overlay 0,35–0,44% e PresentMon 0,01–0,03% da CPU total.
+- **Benchmark** (aba nova): grava os frametimes de um jogo pela aba (com tempo para voltar ao jogo) ou com **Ctrl+Shift+F12** dentro do jogo (o overlay mostra "● REC"); resumo com FPS médio, 1% e 0,1% low, P1, mínimo, máximo, frametime e engasgos; gráfico de frametime; CSV para o Excel; **comparação de duas gravações** com a diferença em % de cada métrica. Gravações em `%AppData%\UpgradeTweaks\benchmarks`.
+- README com as medições de CPU, como cada número é calculado e a seção nova do anti-cheat sobre o overlay; roteiro de teste manual do Monitor, overlay e benchmark.
+
+> **[Print: Início]** `docs/img/inicio.png` · **[Print: Gaming]** `docs/img/gaming.png` · **[Print: Monitor]** `docs/img/monitor.png` · **[Print: Overlay]** `docs/img/overlay.png` · **[Print: Benchmark]** `docs/img/benchmark.png`
 
 ### Mudado
 - Checklists, a contagem de 15 s da taxa do monitor e as confirmações viraram sheets dentro da janela (janela própria só antes de a interface abrir).
