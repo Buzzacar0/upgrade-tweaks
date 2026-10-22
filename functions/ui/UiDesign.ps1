@@ -167,6 +167,51 @@ function New-UTUiGroup {
     return $outer
 }
 
+function New-UTUiScoreRing {
+    <#
+    .SYNOPSIS
+        Progress ring (like the Activity rings of the Apple Watch) with the number in the middle.
+    #>
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Justification = 'Builds a UI element; nothing changes on the system.')]
+    [CmdletBinding()]
+    param([ValidateRange(0, 100)][int]$Nota, [string]$Cor = 'GreenBrush', [double]$Tamanho = 140, [double]$Espessura = 14)
+    $grid = New-Object System.Windows.Controls.Grid
+    $grid.Width = $Tamanho; $grid.Height = $Tamanho
+    $track = New-Object System.Windows.Shapes.Ellipse
+    $track.StrokeThickness = $Espessura
+    $track.Margin = [System.Windows.Thickness]::new($Espessura / 2)
+    $track.SetResourceReference([System.Windows.Shapes.Shape]::StrokeProperty, 'SeparatorBrush')
+    [void]$grid.Children.Add($track)
+    if ($Nota -ge 100) {
+        $arc = New-Object System.Windows.Shapes.Ellipse
+        $arc.Margin = [System.Windows.Thickness]::new($Espessura / 2)
+    } else {
+        $r = ($Tamanho - $Espessura) / 2
+        $c = $Tamanho / 2
+        $angle = 360.0 * [math]::Max($Nota, 0.5) / 100
+        $rad = ($angle - 90) * [math]::PI / 180
+        $ci = [Globalization.CultureInfo]::InvariantCulture
+        $data = [string]::Format($ci, 'M {0},{1} A {2},{2} 0 {3} 1 {4},{5}', $c, ($c - $r), $r, $(if ($angle -gt 180) { 1 } else { 0 }), ($c + $r * [math]::Cos($rad)), ($c + $r * [math]::Sin($rad)))
+        $arc = New-Object System.Windows.Shapes.Path
+        $arc.Data = [System.Windows.Media.Geometry]::Parse($data)
+        $arc.StrokeStartLineCap = 'Round'
+        $arc.StrokeEndLineCap = 'Round'
+    }
+    $arc.StrokeThickness = $Espessura
+    $arc.SetResourceReference([System.Windows.Shapes.Shape]::StrokeProperty, $Cor)
+    [void]$grid.Children.Add($arc)
+    $number = New-UTUiText ([string]$Nota) -Tamanho ([math]::Round($Tamanho * 0.27)) -Peso SemiBold
+    $number.SetResourceReference([System.Windows.Controls.TextBlock]::FontFamilyProperty, 'DisplayFont')
+    $number.HorizontalAlignment = 'Center'
+    $of = New-UTUiText 'de 100' -Tamanho 12 -Cor MutedBrush
+    $of.HorizontalAlignment = 'Center'
+    $center = New-UTUiStack -Itens @($number, $of)
+    $center.HorizontalAlignment = 'Center'; $center.VerticalAlignment = 'Center'
+    [void]$grid.Children.Add($center)
+    [System.Windows.Automation.AutomationProperties]::SetName($grid, "Nota de Otimização: $Nota de 100")
+    return $grid
+}
+
 #region Sheet
 function Show-UTUiSheet {
     <#
@@ -187,9 +232,7 @@ function Show-UTUiSheet {
         [object]$Conteudo
     )
     $ui = Get-UTUi
-    $canSheet = ($null -ne $ui -and $null -ne $ui.Window -and $ui.Window.IsVisible -and $ui.C.ContainsKey('SheetHost'))
-    $busy = ($canSheet -and $ui.ContainsKey('SheetEstado') -and $null -ne $ui.SheetEstado)
-    if (-not $canSheet -or $busy) {
+    if (-not (Test-UTUiSheetAvailable)) {
         return (Show-UTUiDialogWindow -Titulo $Titulo -Mensagem $Mensagem -Botoes $Botoes -Tipo $Tipo -Itens $Itens -TextoConfirmacao $TextoConfirmacao)
     }
     $state = @{ Resultado = $null; Frame = (New-Object System.Windows.Threading.DispatcherFrame) }
@@ -200,7 +243,11 @@ function Show-UTUiSheet {
     if ($Mensagem) { [void]$root.Children.Add((New-UTUiText $Mensagem -Quebrar -Cor MutedBrush -Margem '0,12,0,0')) }
     if ($Itens) {
         $list = New-UTUiStack
-        foreach ($i in $Itens) { [void]$list.Children.Add((New-UTUiText ("•  " + $i) -Quebrar -Margem '0,2,0,2')) }
+        foreach ($i in $Itens) {
+            # Indented lines are details of the item above (e.g. what changes in the registry).
+            if ($i -match '^\s{2,}') { [void]$list.Children.Add((New-UTUiText $i.Trim() -Quebrar -Tamanho 12 -Cor MutedBrush -Margem '16,0,0,2')) }
+            else { [void]$list.Children.Add((New-UTUiText ("•  " + $i) -Quebrar -Margem '0,4,0,2')) }
+        }
         $scroll = New-Object System.Windows.Controls.ScrollViewer
         $scroll.MaxHeight = 320
         $scroll.VerticalScrollBarVisibility = 'Auto'
@@ -258,6 +305,16 @@ function Show-UTUiSheet {
         $ui.SheetEstado = $null
     }
     return $state.Resultado
+}
+
+function Test-UTUiSheetAvailable {
+    # A sheet needs the main window on screen and no other sheet open (otherwise: dialog window).
+    [CmdletBinding()]
+    [OutputType([bool])]
+    param()
+    $ui = Get-UTUi
+    if ($null -eq $ui -or $null -eq $ui.Window -or -not $ui.Window.IsVisible -or -not $ui.C.ContainsKey('SheetHost')) { return $false }
+    return -not ($ui.ContainsKey('SheetEstado') -and $null -ne $ui.SheetEstado)
 }
 
 function Initialize-UTUiSheet {

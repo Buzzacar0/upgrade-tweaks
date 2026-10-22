@@ -24,7 +24,11 @@ function Initialize-UTUiState {
         Timer       = $null
         Pages       = @{}
         Rows        = New-Object System.Collections.Generic.List[object]
+        # Pending changes: switched on (to apply) and switched off (to undo).
         Selecionados = New-Object 'System.Collections.Generic.HashSet[string]' ([StringComparer]::OrdinalIgnoreCase)
+        Desmarcados = New-Object 'System.Collections.Generic.HashSet[string]' ([StringComparer]::OrdinalIgnoreCase)
+        Sincronizando = $false
+        ProgressoAberto = $false
         Estados     = @{}
         Diagnostico = $null
         PaginaAtual = $null
@@ -34,6 +38,7 @@ function Initialize-UTUiState {
         LogMax      = 2000
         Monitor     = $null
         SheetEstado = $null
+        BiosBusca   = $null
     }
     $UTSync['Ui'] = $ui
     if (-not $UTSync.ContainsKey('LogQueue') -or $null -eq $UTSync['LogQueue']) {
@@ -94,11 +99,12 @@ function Get-UTUiBrush {
         $b = $ui.Window.TryFindResource($Nome)
         if ($b) { return $b }
     }
-    $fallback = @{ BgBrush = '#0B0F1E'; CardBrush = '#141A33'; BorderBrush = '#242C52'; AccentBrush = '#7C3AED'; AccentLightBrush = '#A78BFA'
-        TextBrush = '#E7E9F5'; MutedBrush = '#98A1C6'; GreenBrush = '#22C55E'; YellowBrush = '#EAB308'; RedBrush = '#EF4444'; BlueBrush = '#38BDF8'
+    # Dark theme values, for elements built before a window has the design system.
+    $fallback = @{ BgBrush = '#1C1C1E'; CardBrush = '#2C2C2E'; BorderBrush = '#3A3A3C'; AccentBrush = '#7C3AED'; AccentLightBrush = '#A78BFA'
+        TextBrush = '#F5F5F7'; MutedBrush = '#98989F'; GreenBrush = '#32D74B'; YellowBrush = '#FF9F0A'; RedBrush = '#FF453A'; BlueBrush = '#0A84FF'
     }
     $hex = $fallback[$Nome]
-    if (-not $hex) { $hex = '#E7E9F5' }
+    if (-not $hex) { $hex = '#F5F5F7' }
     return (New-Object System.Windows.Media.SolidColorBrush ([System.Windows.Media.ColorConverter]::ConvertFromString($hex)))
 }
 #endregion
@@ -221,7 +227,8 @@ function Sync-UTUiBusy {
     $ui.C['BusyBar'].Visibility = $(if ($busy) { 'Visible' } else { 'Hidden' })
     $ui.C['StatusText'].Text = $(if ($busy) { 'Trabalhando: ' + (($running | ForEach-Object Nome) -join ', ') + '...' } else { 'Pronto.' })
     $exclusive = Test-UTUiExclusiveJob
-    foreach ($n in 'ApplyButton', 'UndoButton', 'SimulateButton') { $ui.C[$n].IsEnabled = -not $exclusive }
+    $pending = (Get-UTUiPendingCount) -gt 0
+    foreach ($n in 'ApplyButton', 'UndoButton', 'SimulateButton') { $ui.C[$n].IsEnabled = (-not $exclusive -and $pending) }
 }
 #endregion
 

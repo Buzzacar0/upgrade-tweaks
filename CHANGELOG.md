@@ -11,8 +11,14 @@ O formato segue o [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) e 
 - Janela nova: barra de título integrada com os botões do Windows à direita, barra lateral estilo Ajustes do macOS (seções, ícones em squircle, busca no topo, Ctrl+K), barra de ação flutuante, transição suave entre páginas (respeita "reduzir animações"), confirmações em sheet dentro da janela.
 - A janela lembra tamanho, posição, última página e tema (`%AppData%\UpgradeTweaks\ui.json`).
 - Galeria de componentes: `-Galeria` ou Ctrl+Shift+G.
+- Ajustes em listas agrupadas por risco, cada um com switch (ligado = aplicado), ganho em uma linha e botão ⓘ com descrição, risco, aviso e o que muda no registro/serviços.
+- Fluxo revisar → aplicar: ligar ou desligar só cria uma pendência ("Será aplicado" / "Será desfeito"); "Revisar e aplicar" calcula em simulação exatamente o que vai mudar, mostra num sheet e só então aplica e desfaz na mesma rodada, com progresso e resumo.
+- Início novo: anel com a Nota de Otimização, card "Otimizar agora" com o preset, pendências com "Resolver", resumo do PC e o que já está certo.
+- Busca global (Ctrl+K): abas, ajustes, sensores lidos agora e opções da BIOS (quando o mapa já foi carregado), com atalho para cada resultado.
 
 ### Mudado
+- Checklists, a contagem de 15 s da taxa do monitor e as confirmações viraram sheets dentro da janela (janela própria só antes de a interface abrir).
+- Programas da inicialização com switch em vez de caixa de seleção.
 - Plano de energia: o plano personalizado das versões anteriores deu lugar ao **Desempenho Máximo** nativo do Windows (liberado com `powercfg -duplicatescheme` só quando está escondido, sem criar cópias; Alto Desempenho quando a edição não permite). Na primeira execução, o plano antigo é apagado (com o Desempenho Máximo ativado no lugar quando ele era o ativo) e sai do diário de ajustes.
 - Os valores que eram do plano antigo viraram ajustes avulsos e opcionais sobre o plano ativo (`UT_Power_Ajuste_*`), fora dos presets.
 - Aba Energia: botão "Ativar Desempenho Máximo", seletor com todos os planos instalados e "Restaurar planos padrão do Windows".

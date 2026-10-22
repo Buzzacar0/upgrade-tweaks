@@ -110,4 +110,15 @@ Describe 'Design system' {
         $inner = $g.Children[1].Child
         $inner.Children.Count | Should -Be 5   # 3 rows + 2 separators
     }
+
+    It 'anel da nota: arco proporcional, círculo cheio em 100, nome para leitor de tela' {
+        $null = Initialize-TestWindow
+        $r = New-UTUiScoreRing -Nota 75 -Cor 'GreenBrush'
+        $r.Children.Count | Should -Be 3
+        $r.Children[1] | Should -BeOfType System.Windows.Shapes.Path
+        $r.Children[1].Data.Bounds.Width | Should -BeGreaterThan 100
+        [System.Windows.Automation.AutomationProperties]::GetName($r) | Should -Match '75 de 100'
+        (New-UTUiScoreRing -Nota 100).Children[1] | Should -BeOfType System.Windows.Shapes.Ellipse
+        (New-UTUiScoreRing -Nota 0).Children[1] | Should -BeOfType System.Windows.Shapes.Path
+    }
 }

@@ -1,4 +1,4 @@
-﻿<!-- Janela principal. Cores e estilos vêm do design system (xaml\Theme), carregado pelo código
+<!-- Janela principal. Cores e estilos vêm do design system (xaml\Theme), carregado pelo código
      antes de mostrar a janela; por isso aqui só existe DynamicResource. -->
 <Window xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -106,13 +106,13 @@
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                        <TextBlock x:Name="SelectionText" Text="Nenhum ajuste marcado" VerticalAlignment="Center" Foreground="{DynamicResource MutedBrush}" Margin="2,0,16,0"/>
+                        <TextBlock x:Name="SelectionText" Text="Nenhuma alteração pendente" VerticalAlignment="Center" Foreground="{DynamicResource MutedBrush}" Margin="2,0,16,0"/>
                         <ComboBox x:Name="PresetBox" Width="170" ToolTip="Marca os ajustes de um preset"/>
                     </StackPanel>
                     <StackPanel Orientation="Horizontal" Grid.Column="1">
-                        <Button x:Name="SimulateButton" Content="Simular"/>
-                        <Button x:Name="UndoButton" Content="Desfazer"/>
-                        <Button x:Name="ApplyButton" Content="Aplicar" Style="{DynamicResource PrimaryButton}" Margin="0"/>
+                        <Button x:Name="SimulateButton" Content="Simular" ToolTip="Mostra o que mudaria, sem alterar nada"/>
+                        <Button x:Name="UndoButton" Content="Descartar" ToolTip="Volta os switches para o estado atual, sem aplicar nada"/>
+                        <Button x:Name="ApplyButton" Content="Revisar e aplicar" Style="{DynamicResource PrimaryButton}" Margin="0"/>
                     </StackPanel>
                 </Grid>
             </Border>

@@ -101,27 +101,30 @@ function New-UTUiButton {
 }
 
 function New-UTUiBadge {
+    <#
+    .SYNOPSIS
+        Small soft pill (status color on a light tint of it), colors from the theme tokens.
+    #>
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Justification = 'Builds a UI element; nothing changes on the system.')]
     [CmdletBinding()]
     param(
         [Parameter(Mandatory, Position = 0)][string]$Texto,
         [ValidateSet('verde', 'amarelo', 'vermelho', 'roxo', 'azul', 'cinza')][string]$Cor = 'cinza'
     )
-    $map = @{ verde = '#22C55E'; amarelo = '#EAB308'; vermelho = '#EF4444'; roxo = '#A78BFA'; azul = '#38BDF8'; cinza = '#98A1C6' }
-    $color = [System.Windows.Media.ColorConverter]::ConvertFromString($map[$Cor])
+    $tokens = @{ verde = @('GreenBrush', 'GreenSoftBrush'); amarelo = @('YellowBrush', 'YellowSoftBrush'); vermelho = @('RedBrush', 'RedSoftBrush')
+        roxo = @('AccentLightBrush', 'AccentSoftBrush'); azul = @('BlueBrush', 'BlueSoftBrush'); cinza = @('MutedBrush', 'NavHoverBrush')
+    }[$Cor]
     $bd = New-Object System.Windows.Controls.Border
-    $bd.CornerRadius = 4
-    $bd.Padding = '6,1'
+    $bd.CornerRadius = 6
+    $bd.Padding = '7,1,7,2'
     $bd.Margin = '6,0,0,0'
     $bd.VerticalAlignment = 'Center'
-    $bd.Background = New-Object System.Windows.Media.SolidColorBrush ([System.Windows.Media.Color]::FromArgb(40, $color.R, $color.G, $color.B))
-    $fg = $color
-    $bd.BorderBrush = New-Object System.Windows.Media.SolidColorBrush $fg
-    $bd.BorderThickness = 1
+    $bd.SetResourceReference([System.Windows.Controls.Border]::BackgroundProperty, $tokens[1])
     $tb = New-Object System.Windows.Controls.TextBlock
     $tb.Text = $Texto
     $tb.FontSize = 11
-    $tb.Foreground = New-Object System.Windows.Media.SolidColorBrush $fg
+    $tb.FontWeight = [System.Windows.FontWeights]::SemiBold
+    $tb.SetResourceReference([System.Windows.Controls.TextBlock]::ForegroundProperty, $tokens[0])
     $bd.Child = $tb
     return $bd
 }

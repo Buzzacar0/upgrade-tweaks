@@ -69,74 +69,54 @@ function Get-UTUiTweakToolTip {
 }
 
 function New-UTUiTweakRow {
+    <#
+    .SYNOPSIS
+        One tweak: icon, name, short gain, the switch (on = applied) and the "i" with the details.
+        Flipping the switch only records a pending change; "Revisar e aplicar" does the work.
+    #>
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Justification = 'Builds a UI element; nothing changes on the system.')]
     [CmdletBinding()]
     param(
         [Parameter(Mandatory)][System.Collections.IDictionary]$Tweak,
-        [Parameter(Mandatory)][string]$Pagina
+        [Parameter(Mandatory)][string]$Pagina,
+        [string]$Icone = 'E762',
+        [string]$IconeCor = 'IconBlue'
     )
     $ui = Get-UTUi
     $id = [string]$Tweak.id
+    $badges = @()
+    if ($Tweak.risco -ne 'baixo') { $badges += Get-UTUiRiskBadge -Risco ([string]$Tweak.risco) }
+    if ($Tweak.requerReinicio) { $badges += New-UTUiBadge 'Reinício' -Cor azul }
+    if ($Tweak.controverso) { $badges += New-UTUiBadge 'Controverso' -Cor roxo }
 
-    $grid = New-Object System.Windows.Controls.Grid
-    foreach ($w in 'Auto', '*', 'Auto') {
-        $cd = New-Object System.Windows.Controls.ColumnDefinition
-        $cd.Width = $(if ($w -eq '*') { New-Object System.Windows.GridLength (1, [System.Windows.GridUnitType]::Star) } else { [System.Windows.GridLength]::Auto })
-        [void]$grid.ColumnDefinitions.Add($cd)
+    $switch = New-UTUiSwitch -Marcado $false -Dados $id -Dica ([string]$Tweak.nome) -AoMudar {
+        param($s, $d)
+        if ((Get-UTUi).Sincronizando) { return }
+        Set-UTUiPending -Id $d -Ligado ([bool]$s.IsChecked)
     }
-
-    $cb = New-Object System.Windows.Controls.CheckBox
-    $cb.Tag = $id
-    $cb.VerticalAlignment = 'Center'
-    $cb.Margin = '0,0,12,0'
-    $cb.IsChecked = $ui.Selecionados.Contains($id)
-    $cb.Add_Click({
-            param($box, $evt)
-            $null = $evt
-            Set-UTUiSelection -Id ([string]$box.Tag) -Marcado ([bool]$box.IsChecked)
-        })
-    [System.Windows.Controls.Grid]::SetColumn($cb, 0)
-    [void]$grid.Children.Add($cb)
-
-    $title = New-UTUiWrap -Itens @((New-UTUiText ([string]$Tweak.nome) -Peso SemiBold))
-    [void]$title.Children.Add((Get-UTUiRiskBadge -Risco ([string]$Tweak.risco)))
-    if ($Tweak.requerReinicio) { [void]$title.Children.Add((New-UTUiBadge 'Requer reinício' -Cor azul)) }
-    if ($Tweak.controverso) { [void]$title.Children.Add((New-UTUiBadge 'Controverso' -Cor roxo)) }
-    $texts = New-UTUiStack -Itens @($title)
-    if ($Tweak.ganhoEsperado) {
-        $gain = New-UTUiText ("Ganho: " + $Tweak.ganhoEsperado) -Tamanho 12 -Cor MutedBrush -Margem '0,2,0,0'
-        $gain.TextTrimming = 'CharacterEllipsis'
-        [void]$texts.Children.Add($gain)
-    }
-    [System.Windows.Controls.Grid]::SetColumn($texts, 1)
-    [void]$grid.Children.Add($texts)
-
     $dot = New-Object System.Windows.Shapes.Ellipse
-    $dot.Width = 8; $dot.Height = 8
-    $dot.Margin = '12,0,6,0'
+    $dot.Width = 7; $dot.Height = 7
+    $dot.Margin = '0,0,6,0'
     $dot.VerticalAlignment = 'Center'
-    $stateText = New-UTUiText '' -Tamanho 12
-    $stateText.MinWidth = 92
-    $state = New-UTUiStack -Horizontal -Itens @($dot, $stateText)
-    $state.VerticalAlignment = 'Center'
-    [System.Windows.Controls.Grid]::SetColumn($state, 2)
-    [void]$grid.Children.Add($state)
-
-    $row = New-Object System.Windows.Controls.Border
-    $row.Padding = '10,8'
-    $row.CornerRadius = 8
-    $row.Margin = '0,1'
-    $row.Background = [System.Windows.Media.Brushes]::Transparent
-    $row.Child = $grid
-    $row.ToolTip = Get-UTUiTweakToolTip -Tweak $Tweak
-    [System.Windows.Controls.ToolTipService]::SetShowDuration($row, 60000)
-    $row.Add_MouseEnter({ param($r, $evt) $null = $evt; $r.Background = Get-UTUiBrush 'CardHoverBrush' })
-    $row.Add_MouseLeave({ param($r, $evt) $null = $evt; $r.Background = [System.Windows.Media.Brushes]::Transparent })
-
-    $entry = [pscustomobject]@{ Id = $id; Pagina = $Pagina; Check = $cb; Ponto = $dot; EstadoTexto = $stateText; Borda = $row; Tweak = $Tweak }
+    $stateText = New-UTUiText '' -Tamanho 12 -Cor MutedBrush -Margem '0,0,12,0'
+    $stateText.VerticalAlignment = 'Center'
+    $right = New-UTUiStack -Horizontal -Itens @($dot, $stateText, $switch)
+    $subtitle = $(if ($Tweak.ganhoEsperado) { 'Ganho: ' + [string]$Tweak.ganhoEsperado } else { '' })
+    $row = New-UTUiRow -Titulo ([string]$Tweak.nome) -Subtitulo $subtitle -Icone $Icone -IconeCor $IconeCor -Direita $right -Selos $badges -Dados $id -AoClicarInfo {
+        param($b, $d) $null = $b
+        Show-UTUiTweakDetail -Id $d
+    }
+    $entry = [pscustomobject]@{ Id = $id; Pagina = $Pagina; Check = $switch; Ponto = $dot; EstadoTexto = $stateText; Borda = $row; Tweak = $Tweak }
     $ui.Rows.Add($entry)
     Sync-UTUiRowState -Linha $entry
     return $row
+}
+
+function Test-UTUiTweakApplied {
+    # $true when the last read state says the tweak is on (Aplicado or Parcial).
+    param([Parameter(Mandatory)][string]$Id)
+    $ui = Get-UTUi
+    return [bool]($ui.Estados.ContainsKey($Id) -and $ui.Estados[$Id].Estado -in 'Aplicado', 'Parcial')
 }
 
 function Sync-UTUiRowState {
@@ -145,32 +125,38 @@ function Sync-UTUiRowState {
     $s = $null
     if ($ui.Estados.ContainsKey($Linha.Id)) { $s = $ui.Estados[$Linha.Id] }
     $visual = Get-UTUiStateVisual -Estado $(if ($s) { $s.Estado } else { '' })
-    $Linha.EstadoTexto.Text = $visual.Texto
-    $Linha.EstadoTexto.Foreground = Get-UTUiBrush $visual.Cor
-    $Linha.Ponto.Fill = Get-UTUiBrush $visual.Cor
     $incompatible = ($s -and $s.Estado -eq 'Incompativel')
-    $Linha.Check.IsEnabled = -not $incompatible
-    if ($incompatible) {
-        $Linha.Check.IsChecked = $false
-        $Linha.EstadoTexto.ToolTip = $s.Motivo
-        $Linha.Borda.ToolTip = Get-UTUiTweakToolTip -Tweak $Linha.Tweak -Motivo $s.Motivo
-    } else {
-        $Linha.Check.IsChecked = $ui.Selecionados.Contains($Linha.Id)
-    }
+    $on = Test-UTUiTweakApplied -Id $Linha.Id
+    $text = $visual.Texto; $color = $visual.Cor
+    if ($ui.Selecionados.Contains($Linha.Id)) { $on = $true; $text = 'Será aplicado'; $color = 'AccentLightBrush' }
+    elseif ($ui.Desmarcados.Contains($Linha.Id)) { $on = $false; $text = 'Será desfeito'; $color = 'YellowBrush' }
+    $ui.Sincronizando = $true
+    try {
+        $Linha.Check.IsEnabled = -not $incompatible
+        $Linha.Check.IsChecked = ($on -and -not $incompatible)
+    } finally { $ui.Sincronizando = $false }
+    $Linha.EstadoTexto.Text = $text
+    $Linha.EstadoTexto.SetResourceReference([System.Windows.Controls.TextBlock]::ForegroundProperty, $color)
+    $Linha.Ponto.SetResourceReference([System.Windows.Shapes.Shape]::FillProperty, $color)
+    $Linha.EstadoTexto.ToolTip = $(if ($incompatible) { [string]$s.Motivo } else { $null })
 }
 
 function Sync-UTUiTweakState {
     <#
     .SYNOPSIS
-        Stores the states read in the background and repaints every row of those tweaks.
+        Stores the states read in the background and repaints every row of those tweaks. A
+        pending change that is already true (on and applied, off and not applied) is dropped.
     #>
     [CmdletBinding()]
     param([Parameter(Mandatory)][AllowEmptyCollection()][object[]]$Estados)
     $ui = Get-UTUi
     foreach ($s in $Estados) {
         if (-not $s.Id) { continue }
-        $ui.Estados[[string]$s.Id] = $s
-        if ($s.Estado -eq 'Incompativel') { [void]$ui.Selecionados.Remove([string]$s.Id) }
+        $id = [string]$s.Id
+        $ui.Estados[$id] = $s
+        if ($s.Estado -eq 'Incompativel') { [void]$ui.Selecionados.Remove($id); [void]$ui.Desmarcados.Remove($id) }
+        elseif ($s.Estado -eq 'Aplicado') { [void]$ui.Selecionados.Remove($id) }
+        elseif ($s.Estado -eq 'NaoAplicado') { [void]$ui.Desmarcados.Remove($id) }
     }
     foreach ($row in $ui.Rows.ToArray()) { Sync-UTUiRowState -Linha $row }
     Sync-UTUiSelectionText
@@ -195,35 +181,68 @@ function Invoke-UTUiStateRefresh {
         })
 }
 
+function Set-UTUiPending {
+    <#
+    .SYNOPSIS
+        A switch was flipped: on for a tweak that is not applied = pending apply; off for one
+        that is applied = pending undo; flipping back cancels the pending change.
+    #>
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Justification = 'Changes only the selection in the interface.')]
+    [CmdletBinding()]
+    param([Parameter(Mandatory)][string]$Id, [Parameter(Mandatory)][bool]$Ligado)
+    $ui = Get-UTUi
+    if ($ui.Estados.ContainsKey($Id) -and $ui.Estados[$Id].Estado -eq 'Incompativel') { return }
+    $applied = Test-UTUiTweakApplied -Id $Id
+    if ($Ligado) {
+        [void]$ui.Desmarcados.Remove($Id)
+        if (-not $applied) { [void]$ui.Selecionados.Add($Id) }
+    } else {
+        [void]$ui.Selecionados.Remove($Id)
+        if ($applied) { [void]$ui.Desmarcados.Add($Id) }
+    }
+    foreach ($row in @($ui.Rows | Where-Object { $_.Id -eq $Id })) { Sync-UTUiRowState -Linha $row }
+    Sync-UTUiSelectionText
+}
+
 function Set-UTUiSelection {
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Justification = 'Builds a UI element; nothing changes on the system.')]
+    <#
+    .SYNOPSIS
+        Marks tweaks to be applied (presets, imported selections). Tweaks already applied or that do
+        not fit this PC are left as they are.
+    #>
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Justification = 'Changes only the selection in the interface.')]
     [CmdletBinding()]
     param([Parameter(Mandatory)][string[]]$Id, [Parameter(Mandatory)][bool]$Marcado)
     $ui = Get-UTUi
     foreach ($i in $Id) {
         if ($Marcado) {
-            if ($ui.Estados.ContainsKey($i) -and $ui.Estados[$i].Estado -eq 'Incompativel') { continue }
+            if ($ui.Estados.ContainsKey($i) -and $ui.Estados[$i].Estado -in 'Incompativel', 'Aplicado') { continue }
+            [void]$ui.Desmarcados.Remove($i)
             [void]$ui.Selecionados.Add($i)
         } else {
             [void]$ui.Selecionados.Remove($i)
         }
     }
-    foreach ($row in @($ui.Rows | Where-Object { $Id -contains $_.Id })) {
-        if ($row.Check.IsEnabled) { $row.Check.IsChecked = $ui.Selecionados.Contains($row.Id) }
-    }
+    foreach ($row in @($ui.Rows | Where-Object { $Id -contains $_.Id })) { Sync-UTUiRowState -Linha $row }
     Sync-UTUiSelectionText
 }
 
 function Clear-UTUiSelection {
+    <#
+    .SYNOPSIS
+        "Descartar": forgets every pending change; the switches go back to the real state.
+    #>
     [CmdletBinding()]
     param()
     $ui = Get-UTUi
-    $ids = @($ui.Selecionados)
-    if ($ids.Count -gt 0) { Set-UTUiSelection -Id $ids -Marcado $false }
+    $ui.Selecionados.Clear()
+    $ui.Desmarcados.Clear()
+    foreach ($row in $ui.Rows.ToArray()) { Sync-UTUiRowState -Linha $row }
+    Sync-UTUiSelectionText
 }
 
 function Get-UTUiSelectedId {
-    # Selected ids in catalog order (the order tweaks are applied).
+    # Tweaks pending apply, in catalog order (the order they are applied).
     [CmdletBinding()]
     [OutputType([string[]])]
     param()
@@ -231,17 +250,47 @@ function Get-UTUiSelectedId {
     return @(Get-UTTweak | Where-Object { $ui.Selecionados.Contains([string]$_.id) } | ForEach-Object { [string]$_.id })
 }
 
+function Get-UTUiUndoId {
+    # Tweaks pending undo, in reverse catalog order.
+    [CmdletBinding()]
+    [OutputType([string[]])]
+    param()
+    $ui = Get-UTUi
+    $ids = @(Get-UTTweak | Where-Object { $ui.Desmarcados.Contains([string]$_.id) } | ForEach-Object { [string]$_.id })
+    [array]::Reverse($ids)
+    return $ids
+}
+
+function Get-UTUiOnId {
+    # Tweaks whose switch is on (applied and not switched off, or pending apply), in catalog order.
+    [CmdletBinding()]
+    [OutputType([string[]])]
+    param()
+    $ui = Get-UTUi
+    return @(Get-UTTweak | Where-Object {
+            $i = [string]$_.id
+            $ui.Selecionados.Contains($i) -or ((Test-UTUiTweakApplied -Id $i) -and -not $ui.Desmarcados.Contains($i))
+        } | ForEach-Object { [string]$_.id })
+}
+
+function Get-UTUiPendingCount {
+    $ui = Get-UTUi
+    if ($null -eq $ui) { return 0 }
+    return ($ui.Selecionados.Count + $ui.Desmarcados.Count)
+}
+
 function Sync-UTUiSelectionText {
     $ui = Get-UTUi
     if ($null -eq $ui -or -not $ui.C.ContainsKey('SelectionText')) { return }
-    $n = $ui.Selecionados.Count
-    $ui.C['SelectionText'].Text = $(if ($n -eq 0) { 'Nenhum ajuste marcado' } elseif ($n -eq 1) { '1 ajuste marcado' } else { "$n ajustes marcados" })
+    $n = Get-UTUiPendingCount
+    $ui.C['SelectionText'].Text = $(if ($n -eq 0) { 'Nenhuma alteração pendente' } elseif ($n -eq 1) { '1 alteração pendente' } else { "$n alterações pendentes" })
+    Sync-UTUiBusy
 }
 
 function New-UTUiTweakList {
     <#
     .SYNOPSIS
-        Card with the tweaks of a tab, grouped by risk, with "mark recommended" / "unmark".
+        The tweaks of a tab as grouped lists by risk, with "ligar os recomendados" and "descartar".
     #>
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Justification = 'Builds a UI element; nothing changes on the system.')]
     [CmdletBinding()]
@@ -252,26 +301,105 @@ function New-UTUiTweakList {
         [string]$Subtitulo
     )
     if (@($Tweaks).Count -eq 0) { return $null }
+    $tab = (@(Get-UTUiTabDefinition | Where-Object Id -eq $Pagina) | Select-Object -First 1)
+    $icon = $(if ($tab) { [string]$tab.Icone } else { 'E762' })
+    $color = $(if ($tab) { [string](Get-UTField -Objeto $tab -Nome 'Cor' -Padrao 'IconBlue') } else { 'IconBlue' })
     $ids = @($Tweaks | ForEach-Object { [string]$_.id })
     $low = @($Tweaks | Where-Object { $_.risco -eq 'baixo' } | ForEach-Object { [string]$_.id })
-    $tools = New-UTUiWrap -Margem '0,0,0,6'
-    [void]$tools.Children.Add((New-UTUiButton 'Marcar os de risco baixo' -Estilo Link -Margem '0,0,18,0' -Dados $low -AoClicar { param($b, $d) $null = $b; Set-UTUiSelection -Id @($d) -Marcado $true }))
-    [void]$tools.Children.Add((New-UTUiButton 'Desmarcar todos desta aba' -Estilo Link -Margem '0' -Dados $ids -AoClicar { param($b, $d) $null = $b; Set-UTUiSelection -Id @($d) -Marcado $false }))
-    $content = New-Object System.Collections.Generic.List[object]
-    $content.Add($tools)
+
+    $root = New-UTUiStack
+    $head = New-Object System.Windows.Controls.Grid
+    foreach ($w in '*', 'Auto') {
+        $cd = New-Object System.Windows.Controls.ColumnDefinition
+        $cd.Width = $(if ($w -eq '*') { New-Object System.Windows.GridLength (1, [System.Windows.GridUnitType]::Star) } else { [System.Windows.GridLength]::Auto })
+        [void]$head.ColumnDefinitions.Add($cd)
+    }
+    $titleBox = New-UTUiStack -Itens @((New-UTUiText $Titulo -Tamanho 17 -Peso SemiBold))
+    if (-not $Subtitulo) { $Subtitulo = 'Ligue ou desligue e clique em "Revisar e aplicar". O "i" mostra o que cada um faz.' }
+    [void]$titleBox.Children.Add((New-UTUiText $Subtitulo -Cor MutedBrush -Quebrar -Margem '0,2,0,0'))
+    [void]$head.Children.Add($titleBox)
+    $tools = New-UTUiStack -Horizontal
+    $tools.VerticalAlignment = 'Bottom'
+    [void]$tools.Children.Add((New-UTUiButton 'Ligar os recomendados' -Estilo Link -Margem '0,0,18,0' -Dados $low -AoClicar { param($b, $d) $null = $b; Set-UTUiSelection -Id @($d) -Marcado $true }))
+    [void]$tools.Children.Add((New-UTUiButton 'Descartar alterações' -Estilo Link -Margem '0' -Dados $ids -AoClicar {
+                param($b, $d) $null = $b
+                $u = Get-UTUi
+                foreach ($i in @($d)) { [void]$u.Selecionados.Remove($i); [void]$u.Desmarcados.Remove($i) }
+                foreach ($row in @($u.Rows | Where-Object { @($d) -contains $_.Id })) { Sync-UTUiRowState -Linha $row }
+                Sync-UTUiSelectionText
+            }))
+    [System.Windows.Controls.Grid]::SetColumn($tools, 1)
+    [void]$head.Children.Add($tools)
+    $head.Margin = '0,8,0,12'
+    [void]$root.Children.Add($head)
+
     $groups = @(
-        @{ Risco = 'baixo'; Titulo = 'Recomendados (risco baixo)' }
-        @{ Risco = 'médio'; Titulo = 'Risco médio: leia a descrição antes' }
-        @{ Risco = 'alto'; Titulo = 'Risco alto: pedem confirmação' }
+        @{ Risco = 'baixo'; Titulo = 'Recomendados'; Rodape = '' }
+        @{ Risco = 'médio'; Titulo = 'Leia antes de ligar'; Rodape = 'Risco médio: veja o "i" para saber o que muda e o cuidado de cada um.' }
+        @{ Risco = 'alto'; Titulo = 'Risco alto'; Rodape = 'Pedem uma confirmação a mais antes de aplicar.' }
     )
     foreach ($g in $groups) {
         $part = @($Tweaks | Where-Object { $_.risco -eq $g.Risco } | Sort-Object { [string]$_.nome })
         if ($part.Count -eq 0) { continue }
-        $content.Add((New-UTUiText $g.Titulo -Tamanho 12 -Peso SemiBold -Cor AccentLightBrush -Margem '0,10,0,2'))
-        foreach ($t in $part) { $content.Add((New-UTUiTweakRow -Tweak $t -Pagina $Pagina)) }
+        $rows = @($part | ForEach-Object { New-UTUiTweakRow -Tweak $_ -Pagina $Pagina -Icone $icon -IconeCor $color })
+        [void]$root.Children.Add((New-UTUiGroup -Titulo $g.Titulo -Linhas $rows -Rodape $g.Rodape -RecuoSeparador 56))
     }
-    if (-not $Subtitulo) { $Subtitulo = 'Passe o mouse sobre um ajuste para ver o que ele faz, o ganho esperado e os cuidados.' }
-    return (New-UTUiCard -Titulo $Titulo -Subtitulo $Subtitulo -Icone 'E762' -Conteudo $content.ToArray())
+    return $root
+}
+
+function Show-UTUiTweakDetail {
+    <#
+    .SYNOPSIS
+        The "i" of a tweak: full description, risk, expected gain, what changes (registry and
+        services) and, when it is applied, the button to undo it.
+    #>
+    [CmdletBinding()]
+    param([Parameter(Mandatory)][string]$Id)
+    $t = Get-UTTweak -Id $Id
+    $ui = Get-UTUi
+    $box = New-UTUiStack
+    [void]$box.Children.Add((New-UTUiText ([string]$t.descricao) -Quebrar))
+    $state = $(if ($ui.Estados.ContainsKey($Id)) { (Get-UTUiStateVisual -Estado $ui.Estados[$Id].Estado).Texto } else { 'Verificando...' })
+    $pairs = @(
+        , @('Risco', ([string]$t.risco))
+        , @('Ganho esperado', ([string]$t.ganhoEsperado))
+        , @('Reiniciar depois', $(if ($t.requerReinicio) { 'Sim' } else { 'Não' }))
+        , @('Situação agora', $state)
+    )
+    $kv = New-UTUiKeyValue -Pares $pairs -LarguraRotulo 140
+    $kv.Margin = '0,12,0,0'
+    [void]$box.Children.Add($kv)
+    if ($t.observacao) { [void]$box.Children.Add((New-UTUiText ([string]$t.observacao) -Cor YellowBrush -Quebrar -Margem '0,10,0,0')) }
+    if ($t.risco -eq 'alto' -and $t.confirmacao) { [void]$box.Children.Add((New-UTUiText ([string]$t.confirmacao) -Cor RedBrush -Quebrar -Margem '0,8,0,0')) }
+    $changes = New-Object System.Collections.Generic.List[string]
+    foreach ($r in @($t.registro | Where-Object { $_ })) {
+        $name = $(if ([string]$r.nome) { [string]$r.nome } else { '(Padrão)' })
+        $value = $(if ($r.Contains('acao') -and $r.acao -eq 'remover') { 'apagado' } else { ($r.valor | ForEach-Object { [string]$_ }) -join ', ' })
+        $changes.Add("Registro: $($r.caminho)\$name = $value")
+    }
+    foreach ($s in @($t.servicos | Where-Object { $_ })) { $changes.Add("Serviço $($s.nome): inicialização $($s.inicio)") }
+    if (@($t.scriptAplicar | Where-Object { $_ }).Count -gt 0) { $changes.Add('Procedimento próprio do programa: o botão Simular mostra cada passo neste PC.') }
+    if ($changes.Count -gt 0) {
+        [void]$box.Children.Add((New-UTUiText 'O que muda' -Peso SemiBold -Margem '0,14,0,4'))
+        $list = New-UTUiStack
+        foreach ($c in $changes) {
+            $line = New-UTUiText $c -Tamanho 12 -Cor MutedBrush -Quebrar -Margem '0,1'
+            $line.SetResourceReference([System.Windows.Controls.TextBlock]::FontFamilyProperty, 'MonoFont')
+            [void]$list.Children.Add($line)
+        }
+        $scroll = New-Object System.Windows.Controls.ScrollViewer
+        $scroll.MaxHeight = 200
+        $scroll.VerticalScrollBarVisibility = 'Auto'
+        $scroll.Content = $list
+        [void]$box.Children.Add($scroll)
+    }
+    $buttons = @('Fechar')
+    if (Test-UTUiTweakApplied -Id $Id) { $buttons = @('Fechar', 'Desfazer este ajuste') }
+    $answer = Show-UTUiSheet -Titulo ([string]$t.nome) -Tipo info -Conteudo $box -Botoes $buttons
+    if ($answer -eq 'Desfazer este ajuste') {
+        Set-UTUiPending -Id $Id -Ligado $false
+        Invoke-UTUiRun -Modo Aplicar
+    }
 }
 
 function Remove-UTUiPageRow {
@@ -305,67 +433,170 @@ function ConvertTo-UTUiSearchText {
     return $sb.ToString().ToLowerInvariant().Trim()
 }
 
-#region Apply / undo / simulate
+#region Progress (sheet without buttons while work runs)
+function Show-UTUiProgress {
+    <#
+    .SYNOPSIS
+        Non-blocking sheet with an animated progress bar while a long job runs.
+    #>
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Justification = 'Builds a UI element; nothing changes on the system.')]
+    [CmdletBinding()]
+    param([Parameter(Mandatory)][string]$Titulo, [string]$Texto)
+    $ui = Get-UTUi
+    if ($null -eq $ui -or $null -eq $ui.Window -or -not $ui.Window.IsVisible -or -not $ui.C.ContainsKey('SheetHost') -or $ui.SheetEstado) { Show-UTUiStatus $Titulo; return }
+    $bar = New-Object System.Windows.Controls.ProgressBar
+    $bar.IsIndeterminate = $true
+    $bar.Height = 6
+    $bar.Margin = '0,16,0,0'
+    $box = New-UTUiStack -Itens @((New-UTUiText $Titulo -Tamanho 17 -Peso SemiBold))
+    if ($Texto) { [void]$box.Children.Add((New-UTUiText $Texto -Cor MutedBrush -Quebrar -Margem '0,8,0,0')) }
+    [void]$box.Children.Add($bar)
+    $ui.C['SheetContent'].Content = $box
+    $ui.C['SheetHost'].Visibility = 'Visible'
+    $ui.ProgressoAberto = $true
+}
+
+function Hide-UTUiProgress {
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Justification = 'Updates a UI element; nothing changes on the system.')]
+    [CmdletBinding()]
+    param()
+    $ui = Get-UTUi
+    if ($null -eq $ui -or -not $ui.ProgressoAberto) { return }
+    $ui.ProgressoAberto = $false
+    if ($ui.C.ContainsKey('SheetHost') -and -not $ui.SheetEstado) { $ui.C['SheetHost'].Visibility = 'Collapsed'; $ui.C['SheetContent'].Content = $null }
+}
+#endregion
+
+#region Review, apply, undo, simulate
 function Invoke-UTUiRun {
     <#
     .SYNOPSIS
-        Buttons "Aplicar selecionados", "Desfazer selecionados" and "Simular": confirmations
-        (high risk listed one by one) and the background run.
+        "Revisar e aplicar" (Aplicar), "Simular" and the old "undo selected" (Desfazer).
+    .DESCRIPTION
+        Aplicar: confirms high-risk tweaks, computes in the background exactly what will change
+        (the engine in simulation mode), shows it in a sheet, then applies the pending tweaks and
+        undoes the ones switched off, with a progress sheet and a summary at the end.
     #>
     [CmdletBinding()]
     param([Parameter(Mandatory)][ValidateSet('Aplicar', 'Desfazer', 'Simular')][string]$Modo)
     if (Test-UTUiExclusiveJob) { return }
-    $ids = @(Get-UTUiSelectedId)
-    if ($ids.Count -eq 0) {
-        [void](Show-UTUiDialog -Titulo 'Nenhum ajuste marcado' -Mensagem 'Marque os ajustes nas abas (ou escolha um preset) e tente de novo.' -Tipo info)
+
+    if ($Modo -eq 'Desfazer') {
+        $ids = @(Get-UTUiSelectedId)
+        if ($ids.Count -eq 0) { return }
+        $tweaks = @(Get-UTTweak -Id $ids)
+        $answer = Show-UTUiDialog -Titulo "Desfazer $($ids.Count) ajuste(s)?" -Mensagem 'Cada ajuste volta exatamente ao valor que estava antes do Upgrade Tweaks mexer.' -Tipo pergunta -Itens @($tweaks | ForEach-Object { [string]$_.nome }) -Botoes @('Desfazer', 'Cancelar')
+        if ($answer -ne 'Desfazer') { return }
+        [void](Invoke-UTUiJob -Nome 'Desfazendo ajustes' -Exclusivo -Argumentos @{ Ids = $ids; Desfazer = @(); Modo = 'Desfazer'; Risco = $false } -Estado @{ Ids = $ids; Desfazer = @(); Modo = 'Desfazer' } -Script {
+                param([string[]]$Ids) Undo-UTTweak -Id $Ids
+            } -AoTerminar { param($Resultado, $Estado) Hide-UTUiProgress; Complete-UTUiRun -Resultado $Resultado -Estado $Estado })
+        Show-UTUiProgress -Titulo 'Desfazendo ajustes...'
+        return
+    }
+
+    $apply = @(Get-UTUiSelectedId)
+    $undo = @(Get-UTUiUndoId)
+    if ($apply.Count + $undo.Count -eq 0) {
+        [void](Show-UTUiDialog -Titulo 'Nada para aplicar' -Mensagem 'Ligue ou desligue ajustes nas abas (ou escolha um preset no Início) e tente de novo.' -Tipo info)
         return
     }
     if ($Modo -eq 'Aplicar' -and (Get-UTSyncValue -Key 'Simular')) { $Modo = 'Simular' }
-    $tweaks = @(Get-UTTweak -Id $ids)
     $risk = $false
-
-    if ($Modo -eq 'Aplicar') {
-        $high = @($tweaks | Where-Object { $_.risco -eq 'alto' })
+    if ($Modo -eq 'Simular') {
+        $risk = $true
+    } else {
+        $high = @(Get-UTTweak -Id $apply | Where-Object { $_.risco -eq 'alto' })
         if ($high.Count -gt 0) {
             $lines = @($high | ForEach-Object { "$($_.nome): $($_.confirmacao)" })
             $answer = Show-UTUiDialog -Titulo 'Ajustes de risco alto' -Tipo aviso -Largura 640 -Itens $lines `
-                -Mensagem 'Estes ajustes podem causar instabilidade ou efeitos colaterais. Leia cada aviso. Tudo pode ser desfeito na aba Restaurar.' `
+                -Mensagem 'Estes ajustes podem causar instabilidade ou efeitos colaterais. Leia cada aviso. Tudo pode ser desfeito depois.' `
                 -Botoes @('Entendo o risco, aplicar', 'Pular os de risco alto', 'Cancelar')
             if ($answer -eq 'Pular os de risco alto') {
                 $skip = @($high | ForEach-Object { [string]$_.id })
-                $ids = @($ids | Where-Object { $skip -notcontains $_ })
-                $tweaks = @($tweaks | Where-Object { $skip -notcontains [string]$_.id })
-                if ($ids.Count -eq 0) { return }
+                $apply = @($apply | Where-Object { $skip -notcontains $_ })
+                if ($apply.Count + $undo.Count -eq 0) { return }
             } elseif ($answer -ne 'Entendo o risco, aplicar') {
                 return
             } else {
                 $risk = $true
             }
         }
-        $restart = @($tweaks | Where-Object { $_.requerReinicio }).Count
-        $msg = "Antes da primeira alteração o programa cria um ponto de restauração e um backup. Tudo pode ser desfeito depois."
-        if ($restart -gt 0) { $msg += " $restart ajuste(s) só valem depois de reiniciar." }
-        $answer = Show-UTUiDialog -Titulo "Aplicar $($ids.Count) ajuste(s)?" -Mensagem $msg -Tipo pergunta -Itens @($tweaks | ForEach-Object { [string]$_.nome }) -Botoes @('Aplicar', 'Cancelar')
-        if ($answer -ne 'Aplicar') { return }
-    } elseif ($Modo -eq 'Desfazer') {
-        $answer = Show-UTUiDialog -Titulo "Desfazer $($ids.Count) ajuste(s)?" -Mensagem 'Cada ajuste volta exatamente ao valor que estava antes do Upgrade Tweaks mexer.' -Tipo pergunta -Itens @($tweaks | ForEach-Object { [string]$_.nome }) -Botoes @('Desfazer', 'Cancelar')
-        if ($answer -ne 'Desfazer') { return }
-    } else {
-        $risk = $true
     }
-
-    $label = @{ Aplicar = 'Aplicando ajustes'; Desfazer = 'Desfazendo ajustes'; Simular = 'Simulando' }[$Modo]
-    [void](Invoke-UTUiJob -Nome $label -Exclusivo -Argumentos @{ Ids = $ids; Modo = $Modo; Risco = $risk } -Estado @{ Ids = $ids; Modo = $Modo } -Script {
-            param([string[]]$Ids, [string]$Modo, [bool]$Risco)
-            switch ($Modo) {
-                'Aplicar' { Invoke-UTTweak -Id $Ids -RiscoAltoConfirmado:$Risco }
-                'Simular' { Invoke-UTTweak -Id $Ids -RiscoAltoConfirmado:$Risco -WhatIf }
-                'Desfazer' { Undo-UTTweak -Id $Ids }
-            }
+    $state = @{ Ids = $apply; Desfazer = $undo; Modo = $Modo; Risco = $risk }
+    [void](Invoke-UTUiJob -Nome 'Calculando o que vai mudar' -Exclusivo -Argumentos @{ Ids = $apply; Desfazer = $undo; Modo = $Modo; Risco = $risk } -Estado $state -Script {
+            param([string[]]$Ids, [string[]]$Desfazer, [string]$Modo, [bool]$Risco)
+            $null = $Modo
+            if (@($Ids).Count -gt 0) { Invoke-UTTweak -Id $Ids -RiscoAltoConfirmado:$Risco -WhatIf }
+            if (@($Desfazer).Count -gt 0) { Undo-UTTweak -Id $Desfazer -WhatIf }
         } -AoTerminar {
             param($Resultado, $Estado)
+            Complete-UTUiPreview -Resultado $Resultado -Estado $Estado
+        })
+    Show-UTUiProgress -Titulo 'Calculando o que vai mudar...' -Texto 'Nada é alterado nesta etapa.'
+}
+
+function Complete-UTUiPreview {
+    <#
+    .SYNOPSIS
+        The simulation came back: in simulation mode it is the result; otherwise the review sheet
+        lists every change (current -> new) and, confirmed, the real run starts.
+    #>
+    [CmdletBinding()]
+    param([Parameter(Mandatory)][psobject]$Resultado, [Parameter(Mandatory)][hashtable]$Estado)
+    Hide-UTUiProgress
+    if (-not $Resultado.Ok) { Show-UTUiError -Mensagem $Resultado.Erro; return }
+    $results = @($Resultado.Resultado)
+    if ($Estado.Modo -eq 'Simular') {
+        [void](Show-UTUiRunSummary -Resultados $results -Titulo 'Simulação (nada foi alterado)')
+        return
+    }
+    $items = New-Object System.Collections.Generic.List[string]
+    $todo = 0
+    foreach ($r in $results) {
+        if ($r.Status -eq 'Simulado') {
+            $todo++
+            $verb = $(if (@($Estado.Desfazer) -contains $r.Id) { 'Desligar' } else { 'Ligar' })
+            $items.Add("$verb`: $($r.Nome)")
+            foreach ($a in @($r.Acoes)) { $items.Add("      $a") }
+        } else {
+            $items.Add("$($r.Nome): $($r.Mensagem)")
+        }
+    }
+    if ($todo -eq 0) {
+        [void](Show-UTUiRunSummary -Resultados $results -Titulo 'Nada para mudar')
+        Complete-UTUiPending -Resultados $results -Estado $Estado
+        return
+    }
+    $restart = @($results | Where-Object { $_.RequerReinicio }).Count
+    $msg = 'Antes da primeira alteração o programa cria um ponto de restauração e um backup. Tudo pode ser desfeito depois.'
+    if ($restart -gt 0) { $msg += " $restart ajuste(s) só valem depois de reiniciar." }
+    $answer = Show-UTUiDialog -Titulo $(if ($todo -eq 1) { 'Aplicar 1 alteração?' } else { "Aplicar $todo alterações?" }) -Mensagem $msg -Tipo pergunta -Itens $items.ToArray() -Botoes @('Aplicar', 'Cancelar') -Largura 680
+    if ($answer -ne 'Aplicar') { return }
+    $run = @{ Ids = @($Estado.Ids); Desfazer = @($Estado.Desfazer); Modo = 'Aplicar'; Risco = [bool]$Estado.Risco }
+    [void](Invoke-UTUiJob -Nome 'Aplicando ajustes' -Exclusivo -Argumentos @{ Ids = $run.Ids; Desfazer = $run.Desfazer; Modo = 'Aplicar'; Risco = $run.Risco } -Estado $run -Script {
+            param([string[]]$Ids, [string[]]$Desfazer, [string]$Modo, [bool]$Risco)
+            $null = $Modo
+            if (@($Ids).Count -gt 0) { Invoke-UTTweak -Id $Ids -RiscoAltoConfirmado:$Risco }
+            if (@($Desfazer).Count -gt 0) { Undo-UTTweak -Id $Desfazer }
+        } -AoTerminar {
+            param($Resultado, $Estado)
+            Hide-UTUiProgress
             Complete-UTUiRun -Resultado $Resultado -Estado $Estado
         })
+    Show-UTUiProgress -Titulo $(if ($todo -eq 1) { 'Aplicando 1 alteração...' } else { "Aplicando $todo alterações..." }) -Texto 'Não feche o programa até terminar.'
+}
+
+function Complete-UTUiPending {
+    # After a run, the pending changes that were done (or had nothing to do) are cleared.
+    param([AllowEmptyCollection()][object[]]$Resultados, [hashtable]$Estado)
+    $ui = Get-UTUi
+    $keep = @(@($Resultados) | Where-Object { $_.Status -in 'Falhou', 'PrecisaConfirmacao' } | ForEach-Object { [string]$_.Id })
+    foreach ($id in @(@($Estado.Ids) + @(Get-UTField -Objeto $Estado -Nome 'Desfazer' -Padrao @()))) {
+        if ($keep -contains $id) { continue }
+        [void]$ui.Selecionados.Remove([string]$id)
+        [void]$ui.Desmarcados.Remove([string]$id)
+    }
+    Sync-UTUiSelectionText
 }
 
 function Complete-UTUiRun {
@@ -390,8 +621,12 @@ function Complete-UTUiRun {
         }
     }
 
-    $title = @{ Aplicar = 'Ajustes aplicados'; Desfazer = 'Ajustes desfeitos'; Simular = 'Simulação (nada foi alterado)' }[$Estado.Modo]
+    $title = @{ Aplicar = 'Pronto'; Desfazer = 'Ajustes desfeitos'; Simular = 'Simulação (nada foi alterado)' }[$Estado.Modo]
     [void](Show-UTUiRunSummary -Resultados $results -Titulo $title)
-    if ($Estado.Modo -ne 'Simular') { Invoke-UTUiStateRefresh -Id $Estado.Ids }
+    if ($Estado.Modo -ne 'Simular') {
+        Complete-UTUiPending -Resultados $results -Estado $Estado
+        $ids = @(@($Estado.Ids) + @(Get-UTField -Objeto $Estado -Nome 'Desfazer' -Padrao @()) | Where-Object { $_ })
+        if ($ids.Count -gt 0) { Invoke-UTUiStateRefresh -Id $ids }
+    }
 }
 #endregion

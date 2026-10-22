@@ -327,11 +327,25 @@ function New-UTUiPageFirmware {
             foreach ($s in $list) { [void]$dd.Resultado.Children.Add((New-UTUiBiosSettingRow -Opcao $s -Painel $null)) }
         }
     }
+    $searchState.Botao = $go
+    (Get-UTUi).BiosBusca = $searchState
     $bar = New-UTUiWrap -Itens @($searchBox, $go)
     [void]$page.Children.Add((New-UTUiCard -Titulo 'Todas as opções (avançado)' -Icone 'E721' -Subtitulo 'Busca em todas as opções visíveis da BIOS, pelo nome em inglês como aparece na tela da BIOS. Mude só o que você conhece.' -Conteudo @($bar, $results)))
     return $page
 }
 
+function Start-UTUiBiosSearch {
+    # Opens the BIOS tab and runs its "all options" search with the text (from the global search).
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Justification = 'Only searches; nothing changes on the system.')]
+    [CmdletBinding()]
+    param([Parameter(Mandatory)][string]$Texto)
+    Show-UTUiPage -Id 'BIOS'
+    $s = (Get-UTUi).BiosBusca
+    if ($null -eq $s -or $null -eq $s.Caixa -or $null -eq $s.Botao) { return }
+    $s.Caixa.Text = $Texto
+    $s.Botao.RaiseEvent((New-Object System.Windows.RoutedEventArgs ([System.Windows.Controls.Primitives.ButtonBase]::ClickEvent)))
+    $s.Caixa.BringIntoView()
+}
 function New-UTUiBiosSettingRow {
     <#
     .SYNOPSIS

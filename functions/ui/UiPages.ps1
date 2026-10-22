@@ -101,12 +101,32 @@ function Test-UTUiVendor {
 
 #region Início
 function New-UTUiPageInicio {
+    <#
+    .SYNOPSIS
+        Overview: the Optimization Score ring, "Otimizar agora" with the preset choice, the
+        hardware found and the pending items, each with the tab that solves it.
+    #>
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Justification = 'Builds a UI element; nothing changes on the system.')]
     [CmdletBinding()]
     param()
-    $page = New-UTUiStack -Itens @((New-UTUiPageHeader -Titulo 'Início' -Descricao 'Diagnóstico do seu PC para o Call of Duty: Warzone. Esta tela só lê o sistema; nada é alterado aqui.'))
-    [void]$page.Children.Add((New-UTUiPresetCard))
-    $data = @{}
+    $page = New-UTUiStack -Itens @((New-UTUiPageHeader -Titulo 'Início' -Descricao 'Visão geral do seu PC para o Call of Duty: Warzone. Esta tela só lê o sistema; nada muda até você confirmar.'))
+
+    $hero = New-Object System.Windows.Controls.Grid
+    foreach ($w in 360, 0) {
+        $cd = New-Object System.Windows.Controls.ColumnDefinition
+        $cd.Width = $(if ($w) { New-Object System.Windows.GridLength $w } else { New-Object System.Windows.GridLength (1, [System.Windows.GridUnitType]::Star) })
+        [void]$hero.ColumnDefinitions.Add($cd)
+    }
+    $ringHolder = New-UTUiCard -Conteudo @((New-UTUiStack -Margem '0,40,0,40' -Itens @((New-UTUiText 'Analisando o hardware e o Windows...' -Cor MutedBrush))))
+    $ringHolder.Margin = '0,0,16,24'
+    [void]$hero.Children.Add($ringHolder)
+    $preset = New-UTUiPresetCard
+    $preset.Margin = '0,0,0,24'
+    [System.Windows.Controls.Grid]::SetColumn($preset, 1)
+    [void]$hero.Children.Add($preset)
+    [void]$page.Children.Add($hero)
+
+    $data = @{ Anel = $ringHolder }
     $panel = New-UTUiAsyncPanel -Nome 'Diagnóstico do PC' -Carregando 'Analisando o hardware e o Windows (leva alguns segundos)...' -Dados $data -Script { Get-UTDiagnostic } -Montar {
         param($R, $D)
         $diag = (@($R) | Select-Object -First 1)
@@ -118,83 +138,34 @@ function New-UTUiPageInicio {
             # Pages built before the hardware was known are rebuilt on the next visit.
             foreach ($k in @($ui.Pages.Keys)) { if ($k -ne 'Inicio' -and $k -ne $ui.PaginaAtual) { [void]$ui.Pages.Remove($k); Remove-UTUiPageRow -Pagina $k } }
         }
-        New-UTUiDiagnosticView -Diagnostico $diag -Painel $D.Painel
+        $D.Anel.Child = New-UTUiScoreView -Diagnostico $diag -Painel $D.Painel
+        New-UTUiDiagnosticView -Diagnostico $diag
     }
     $data.Painel = $panel
     [void]$page.Children.Add($panel)
     return $page
 }
 
-function New-UTUiPresetCard {
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Justification = 'Builds a UI element; nothing changes on the system.')]
-    [CmdletBinding()]
-    param()
-    $content = New-Object System.Collections.Generic.List[object]
-    $names = @()
-    try { $names = @(Get-UTPresetName) } catch { $names = @() }
-    if ($names -contains 'Seguro') {
-        $big = New-UTUiButton 'Otimizar agora com o preset Seguro (recomendado)' -Estilo Primario -Icone 'E945' -Margem '0,0,0,10' -AoClicar {
-            param($b, $d) $null = $b, $d
-            Select-UTUiPreset -Nome 'Seguro'
-            Invoke-UTUiRun -Modo Aplicar
-        }
-        $big.Padding = '22,12'
-        $big.FontSize = 15
-        $content.Add($big)
-    }
-    foreach ($n in $names) {
-        $p = Get-UTPreset -Nome $n
-        $line = New-UTUiWrap -Itens @((New-UTUiText $n -Peso SemiBold -Margem '0,0,8,0'))
-        [void]$line.Children.Add((New-UTUiButton "Marcar os ajustes do $n" -Estilo Link -Margem '0' -Dados $n -AoClicar { param($b, $d) $null = $b; Select-UTUiPreset -Nome $d }))
-        $content.Add($line)
-        $content.Add((New-UTUiText ([string]$p.descricao) -Cor MutedBrush -Quebrar -Margem '0,2,0,10'))
-    }
-    $files = New-UTUiWrap -Margem '0,4,0,0'
-    [void]$files.Children.Add((New-UTUiButton 'Exportar seleção...' -Icone 'E74E' -Dica 'Salva os ajustes marcados em JSON para repetir em outros PCs (ou usar com -Config).' -AoClicar {
-                param($b, $d) $null = $b, $d
-                $ids = @(Get-UTUiSelectedId)
-                if ($ids.Count -eq 0) { [void](Show-UTUiDialog -Titulo 'Nenhum ajuste marcado' -Mensagem 'Marque os ajustes (ou um preset) antes de exportar.'); return }
-                $path = Get-UTUiFileDialog -Modo Salvar -Filtro 'Seleção do Upgrade Tweaks (*.json)|*.json' -NomeSugerido 'selecao-upgrade-tweaks.json'
-                if ($path) { [void](Export-UTSelection -Id $ids -Caminho $path); [void](Show-UTUiDialog -Titulo 'Seleção salva' -Mensagem "$($ids.Count) ajustes salvos em $path" -Tipo sucesso) }
-            }))
-    [void]$files.Children.Add((New-UTUiButton 'Importar seleção...' -Icone 'E8B5' -AoClicar {
-                param($b, $d) $null = $b, $d
-                $path = Get-UTUiFileDialog -Modo Abrir -Filtro 'Seleção do Upgrade Tweaks (*.json)|*.json'
-                if (-not $path) { return }
-                $imp = Import-UTSelection -Caminho $path
-                Clear-UTUiSelection
-                Set-UTUiSelection -Id @($imp.Ids) -Marcado $true
-                $msg = "$(@($imp.Ids).Count) ajustes marcados. Confira as abas e clique em Aplicar selecionados."
-                if (@($imp.Desconhecidos).Count -gt 0) { $msg += " Ignorados (não existem nesta versão): $($imp.Desconhecidos -join ', ')." }
-                [void](Show-UTUiDialog -Titulo 'Seleção importada' -Mensagem $msg -Tipo sucesso)
-            }))
-    $content.Add($files)
-    return (New-UTUiCard -Titulo 'Presets' -Icone 'E734' -Subtitulo 'Cada preset marca os ajustes; o que não se aplica ao seu hardware é pulado sozinho. Revise as abas antes de aplicar, se quiser.' -Conteudo $content.ToArray())
-}
-
-function New-UTUiDiagnosticView {
+function New-UTUiScoreView {
+    # Content of the score card: ring, one line of verdict and the two actions.
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Justification = 'Builds a UI element; nothing changes on the system.')]
     [CmdletBinding()]
     param([Parameter(Mandatory)][psobject]$Diagnostico, [object]$Painel)
-    $root = New-UTUiStack
     $score = [int]$Diagnostico.Nota
     $color = $(if ($score -ge 80) { 'GreenBrush' } elseif ($score -ge 60) { 'YellowBrush' } else { 'RedBrush' })
-
-    $grid = New-Object System.Windows.Controls.Grid
-    foreach ($w in 300, 0) {
-        $cd = New-Object System.Windows.Controls.ColumnDefinition
-        $cd.Width = $(if ($w) { New-Object System.Windows.GridLength $w } else { New-Object System.Windows.GridLength (1, [System.Windows.GridUnitType]::Star) })
-        [void]$grid.ColumnDefinitions.Add($cd)
-    }
-    $scoreBox = New-UTUiStack -Itens @(
-        (New-UTUiText 'Nota de Otimização' -Cor MutedBrush)
-        (New-UTUiStack -Horizontal -Itens @((New-UTUiText ([string]$score) -Tamanho 56 -Peso Bold -Cor $color), (New-UTUiText '/100' -Tamanho 18 -Cor MutedBrush -Margem '6,0,0,12')))
-        (New-UTUiText $(if ($score -ge 80) { 'PC bem ajustado para jogar.' } elseif ($score -ge 60) { 'Bom, mas há pontos para melhorar.' } else { 'Há problemas que custam FPS ou estabilidade.' }) -Quebrar)
+    $ring = New-UTUiScoreRing -Nota $score -Cor $color
+    $ring.HorizontalAlignment = 'Center'
+    $box = New-UTUiStack -Itens @(
+        (New-UTUiText 'Nota de Otimização' -Tamanho 12 -Peso SemiBold -Cor MutedBrush)
+        $ring
+        (New-UTUiText $(if ($score -ge 80) { 'PC bem ajustado para jogar.' } elseif ($score -ge 60) { 'Bom, mas há pontos para melhorar.' } else { 'Há problemas que custam FPS ou estabilidade.' }) -Quebrar -Margem '0,4,0,0')
     )
-    $scoreBox.Children[1].Children[1].VerticalAlignment = 'Bottom'
+    $box.Children[1].Margin = '0,14,0,14'
+    $box.Children[2].TextAlignment = 'Center'
     $btns = New-UTUiWrap -Margem '0,14,0,0'
+    $btns.HorizontalAlignment = 'Center'
     if ($Painel) { [void]$btns.Children.Add((New-UTUiButton 'Analisar de novo' -Icone 'E72C' -Dados $Painel -AoClicar { param($b, $d) $null = $b; Sync-UTUiAsyncPanel -Painel $d })) }
-    [void]$btns.Children.Add((New-UTUiButton 'Exportar relatório' -Icone 'E8A5' -Dados $Diagnostico -AoClicar {
+    [void]$btns.Children.Add((New-UTUiButton 'Relatório' -Icone 'E8A5' -Dados $Diagnostico -Margem '0,0,0,8' -AoClicar {
                 param($b, $d)
                 $null = $b
                 $path = Get-UTUiFileDialog -Modo Salvar -Filtro 'Página HTML (*.html)|*.html|Texto (*.txt)|*.txt' -NomeSugerido ("diagnostico-{0}-{1}.html" -f $env:COMPUTERNAME, (Get-Date -Format 'yyyyMMdd'))
@@ -202,37 +173,110 @@ function New-UTUiDiagnosticView {
                 Export-UTDiagnosticReport -Path $path -Diagnostico $d | Out-Null
                 [void](Show-UTUiDialog -Titulo 'Relatório salvo' -Mensagem $path -Tipo sucesso)
             }))
-    [void]$scoreBox.Children.Add($btns)
-    $left = New-UTUiCard -Conteudo @($scoreBox)
-    $left.Margin = '0,0,12,12'
-    [System.Windows.Controls.Grid]::SetColumn($left, 0)
-    [void]$grid.Children.Add($left)
+    [void]$box.Children.Add($btns)
+    return $box
+}
+
+function New-UTUiPresetCard {
+    <#
+    .SYNOPSIS
+        "Otimizar agora": pick a preset, review what changes and apply (the one primary action of
+        the screen). Export/import of the selection stay as links.
+    #>
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Justification = 'Builds a UI element; nothing changes on the system.')]
+    [CmdletBinding()]
+    param()
+    $names = @()
+    try { $names = @(Get-UTPresetName) } catch { $names = @() }
+    $content = New-Object System.Collections.Generic.List[object]
+    $combo = New-Object System.Windows.Controls.ComboBox
+    $combo.MinWidth = 220
+    $combo.HorizontalAlignment = 'Left'
+    $desc = New-UTUiText '' -Cor MutedBrush -Quebrar -Margem '0,10,0,0'
+    $presets = @{}
+    foreach ($n in $names) {
+        $p = Get-UTPreset -Nome $n
+        $presets[$n] = [string]$p.descricao
+        $item = New-Object System.Windows.Controls.ComboBoxItem
+        $item.Content = $(if ($n -eq 'Seguro') { 'Seguro (recomendado)' } else { $n })
+        $item.Tag = $n
+        [void]$combo.Items.Add($item)
+    }
+    $combo.Tag = @{ Descricao = $desc; Textos = $presets }
+    $combo.Add_SelectionChanged({ param($c, $e) $null = $e; if ($c.SelectedItem) { $c.Tag.Descricao.Text = [string]$c.Tag.Textos[[string]$c.SelectedItem.Tag] } })
+    if ($combo.Items.Count -gt 0) { $combo.SelectedIndex = 0 }
+    [System.Windows.Automation.AutomationProperties]::SetName($combo, 'Preset')
+    $content.Add($combo)
+    $content.Add($desc)
+    $go = New-UTUiButton 'Otimizar agora' -Estilo Primario -Icone 'E945' -Margem '0,16,12,0' -Dados $combo -AoClicar {
+        param($b, $d) $null = $b
+        if ($null -eq $d.SelectedItem) { return }
+        Select-UTUiPreset -Nome ([string]$d.SelectedItem.Tag)
+        if ((Get-UTUiPendingCount) -gt 0) { Invoke-UTUiRun -Modo Aplicar }
+        else { [void](Show-UTUiDialog -Titulo 'Nada a mudar' -Mensagem 'Os ajustes deste preset já estão aplicados (ou não se aplicam a este PC).' -Tipo sucesso) }
+    }
+    $go.Padding = '20,9'
+    $actions = New-UTUiWrap -Itens @($go)
+    [void]$actions.Children.Add((New-UTUiButton 'Só marcar nas abas' -Estilo Link -Margem '0,22,16,0' -Dados $combo -AoClicar { param($b, $d) $null = $b; if ($d.SelectedItem) { Select-UTUiPreset -Nome ([string]$d.SelectedItem.Tag) } }))
+    [void]$actions.Children.Add((New-UTUiButton 'Exportar seleção' -Estilo Link -Margem '0,22,16,0' -Dica 'Salva em JSON os ajustes ligados, para repetir em outros PCs (ou usar com -Config).' -AoClicar {
+                param($b, $d) $null = $b, $d
+                $ids = @(Get-UTUiOnId)
+                if ($ids.Count -eq 0) { [void](Show-UTUiDialog -Titulo 'Nenhum ajuste ligado' -Mensagem 'Ligue ajustes (ou escolha um preset) antes de exportar.'); return }
+                $path = Get-UTUiFileDialog -Modo Salvar -Filtro 'Seleção do Upgrade Tweaks (*.json)|*.json' -NomeSugerido 'selecao-upgrade-tweaks.json'
+                if ($path) { [void](Export-UTSelection -Id $ids -Caminho $path); [void](Show-UTUiDialog -Titulo 'Seleção salva' -Mensagem "$($ids.Count) ajustes salvos em $path" -Tipo sucesso) }
+            }))
+    [void]$actions.Children.Add((New-UTUiButton 'Importar seleção' -Estilo Link -Margem '0,22,0,0' -AoClicar {
+                param($b, $d) $null = $b, $d
+                $path = Get-UTUiFileDialog -Modo Abrir -Filtro 'Seleção do Upgrade Tweaks (*.json)|*.json'
+                if (-not $path) { return }
+                $imp = Import-UTSelection -Caminho $path
+                Clear-UTUiSelection
+                Set-UTUiSelection -Id @($imp.Ids) -Marcado $true
+                $msg = "$(Get-UTUiPendingCount) alterações pendentes. Confira as abas e clique em Revisar e aplicar."
+                if (@($imp.Desconhecidos).Count -gt 0) { $msg += " Ignorados (não existem nesta versão): $($imp.Desconhecidos -join ', ')." }
+                [void](Show-UTUiDialog -Titulo 'Seleção importada' -Mensagem $msg -Tipo sucesso)
+            }))
+    $content.Add($actions)
+    return (New-UTUiCard -Titulo 'Otimizar agora' -Icone 'E945' -Subtitulo 'Escolha o preset. Antes de aplicar você vê tudo o que vai mudar; o que não se aplica ao seu hardware é pulado sozinho.' -Conteudo $content.ToArray())
+}
+
+function New-UTUiDiagnosticView {
+    <#
+    .SYNOPSIS
+        Hardware found, pending items (with the tab that solves each) and what is already right,
+        as grouped lists.
+    #>
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Justification = 'Builds a UI element; nothing changes on the system.')]
+    [CmdletBinding()]
+    param([Parameter(Mandatory)][psobject]$Diagnostico, [object]$Painel)
+    $null = $Painel
+    $root = New-UTUiStack
+    $pending = @($Diagnostico.Pendencias)
+    $rows = New-Object System.Collections.Generic.List[object]
+    foreach ($p in $pending) {
+        $look = switch ([string]$p.Status) { 'Problema' { @('EA39', 'IconRed') } 'Aviso' { @('E7BA', 'IconOrange') } default { @('E946', 'IconBlue') } }
+        $tab = Get-UTUiTabForCheck -Aba ([string]$p.Aba)
+        $go = $null
+        if ($tab -and @(Get-UTUiTabDefinition | Where-Object Id -eq $tab).Count -gt 0) {
+            $tabName = (@(Get-UTUiTabDefinition | Where-Object Id -eq $tab) | Select-Object -First 1).Nome
+            $go = New-UTUiButton "Resolver" -Dica "Abre a aba $tabName" -Margem '0' -Dados $tab -AoClicar { param($b, $d) $null = $b; Show-UTUiPage -Id $d }
+        }
+        $rows.Add((New-UTUiRow -Titulo ([string]$p.Titulo) -Subtitulo ([string]$p.Mensagem) -Icone $look[0] -IconeCor $look[1] -Direita $go))
+    }
+    if ($rows.Count -eq 0) { $rows.Add((New-UTUiRow -Titulo 'Nenhuma pendência encontrada' -Icone 'E73E' -IconeCor 'IconGreen')) }
+    [void]$root.Children.Add((New-UTUiGroup -Titulo 'Pendências' -Linhas $rows.ToArray() -Rodape 'Ordenadas pelo impacto. "Resolver" abre a aba certa.'))
 
     $lines = @()
     try { $lines = @(Get-UTHardwareSummaryLine -Hardware $Diagnostico.Hardware | ForEach-Object { , @($_.Rotulo, $_.Valor) }) } catch { $lines = @() }
-    $right = New-UTUiCard -Titulo 'Seu PC' -Icone 'E7F8' -Conteudo @((New-UTUiKeyValue -Pares $lines -LarguraRotulo 150))
-    [System.Windows.Controls.Grid]::SetColumn($right, 1)
-    [void]$grid.Children.Add($right)
-    [void]$root.Children.Add($grid)
-
-    $pending = @($Diagnostico.Pendencias)
-    $items = New-Object System.Collections.Generic.List[object]
-    if ($pending.Count -eq 0) { $items.Add((New-UTUiText 'Nenhuma pendência encontrada.' -Cor GreenBrush)) }
-    foreach ($p in $pending) {
-        $tab = Get-UTUiTabForCheck -Aba ([string]$p.Aba)
-        $extra = $null
-        if ($tab -and @(Get-UTUiTabDefinition | Where-Object Id -eq $tab).Count -gt 0) {
-            $tabName = (@(Get-UTUiTabDefinition | Where-Object Id -eq $tab) | Select-Object -First 1).Nome
-            $extra = New-UTUiButton ("Resolver na aba $tabName") -Estilo Link -Margem '0,4,0,0' -Dados $tab -AoClicar { param($b, $d) $null = $b; Show-UTUiPage -Id $d }
-        }
-        $items.Add((New-UTUiStatusLine -Status ([string]$p.Status) -Titulo ([string]$p.Titulo) -Texto ([string]$p.Mensagem) -Extra $extra))
+    if ($lines.Count -gt 0) {
+        $kv = New-UTUiKeyValue -Pares $lines -LarguraRotulo 170
+        [void]$root.Children.Add((New-UTUiGroup -Titulo 'Seu PC' -Linhas @((New-UTUiRowBox $kv))))
     }
-    [void]$root.Children.Add((New-UTUiCard -Titulo 'Pendências' -Subtitulo 'Ordenadas pelo impacto. Cada uma diz em qual aba se resolve.' -Icone 'E7BA' -Conteudo $items.ToArray()))
 
     $ok = @($Diagnostico.Verificacoes | Where-Object { $_.Status -eq 'OK' })
     if ($ok.Count -gt 0) {
-        $okItems = @($ok | ForEach-Object { New-UTUiStatusLine -Status OK -Titulo ([string]$_.Titulo) -Texto ([string]$_.Mensagem) })
-        [void]$root.Children.Add((New-UTUiCard -Titulo 'Já está certo' -Icone 'E73E' -Conteudo $okItems))
+        $okRows = @($ok | ForEach-Object { New-UTUiRow -Titulo ([string]$_.Titulo) -Subtitulo ([string]$_.Mensagem) -Icone 'E73E' -IconeCor 'IconGreen' })
+        [void]$root.Children.Add((New-UTUiGroup -Titulo 'Já está certo' -Linhas $okRows))
     }
     return $root
 }
@@ -456,25 +500,24 @@ function New-UTUiPageServico {
         param($R, $D)
         $list = New-UTUiStack
         foreach ($it in @($R | Sort-Object Nome)) {
-            $cb = New-Object System.Windows.Controls.CheckBox
-            $cb.Content = New-UTUiStack -Itens @((New-UTUiText ([string]$it.Nome) -Peso SemiBold), (New-UTUiText ("$($it.Origem): $($it.Comando)") -Tamanho 11.5 -Cor MutedBrush -Quebrar))
-            $cb.IsChecked = [bool]$it.Ativo
-            $cb.Margin = '0,4'
-            $cb.Tag = $it
-            $cb.Add_Click({
-                    param($box, $evt) $null = $evt
-                    $item = $box.Tag
-                    $on = [bool]$box.IsChecked
-                    Invoke-UTUiAction -Nome 'Inicialização' -Argumentos @{ Item = $item; Ativo = $on } -Script { param($Item, [bool]$Ativo) Set-UTStartupItemState -Item $Item -Ativo $Ativo } -Dados $box -Depois { param($r, $bx) $null = $r; $bx.Tag.Ativo = [bool]$bx.IsChecked }
-                })
-            [void]$list.Children.Add($cb)
+            # Switch on = starts with Windows. The change is immediate (and undone by switching back).
+            $sw = New-UTUiSwitch -Marcado ([bool]$it.Ativo) -Dados $it -Dica ([string]$it.Nome) -AoMudar {
+                param($s, $item)
+                $on = [bool]$s.IsChecked
+                if ([bool]$item.Ativo -eq $on) { return }
+                if (Test-UTUiSimulacao -Acao "$(if ($on) { 'ligar' } else { 'desligar' }) $($item.Nome) na inicialização.") { $s.IsChecked = [bool]$item.Ativo; return }
+                Invoke-UTUiAction -Nome 'Inicialização' -Argumentos @{ Item = $item; Ativo = $on } -Script { param($Item, [bool]$Ativo) Set-UTStartupItemState -Item $Item -Ativo $Ativo } -Dados @{ Item = $item; Switch = $s } -Depois { param($r, $d) $null = $r; $d.Item.Ativo = [bool]$d.Switch.IsChecked }
+            }
+            $row = New-UTUiRow -Titulo ([string]$it.Nome) -Subtitulo ("$($it.Origem): $($it.Comando)") -Direita $sw
+            $row.Padding = '0,8'
+            [void]$list.Children.Add($row)
         }
         if ($list.Children.Count -eq 0) { [void]$list.Children.Add((New-UTUiText 'Nenhum programa inicia com o Windows.' -Cor MutedBrush)) }
         $null = $D
         return $list
     }
     $data.Painel = $startup
-    $start = New-UTUiCard -Titulo 'Inicialização' -Icone 'E7E8' -Subtitulo 'Marcado = inicia com o Windows. Desmarcar só impede de abrir sozinho; o programa continua instalado.' -Conteudo @($startup)
+    $start = New-UTUiCard -Titulo 'Inicialização' -Icone 'E7E8' -Subtitulo 'Ligado = abre junto com o Windows. Desligar só impede de abrir sozinho; o programa continua instalado.' -Conteudo @($startup)
     return (New-UTUiTweakPage -Aba ServicosApps -Descricao 'Serviços em Manual e remoção de apps que não são de jogo. Store, Xbox App, Gaming Services, Game Bar, Calculadora, Fotos, Terminal e Instalador de Aplicativo nunca são removidos.' -Ferramentas @($lite, $start))
 }
 #endregion

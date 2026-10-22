@@ -1,5 +1,6 @@
 ﻿# Dialogs of the interface: messages, confirmations (including high risk), checklists, the
-# end-of-run summary and the 15-second "keep this refresh rate?" countdown.
+# end-of-run summary and the 15-second "keep this refresh rate?" countdown. With the main window
+# open they are sheets inside it; before it opens, dialog windows.
 
 function New-UTUiDialogWindow {
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Justification = 'Builds a UI element; nothing changes on the system.')]
@@ -145,6 +146,30 @@ function Show-UTUiChecklistDialog {
         [string]$BotaoOk = 'Continuar',
         [double]$Largura = 640
     )
+    if (Test-UTUiSheetAvailable) {
+        $list = New-UTUiStack
+        $checks = New-Object System.Collections.Generic.List[object]
+        foreach ($i in $Itens) {
+            $sw = New-UTUiSwitch -Marcado ([bool]$i.Marcado) -Dica ([string]$i.Texto)
+            if ($i.PSObject.Properties['Habilitado'] -and -not $i.Habilitado) { $sw.IsEnabled = $false; $sw.IsChecked = $false }
+            $sw.DataContext = [string]$i.Id
+            $detail = $(if ($i.PSObject.Properties['Detalhe']) { [string]$i.Detalhe } else { '' })
+            [void]$list.Children.Add((New-UTUiRow -Titulo ([string]$i.Texto) -Subtitulo $detail -Direita $sw))
+            $checks.Add($sw)
+        }
+        $scroll = New-Object System.Windows.Controls.ScrollViewer
+        $scroll.MaxHeight = 380
+        $scroll.VerticalScrollBarVisibility = 'Auto'
+        $scroll.Content = $list
+        $links = New-UTUiStack -Horizontal -Margem '0,8,0,0' -Itens @(
+            (New-UTUiButton 'Ligar todos' -Estilo Link -Margem '0,0,16,0' -Dados $checks -AoClicar { param($b, $d) $null = $b; foreach ($c in $d) { if ($c.IsEnabled) { $c.IsChecked = $true } } })
+            (New-UTUiButton 'Desligar todos' -Estilo Link -Dados $checks -AoClicar { param($b, $d) $null = $b; foreach ($c in $d) { $c.IsChecked = $false } })
+        )
+        $content = New-UTUiStack -Itens @($scroll, $links)
+        $answer = Show-UTUiSheet -Titulo $Titulo -Mensagem $Mensagem -Botoes @($BotaoOk, 'Cancelar') -Tipo pergunta -Conteudo $content
+        if ($answer -ne $BotaoOk) { return $null }
+        return , @($checks | Where-Object { $_.IsChecked } | ForEach-Object { [string]$_.DataContext })
+    }
     $w = New-UTUiDialogWindow -Titulo $Titulo -Largura $Largura
     $root = New-UTUiStack -Margem '24,20,24,18'
     [void]$root.Children.Add((New-UTUiText $Titulo -Tamanho 17 -Peso SemiBold))
@@ -200,6 +225,30 @@ function Show-UTUiCountdownDialog {
         [Parameter(Mandatory)][string]$Mensagem,
         [int]$Segundos = 15
     )
+    if (Test-UTUiSheetAvailable) {
+        $count = New-UTUiText "Voltando sozinho em $Segundos segundos..." -Cor YellowBrush
+        $timer = New-Object System.Windows.Threading.DispatcherTimer
+        $timer.Interval = [TimeSpan]::FromSeconds(1)
+        $timer.Tag = @{ Restante = $Segundos; Texto = $count }
+        $timer.Add_Tick({
+                param($t, $evt)
+                $null = $evt
+                $s = $t.Tag
+                $s.Restante--
+                if ($s.Restante -le 0) {
+                    $t.Stop()
+                    $sheet = (Get-UTUi).SheetEstado
+                    if ($sheet) { $sheet.Resultado = $null; $sheet.Frame.Continue = $false }
+                    return
+                }
+                $s.Texto.Text = "Voltando sozinho em $($s.Restante) segundos..."
+            })
+        $timer.Start()
+        try {
+            $answer = Show-UTUiSheet -Titulo $Titulo -Mensagem $Mensagem -Botoes @('Manter', 'Voltar como estava') -Tipo pergunta -Conteudo $count
+        } finally { $timer.Stop() }
+        return ($answer -eq 'Manter')
+    }
     $w = New-UTUiDialogWindow -Titulo $Titulo -Largura 500
     $root = New-UTUiStack -Margem '24,20,24,18'
     [void]$root.Children.Add((New-UTUiText $Titulo -Tamanho 17 -Peso SemiBold))

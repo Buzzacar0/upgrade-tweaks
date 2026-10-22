@@ -162,10 +162,7 @@ function Show-UTUiPage {
         }
     }
     $ui.PaginaAtual = $Id
-    if ($ui.C.ContainsKey('TitleText')) {
-        $tabName = (@(Get-UTUiTabDefinition | Where-Object Id -eq $Id) | Select-Object -First 1)
-        $ui.C['TitleText'].Text = $(if ($tabName) { $tabName.Nome } elseif ($Id -eq 'Galeria') { 'Galeria de componentes' } else { 'Upgrade Tweaks' })
-    }
+    Set-UTUiTitle -Id $Id
     Set-UTUiPageContent -Conteudo $ui.Pages[$Id]
     foreach ($row in @($ui.Rows | Where-Object Pagina -eq $Id)) { Sync-UTUiRowState -Linha $row }
 
@@ -177,6 +174,16 @@ function Show-UTUiPage {
     } finally { $ui.Navegando = $false }
 }
 
+function Set-UTUiTitle {
+    # Title of the page in the title bar (tab name, "Busca" for the search results).
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Justification = 'Changes only a text of the interface.')]
+    [CmdletBinding()]
+    param([AllowEmptyString()][string]$Id)
+    $ui = Get-UTUi
+    if (-not $ui.C.ContainsKey('TitleText')) { return }
+    $tab = (@(Get-UTUiTabDefinition | Where-Object Id -eq $Id) | Select-Object -First 1)
+    $ui.C['TitleText'].Text = $(if ($tab) { $tab.Nome } elseif ($Id -eq 'Galeria') { 'Galeria de componentes' } elseif ($Id -eq 'Busca') { 'Busca' } else { 'Upgrade Tweaks' })
+}
 function Set-UTUiPageContent {
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Justification = 'Builds a UI element; nothing changes on the system.')]
     [CmdletBinding()]
@@ -190,24 +197,102 @@ function Set-UTUiPageContent {
 }
 
 function Show-UTUiSearch {
+    <#
+    .SYNOPSIS
+        Global search (Ctrl+K): tabs, tweaks, sensors being read now and BIOS options (when the
+        map of this BIOS is loaded). Clicking a result opens where it lives.
+    #>
     [CmdletBinding()]
     param([AllowEmptyString()][string]$Texto)
     $ui = Get-UTUi
     if ($ui.Navegando) { return }
     Remove-UTUiPageRow -Pagina 'Busca'
     if ([string]::IsNullOrWhiteSpace($Texto) -or $Texto.Trim().Length -lt 2) {
-        if ($ui.PaginaAtual -and $ui.Pages.ContainsKey($ui.PaginaAtual)) { Set-UTUiPageContent -Conteudo $ui.Pages[$ui.PaginaAtual] }
+        if ($ui.PaginaAtual -and $ui.Pages.ContainsKey($ui.PaginaAtual)) { Set-UTUiPageContent -Conteudo $ui.Pages[$ui.PaginaAtual]; Set-UTUiTitle -Id ([string]$ui.PaginaAtual) }
         return
     }
-    $found = @(Find-UTUiTweak -Texto $Texto)
-    $page = New-UTUiStack -Itens @((New-UTUiPageHeader -Titulo "Busca: $($Texto.Trim())" -Descricao "$($found.Count) ajuste(s) encontrado(s) em todas as abas."))
-    if ($found.Count -gt 0) { [void]$page.Children.Add((New-UTUiTweakList -Tweaks $found -Pagina 'Busca' -Titulo 'Resultados')) }
-    else { [void]$page.Children.Add((New-UTUiText 'Nenhum ajuste com esse nome. Tente outra palavra (ex.: "mouse", "telemetria", "DNS").' -Cor MutedBrush)) }
+    $q = $Texto.Trim()
+    $tabs = @(Find-UTUiTab -Texto $q)
+    $found = @(Find-UTUiTweak -Texto $q)
+    $sensors = @(Find-UTUiSensor -Texto $q)
+    $bios = @(Find-UTUiBiosOption -Texto $q)
+    $total = $tabs.Count + $found.Count + $sensors.Count + $bios.Count
+    $page = New-UTUiStack -Itens @((New-UTUiPageHeader -Titulo "Busca: $q" -Descricao $(if ($total -eq 1) { '1 resultado.' } else { "$total resultados." })))
+    if ($tabs.Count -gt 0) {
+        $rows = foreach ($tab in $tabs) {
+            $open = New-UTUiButton 'Abrir' -Estilo Link -Dados ([string]$tab.Id) -AoClicar { param($b, $d) $null = $b; Show-UTUiPage -Id $d }
+            New-UTUiRow -Titulo ([string]$tab.Nome) -Subtitulo $(if ($tab.Secao) { [string]$tab.Secao } else { 'Visão geral' }) -Icone ([string]$tab.Icone) -IconeCor ([string]$tab.Cor) -Direita $open
+        }
+        [void]$page.Children.Add((New-UTUiGroup -Titulo 'Abas' -Linhas @($rows)))
+    }
+    if ($found.Count -gt 0) { [void]$page.Children.Add((New-UTUiTweakList -Tweaks $found -Pagina 'Busca' -Titulo 'Ajustes')) }
+    if ($sensors.Count -gt 0) {
+        $rows = foreach ($s in $sensors) {
+            $value = New-UTUiText ([string]$s.Atual) -Peso SemiBold
+            New-UTUiRow -Titulo ([string]$s.Sensor) -Subtitulo "$($s.Hardware) · $($s.Tipo)" -Icone 'E9D9' -IconeCor 'IconGreen' -Direita $value
+        }
+        $more = New-UTUiButton 'Abrir o Monitor' -Estilo Link -AoClicar { param($b, $d) $null = $b, $d; Show-UTUiPage -Id 'Monitor' }
+        [void]$page.Children.Add((New-UTUiGroup -Titulo 'Sensores (agora)' -Linhas @(@($rows) + @(New-UTUiRowBox $more))))
+    }
+    if ($bios.Count -gt 0) {
+        $rows = foreach ($o in $bios) {
+            $open = New-UTUiButton 'Ver na aba BIOS' -Estilo Link -Dados ([string]$o.Nome) -AoClicar { param($b, $d) $null = $b; Start-UTUiBiosSearch -Texto $d }
+            New-UTUiRow -Titulo ([string]$o.Nome) -Subtitulo ([string]$o.Local) -Icone 'E950' -IconeCor 'IconIndigo' -Direita $open
+        }
+        [void]$page.Children.Add((New-UTUiGroup -Titulo 'Opções da BIOS' -Linhas @($rows) -Rodape 'Nomes em inglês, como aparecem na tela da BIOS.'))
+    }
+    if ($total -eq 0) { [void]$page.Children.Add((New-UTUiText 'Nada encontrado. Tente outra palavra (ex.: "mouse", "telemetria", "DNS", "temperatura").' -Cor MutedBrush)) }
     $ui.Navegando = $true
     try { $ui.C['NavList'].SelectedItem = $null } finally { $ui.Navegando = $false }
+    Set-UTUiTitle -Id 'Busca'
     Set-UTUiPageContent -Conteudo $page
 }
 
+function Find-UTUiTab {
+    # Side tabs whose name or section contain the text (accent-insensitive).
+    [CmdletBinding()]
+    param([Parameter(Mandatory)][string]$Texto)
+    $needle = ConvertTo-UTUiSearchText $Texto
+    if (-not $needle) { return @() }
+    foreach ($tab in @(Get-UTUiTabDefinition)) {
+        if ((ConvertTo-UTUiSearchText ("{0} {1} {2}" -f $tab.Nome, $tab.Id, $tab.Secao)).Contains($needle)) { $tab }
+    }
+}
+
+function Find-UTUiSensor {
+    # Sensors of the last reading (only while the Monitor reads them), at most -Maximo.
+    [CmdletBinding()]
+    param([Parameter(Mandatory)][string]$Texto, [int]$Maximo = 12)
+    $needle = ConvertTo-UTUiSearchText $Texto
+    if (-not $needle -or $null -eq (Get-UTSyncValue -Key 'Sensores')) { return @() }
+    $rows = @()
+    try { $rows = @(Get-UTSensorSnapshot) } catch { return @() }
+    @($rows | Where-Object { (ConvertTo-UTUiSearchText ("{0} {1} {2} {3}" -f $_.Sensor, $_.Hardware, $_.Tipo, $_.Grupo)).Contains($needle) } | Select-Object -First $Maximo)
+}
+
+function Find-UTUiBiosOption {
+    <#
+    .SYNOPSIS
+        Options of the BIOS map already loaded in this session (opening the BIOS tab loads it),
+        by the name shown in the BIOS screen. Nothing is read from the NVRAM here.
+    #>
+    [CmdletBinding()]
+    param([Parameter(Mandatory)][string]$Texto, [int]$Maximo = 8)
+    $needle = ConvertTo-UTUiSearchText $Texto
+    $cached = Get-UTSyncValue -Key 'BiosMapa'
+    if (-not $needle -or $null -eq $cached -or $null -eq $cached.Mapa) { return @() }
+    $seen = @{}
+    $out = New-Object System.Collections.Generic.List[object]
+    foreach ($q in @($cached.Mapa['Perguntas'])) {
+        $name = [string]$q['Nome']
+        if (-not $name -or $seen.ContainsKey($name)) { continue }
+        if (-not (ConvertTo-UTUiSearchText $name).Contains($needle)) { continue }
+        $seen[$name] = $true
+        $out.Add([pscustomobject]@{ Nome = $name; Local = (@([string]$q['Menu'], [string]$q['Formulario']) | Where-Object { $_ }) -join ' > ' })
+        if ($out.Count -ge $Maximo) { break }
+    }
+    return $out.ToArray()
+}
 function Register-UTUiHandler {
     <#
     .SYNOPSIS
@@ -218,7 +303,8 @@ function Register-UTUiHandler {
     $ui = Get-UTUi
     $c = $ui.C
     $c['ApplyButton'].Add_Click({ try { Invoke-UTUiRun -Modo Aplicar } catch { Show-UTUiError -Mensagem $_.Exception.Message } })
-    $c['UndoButton'].Add_Click({ try { Invoke-UTUiRun -Modo Desfazer } catch { Show-UTUiError -Mensagem $_.Exception.Message } })
+    # "Descartar": the switches go back to the real state.
+    $c['UndoButton'].Add_Click({ try { Clear-UTUiSelection } catch { Show-UTUiError -Mensagem $_.Exception.Message } })
     $c['SimulateButton'].Add_Click({ try { Invoke-UTUiRun -Modo Simular } catch { Show-UTUiError -Mensagem $_.Exception.Message } })
     $c['LogCopy'].Add_Click({ try { Copy-UTUiLog } catch { Show-UTUiError -Mensagem $_.Exception.Message } })
     $c['LogOpenFolder'].Add_Click({ Start-Process explorer.exe -ArgumentList (Get-UTPath -Name Logs) })
@@ -306,5 +392,5 @@ function Select-UTUiPreset {
     }
     Clear-UTUiSelection
     Set-UTUiSelection -Id @($info.Ids) -Marcado $true
-    Show-UTUiStatus "Preset $Nome`: $(@($info.Ids).Count) ajustes marcados. Confira as abas e clique em Aplicar selecionados."
+    Show-UTUiStatus "Preset $Nome`: $(Get-UTUiPendingCount) alterações pendentes. Confira as abas e clique em Revisar e aplicar."
 }
