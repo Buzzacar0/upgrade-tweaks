@@ -231,7 +231,8 @@ Describe 'Overlay: configuração e lógica' {
         Get-UTPresentMonArgument -ProcessoId 99 | Should -Match '--process_id 99$'
         Mock Assert-UTAdmin { }
         Mock Get-UTGitHubLatestRelease { [pscustomobject]@{ Versao = '2.6.0'; Arquivos = @([pscustomobject]@{ Nome = 'PresentMon-2.6.0.msi'; Url = 'x' }, [pscustomobject]@{ Nome = 'PresentMon-2.6.0-x64.exe'; Url = 'https://y/PresentMon-2.6.0-x64.exe' }) } }
-        Mock Save-UTDownload { Set-Content -LiteralPath $Destino -Value 'x' }
+        # Like the real one: creates the folder (a clean CI machine has no %TEMP%\UpgradeTweaks).
+        Mock Save-UTDownload { New-Item -ItemType Directory -Force -Path (Split-Path -Parent $Destino) | Out-Null; Set-Content -LiteralPath $Destino -Value 'x' }
         Mock Get-AuthenticodeSignature { [pscustomobject]@{ Status = 'NotSigned'; SignerCertificate = $null } }
         { Install-UTPresentMon -Confirm:$false } | Should -Throw '*assinatura digital da Intel*'
         Test-UTPresentMon | Should -BeFalse
