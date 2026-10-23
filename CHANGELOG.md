@@ -3,13 +3,18 @@
 Todas as mudanças relevantes do Upgrade Tweaks ficam registradas aqui.
 O formato segue o [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) e o projeto usa [versionamento semântico](https://semver.org/lang/pt-BR/).
 
-## [Não lançado]
+## [0.3.1] - 2026-10-23
 
 ### Adicionado
-- Layout **Upgrade** no Monitor: uso e temperatura do processador (ponto mais quente, núcleos/CCDs e, no Intel, o núcleo mais quente) da placa de vídeo (núcleo, hotspot quando a placa informa e a memória da GPU) e da memória RAM (uso, GB em uso e a temperatura de cada pente), cada componente numa faixa só, com todos os valores na mesma linha.
+- Layout **Upgrade** no Monitor: uso e temperatura do processador (ponto mais quente, núcleos/CCDs e, no Intel, o núcleo mais quente), da placa de vídeo (núcleo, hotspot quando a placa informa e a memória da GPU) e da memória RAM (uso, GB em uso e a temperatura de cada pente), cada componente numa faixa só, com todos os valores na mesma linha.
+- Overlay: o jogo do perfil automático é escolhido numa **lista dos programas abertos**, com o mesmo nome do Gerenciador de Tarefas (ex.: "Call of Duty® (cod.exe)"), em vez de digitar o .exe.
 
 ### Mudado
-- Nomes das temperaturas do processador: "Ponto mais quente da CPU" no lugar de "Tctl/Tdie", "Núcleos (CCD1)", "Núcleo mais quente" e "Processador (pacote)".
+- Ao trocar de plano de energia (Desempenho Máximo, seletor da aba Energia, Modo Partida, Equilibrado do X3D), **Desligar a tela** e **Suspender** ficam em **Nunca** (em notebook, só na tomada). O desfazer volta os tempos de antes.
+- Nomes das temperaturas do processador: "Ponto mais quente da CPU" no lugar de "Tctl/Tdie", "Núcleos (CCD1)", "Núcleo mais quente", "Processador (pacote)" e "Pente 1", "Pente 2"... para a temperatura dos pentes de memória.
+
+### Corrigido
+- Overlay: escolher outro perfil padrão não mudava nada no Call of Duty, porque ele vinha amarrado ao perfil Competitivo. Agora nenhum jogo vem amarrado; quem já tinha a configuração antiga perde esse vínculo automático uma vez.
 
 ## [0.3.0] - 2026-10-22
 
