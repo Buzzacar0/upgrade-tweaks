@@ -35,7 +35,7 @@ Describe 'Sensores' {
         $v.Hardware | Should -Be 'Gigabyte X870 GAMING WIFI6 · ITE IT8696E'
         ($rows | Where-Object Id -eq '/SuperIO/Fan #1').Sensor | Should -Be 'CPU_FAN'
         @($rows | Where-Object Id -eq '/SuperIO/Fan #2').Count | Should -Be 0
-        ($rows | Where-Object Id -eq '/Cpu/Core (Tctl/Tdie)').Sensor | Should -Be 'Processador (Tctl/Tdie)'
+        ($rows | Where-Object Id -eq '/Cpu/Core (Tctl/Tdie)').Sensor | Should -Be 'Ponto mais quente da CPU'
         @($rows | Where-Object Sensor -like '*Limit*').Count | Should -Be 0
         ($rows | Where-Object Id -eq '/Memory/DIMM #1').Hardware | Should -Be 'Pente de memória (#1)'
         # Another board: raw value, generic name.

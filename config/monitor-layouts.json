@@ -1,6 +1,19 @@
 {
   "_comentario": "Layouts prontos da aba Monitor. Cada regra escolhe sensores pelo tipo do hardware ('hardware', expressão regular no tipo da LibreHardwareMonitor: Cpu, GpuNvidia, GpuAmd, GpuIntel, Memory, SuperIO, Storage...), opcionalmente pelo nome do dispositivo ('dispositivo'), pelo tipo do sensor ('tipo': Temperature, Load, Clock, Power, Fan, Data, SmallData...) e pelo nome original em inglês ('nome', expressão regular). 'primeiro': true fica só com o primeiro sensor que casar em cada dispositivo (ex.: a temperatura principal do processador, que muda de nome entre AMD e Intel). Os sensores aparecem na ordem das regras. 'alertasPadrao': avisos que já vêm ligados (valores em °C).",
   "layouts": {
+    "Upgrade": [
+      { "hardware": "^Cpu$", "tipo": "Load", "nome": "^CPU Total$" },
+      { "hardware": "^Cpu$", "tipo": "Temperature", "nome": "^(Core \\(Tctl/Tdie\\)|Core \\(Tctl\\)|CPU Package|Package)$", "primeiro": true },
+      { "hardware": "^Cpu$", "tipo": "Temperature", "nome": "^Core Max$" },
+      { "hardware": "^Cpu$", "tipo": "Temperature", "nome": "^(CCD\\d+ \\(Tdie\\)|(CPU )?Core #\\d+|Cores)$" },
+      { "hardware": "^Gpu", "tipo": "Load", "nome": "^GPU Core$" },
+      { "hardware": "^Gpu", "tipo": "Temperature", "nome": "^GPU Core$" },
+      { "hardware": "^Gpu", "tipo": "Temperature", "nome": "^GPU Hot ?Spot$" },
+      { "hardware": "^Gpu", "tipo": "Temperature", "nome": "^GPU Memory Junction$" },
+      { "hardware": "^Memory$", "dispositivo": "^(Total|Generic|Physical) Memory$", "tipo": "Load", "nome": "^Memory$" },
+      { "hardware": "^Memory$", "dispositivo": "^(Total|Generic|Physical) Memory$", "tipo": "Data", "nome": "^Memory Used$" },
+      { "hardware": "^Memory$", "tipo": "Temperature", "nome": "^DIMM #\\d+$" }
+    ],
     "Essencial": [
       { "hardware": "^Cpu$", "tipo": "Temperature", "nome": "^(Core \\(Tctl/Tdie\\)|Core \\(Tctl\\)|CPU Package|Core Max|Package)$", "primeiro": true },
       { "hardware": "^Cpu$", "tipo": "Load", "nome": "^CPU Total$" },

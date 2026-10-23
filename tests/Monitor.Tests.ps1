@@ -105,6 +105,28 @@ Describe 'Monitor: layouts, resumo por núcleo e sensores zerados' {
         @(Select-UTMonitorRow -Linhas $rows -Config $c | ForEach-Object Id) | Should -Contain '/gpu-amd/0/load/0'
     }
 
+    It 'Upgrade: uso e temperatura do processador (núcleos e ponto mais quente) e da GPU (com o hotspot)' {
+        $c = Get-UTMonitorDefault
+        $c.Layout = 'Upgrade'
+        $sel = @(Select-UTMonitorRow -Linhas $rows -Config $c)
+        @($sel | ForEach-Object Id) | Should -Be @('/amdcpu/0/load/0', '/amdcpu/0/temperature/2', '/amdcpu/0/temperature/3', '/gpu-nvidia/0/load/0', '/gpu-nvidia/0/temperature/0', '/ram/load/0')
+        @($sel | ForEach-Object NomeExibicao) | Should -Be @('Uso total', 'Ponto mais quente da CPU', 'Núcleos (CCD1)', 'Uso da GPU', 'Temperatura da GPU', 'Uso')
+        $intel = @(ConvertTo-UTSensorRow -Placa 'x' -Itens @(
+                (New-RawSensor 'Intel Core i7-14700K' 'Cpu' 'CPU Total' 'Load' 30 -Id '/intelcpu/0/load/0')
+                (New-RawSensor 'Intel Core i7-14700K' 'Cpu' 'CPU Package' 'Temperature' 70 -Id '/intelcpu/0/temperature/20')
+                (New-RawSensor 'Intel Core i7-14700K' 'Cpu' 'Core Max' 'Temperature' 76 -Id '/intelcpu/0/temperature/21')
+                (New-RawSensor 'Intel Core i7-14700K' 'Cpu' 'CPU Core #1' 'Temperature' 66 -Id '/intelcpu/0/temperature/0')
+                (New-RawSensor 'Intel Core i7-14700K' 'Cpu' 'CPU Core #2' 'Temperature' 76 -Id '/intelcpu/0/temperature/1')
+                (New-RawSensor 'Intel Core i7-14700K' 'Cpu' 'CPU Core #1 Distance to TjMax' 'Temperature' 34 -Id '/intelcpu/0/temperature/10')
+                (New-RawSensor 'AMD Radeon RX 7900 XT' 'GpuAmd' 'GPU Core' 'Load' 98 -Id '/gpu-amd/0/load/0')
+                (New-RawSensor 'AMD Radeon RX 7900 XT' 'GpuAmd' 'GPU Core' 'Temperature' 64 -Id '/gpu-amd/0/temperature/0')
+                (New-RawSensor 'AMD Radeon RX 7900 XT' 'GpuAmd' 'GPU Hot Spot' 'Temperature' 81 -Id '/gpu-amd/0/temperature/1')
+            ))
+        $isel = @(Select-UTMonitorRow -Linhas $intel -Config $c)
+        @($isel | ForEach-Object Id) | Should -Be @('/intelcpu/0/load/0', '/intelcpu/0/temperature/20', '/intelcpu/0/temperature/21', '/intelcpu/0/nucleos/temperature', '/gpu-amd/0/load/0', '/gpu-amd/0/temperature/0', '/gpu-amd/0/temperature/1')
+        ($isel | Where-Object Id -eq '/intelcpu/0/nucleos/temperature').Linha.Valor | Should -Be 71
+        ($isel | Where-Object Id -eq '/intelcpu/0/temperature/21').NomeExibicao | Should -Be 'Núcleo mais quente'
+    }
     It 'Completo: tudo, com os núcleos resumidos em uma linha por tipo' {
         $c = Get-UTMonitorDefault
         $c.Layout = 'Completo'
@@ -210,7 +232,7 @@ Describe 'Monitor: unidades, histórico, alertas e CSV' {
         (Get-UTMonitorAlertLimit -Linhas $rows -Config $c).Keys | Should -Be @('/ram/load/0')
         $cpu = $rows | Where-Object Id -eq '/amdcpu/0/temperature/2'
         $ev = [pscustomobject]@{ Id = $cpu.Id; Linha = $cpu; Lado = 'acima'; Valor = 91.2; Limite = 90 }
-        Format-UTMonitorAlertText -Alerta $ev -Unidade F -Casas 0 | Should -Be 'Processador (Tctl/Tdie) (AMD Ryzen 7 9800X3D) chegou a 196 °F (limite 194 °F).'
+        Format-UTMonitorAlertText -Alerta $ev -Unidade F -Casas 0 | Should -Be 'Ponto mais quente da CPU (AMD Ryzen 7 9800X3D) chegou a 196 °F (limite 194 °F).'
     }
 
     It 'relatório CSV com ponto e vírgula, decimais com vírgula, média e unidade' {
@@ -279,6 +301,22 @@ Describe 'Monitor: a aba' {
         (Get-UTMonitorConfig).Visao | Should -Be 'Tabela'
         $m.Visuais['/amdcpu/0/nucleos/clock'].Tipo | Should -Be 'tabela'
         $m.Visuais['/amdcpu/0/nucleos/clock'].Valor.Text | Should -Be '4850 MHz'
+    }
+
+    It 'layout Upgrade: uma faixa por componente, com uso e temperatura na mesma linha' {
+        $c = Get-UTMonitorDefault; $c.Layout = 'Upgrade'
+        [void](Save-UTMonitorConfig -Config $c -Confirm:$false)
+        $null = New-UTUiPageMonitor
+        $ui.PaginaAtual = 'Monitor'
+        Update-UTUiMonitor -Forcar
+        $m = $ui.Monitor
+        @($m.Itens | ForEach-Object Id) | Should -Be @('/amdcpu/0/load/0', '/amdcpu/0/temperature/2', '/ram/load/0')
+        $strip = $m.Host.Children[0]
+        $strip | Should -BeOfType System.Windows.Controls.Border
+        $strip.Child.Children[1].Children.Count | Should -Be 2
+        $m.Host.Children[1].Child.Children[0].Children[1].Children[0].Text | Should -Be 'Memória'
+        $m.Visuais['/amdcpu/0/load/0'].Valor.Text | Should -Be '12,5 %'
+        $m.Visuais['/amdcpu/0/temperature/2'].Valor.Text | Should -Be '95,0 °C'
     }
 
     It 'ocultar pelo menu cria o Personalizado e salva' {

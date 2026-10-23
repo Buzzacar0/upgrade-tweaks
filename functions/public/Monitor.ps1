@@ -47,7 +47,7 @@ function ConvertTo-UTMonitorConfig {
     if ($Config -isnot [System.Collections.IDictionary]) { return $out }
     $get = { param($k) if ($Config.Contains($k)) { $Config[$k] } else { $null } }
     $layout = [string](& $get 'Layout')
-    if ($layout -in 'Essencial', 'Gamer', 'Completo', 'Personalizado') { $out.Layout = $layout }
+    if ($layout -in 'Upgrade', 'Essencial', 'Gamer', 'Completo', 'Personalizado') { $out.Layout = $layout }
     $view = [string](& $get 'Visao')
     if ($view -in 'Cartoes', 'Tabela') { $out.Visao = $view }
     $interval = & $get 'IntervaloMs'
@@ -256,7 +256,7 @@ function Merge-UTMonitorCoreSummary {
 
 function Get-UTMonitorLayoutRule {
     [CmdletBinding()]
-    param([Parameter(Mandatory)][ValidateSet('Essencial', 'Gamer')][string]$Layout)
+    param([Parameter(Mandatory)][ValidateSet('Upgrade', 'Essencial', 'Gamer')][string]$Layout)
     return @((Get-UTConfig -Name 'monitor-layouts').layouts[$Layout])
 }
 
@@ -493,7 +493,7 @@ function Update-UTMonitorAlert {
 }
 
 function Format-UTMonitorAlertText {
-    # "Processador (Tctl/Tdie) chegou a 91 °C (limite 90 °C)."
+    # "Ponto mais quente da CPU chegou a 91 °C (limite 90 °C)."
     param([Parameter(Mandatory)][psobject]$Alerta, [string]$Nome, [string]$Unidade = 'C', [int]$Casas = 0)
     $t = [string]$Alerta.Linha.TipoOriginal
     $v = Format-UTSensorValue -Valor $Alerta.Valor -Tipo $t -Unidade $Unidade -Casas $Casas

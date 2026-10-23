@@ -43,8 +43,8 @@ function New-UTUiPageMonitor {
 
     $layout = New-Object System.Windows.Controls.ComboBox
     $layout.MinWidth = 150
-    foreach ($l in 'Essencial', 'Gamer', 'Completo', 'Personalizado') { [void]$layout.Items.Add($l) }
-    $layout.ToolTip = 'Essencial: o básico. Gamer: o que importa jogando. Completo: todos os sensores. Personalizado: só os que você escolher.'
+    foreach ($l in 'Upgrade', 'Essencial', 'Gamer', 'Completo', 'Personalizado') { [void]$layout.Items.Add($l) }
+    $layout.ToolTip = 'Upgrade: uso e temperatura do processador (núcleos e ponto mais quente) e da placa de vídeo (com o hotspot). Essencial: o básico. Gamer: o que importa jogando. Completo: todos os sensores. Personalizado: só os que você escolher.'
     $layout.Add_SelectionChanged({
             param($cb, $e) $null = $e
             $mm = (Get-UTUi).Monitor
@@ -322,11 +322,16 @@ function Show-UTUiMonitorView {
     $sections = New-Object System.Collections.Generic.List[object]
     $fav = @($items | Where-Object { $_.Favorito })
     if ($fav.Count -gt 0) { $sections.Add(@{ Titulo = 'Favoritos'; Itens = $fav }) }
-    foreach ($g in @($items | Where-Object { -not $_.Favorito } | Group-Object { $_.Linha.Hardware })) { $sections.Add(@{ Titulo = [string]$g.Name; Itens = @($g.Group) }) }
     $cards = ($m.Config.Visao -ne 'Tabela')
+    # Upgrade layout: one strip per kind of component (processor, video card, memory), every value
+    # on the same line; the other layouts group by device.
+    $strips = ($cards -and $m.Config.Layout -eq 'Upgrade')
+    foreach ($g in @($items | Where-Object { -not $_.Favorito } | Group-Object { if ($strips) { $_.Linha.Grupo } else { $_.Linha.Hardware } })) { $sections.Add(@{ Titulo = [string]$g.Name; Itens = @($g.Group) }) }
     $spark = ($items.Count -le 60)
     foreach ($s in $sections) {
-        if ($cards) {
+        if ($strips) {
+            [void]$m.Host.Children.Add((New-UTUiSensorStrip -Titulo $s.Titulo -Itens $s.Itens -Grafico $spark))
+        } elseif ($cards) {
             [void]$m.Host.Children.Add((New-UTUiText $s.Titulo -Tamanho 12 -Peso SemiBold -Cor MutedBrush -Margem '2,4,0,8'))
             $wrap = New-UTUiWrap -Margem '0,0,0,8'
             foreach ($it in $s.Itens) { [void]$wrap.Children.Add((New-UTUiSensorCard -Item $it -Grafico $spark)) }
@@ -337,7 +342,84 @@ function Show-UTUiMonitorView {
             [void]$m.Host.Children.Add((New-UTUiGroup -Titulo $s.Titulo -Linhas $rows -RecuoSeparador 16))
         }
     }
-    if ($cards) { [void]$m.Host.Children.Add((New-UTUiText 'Arraste um cartão para mudar a ordem. Clique para ver detalhes, renomear ou criar um alerta; botão direito para mais opções.' -Tamanho 11.5 -Cor TertiaryBrush -Margem '2,0,0,18')) }
+    if ($strips) { [void]$m.Host.Children.Add((New-UTUiText 'Clique num valor para ver detalhes, renomear ou criar um alerta; botão direito para mais opções.' -Tamanho 11.5 -Cor TertiaryBrush -Margem '2,4,0,18')) }
+    elseif ($cards) { [void]$m.Host.Children.Add((New-UTUiText 'Arraste um cartão para mudar a ordem. Clique para ver detalhes, renomear ou criar um alerta; botão direito para mais opções.' -Tamanho 11.5 -Cor TertiaryBrush -Margem '2,0,0,18')) }
+}
+
+function New-UTUiSensorStrip {
+    <#
+    .SYNOPSIS
+        One device on one line: its name on the left and each sensor (name, big value, small
+        graph, minimum/maximum/average) side by side, so a look down the page shows the whole PC.
+    #>
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Justification = 'Builds UI elements; nothing changes on the system.')]
+    param([Parameter(Mandatory)][string]$Titulo, [Parameter(Mandatory)][object[]]$Itens, [bool]$Grafico = $true)
+    $m = (Get-UTUi).Monitor
+    $width = 150.0; $height = 22.0
+    $strip = New-Object System.Windows.Controls.Border
+    $strip.Margin = '0,0,0,12'
+    $strip.Padding = '18,14,18,12'
+    $strip.CornerRadius = 12
+    $strip.BorderThickness = 1
+    $strip.SetResourceReference([System.Windows.Controls.Border]::BackgroundProperty, 'CardBrush')
+    $strip.SetResourceReference([System.Windows.Controls.Border]::BorderBrushProperty, 'SeparatorBrush')
+    $grid = New-Object System.Windows.Controls.Grid
+    foreach ($w in 'Auto', '*') {
+        $cd = New-Object System.Windows.Controls.ColumnDefinition
+        $cd.Width = $(if ($w -eq '*') { New-Object System.Windows.GridLength (1, [System.Windows.GridUnitType]::Star) } else { [System.Windows.GridLength]::Auto })
+        [void]$grid.ColumnDefinitions.Add($cd)
+    }
+    $kind = $Titulo
+    # Under the name: the device (several memory sticks count as "2 pentes").
+    $devices = @($Itens | ForEach-Object { [string]$_.Linha.Hardware } | Where-Object { $_ -notmatch '^Memória (RAM|virtual)' } | Select-Object -Unique)
+    $sub = $(if ($Titulo -eq 'Favoritos') { '' } elseif ($kind -eq 'Memória') { $(if ($devices.Count -gt 0) { "$($devices.Count) pente(s)" } else { 'RAM' }) } else { $devices -join ' · ' })
+    $icon = $(switch ($kind) { 'Processador' { @('E950', 'IconBlue') } 'Placa de vídeo' { @('E7F4', 'IconGreen') } 'Memória' { @('E950', 'IconPurple') } 'Favoritos' { @('E735', 'IconYellow') } default { @('E9D9', 'IconGray') } })
+    $head = New-UTUiStack -Horizontal -Itens @((New-UTUiSquircle -Glifo $icon[0] -Cor $icon[1] -Tamanho 32 -Margem '0,0,12,0'), (New-UTUiStack -Itens @((New-UTUiText $kind -Tamanho 15 -Peso SemiBold), (New-UTUiText $sub -Tamanho 11.5 -Cor MutedBrush))))
+    $head.Width = 230
+    $head.VerticalAlignment = 'Center'
+    [void]$grid.Children.Add($head)
+    $values = New-UTUiWrap
+    $values.VerticalAlignment = 'Center'
+    foreach ($it in $Itens) {
+        $box = New-Object System.Windows.Controls.StackPanel
+        $box.Width = 168
+        $box.Margin = '0,2,14,2'
+        $box.Background = [System.Windows.Media.Brushes]::Transparent
+        $box.Cursor = 'Hand'
+        $box.ToolTip = "$($it.Linha.Hardware) · $($it.Linha.Tipo)"
+        $name = New-UTUiText ([string]$it.NomeExibicao) -Tamanho 12 -Cor MutedBrush
+        $name.TextTrimming = 'CharacterEllipsis'
+        $value = New-UTUiText '-' -Tamanho 28 -Peso SemiBold
+        $value.SetResourceReference([System.Windows.Controls.TextBlock]::FontFamilyProperty, 'DisplayFont')
+        [void]$box.Children.Add($name)
+        [void]$box.Children.Add($value)
+        $line = $null
+        if ($Grafico) {
+            $canvas = New-Object System.Windows.Controls.Canvas
+            $canvas.Width = $width; $canvas.Height = $height
+            $canvas.HorizontalAlignment = 'Left'
+            $canvas.Margin = '0,2,0,2'
+            $canvas.ClipToBounds = $true
+            $line = New-Object System.Windows.Shapes.Polyline
+            $line.StrokeThickness = 1.5
+            $line.StrokeLineJoin = 'Round'
+            $line.SetResourceReference([System.Windows.Shapes.Shape]::StrokeProperty, 'AccentBrush')
+            [void]$canvas.Children.Add($line)
+            [void]$box.Children.Add($canvas)
+        }
+        $foot = New-UTUiText '' -Tamanho 10.5 -Cor MutedBrush
+        $foot.TextTrimming = 'CharacterEllipsis'
+        [void]$box.Children.Add($foot)
+        $box.ContextMenu = New-UTUiSensorMenu -Item $it
+        $box.Tag = [string]$it.Id
+        $box.Add_MouseLeftButtonUp({ param($s, $e) $null = $e; Show-UTUiSensorDetail -Id ([string]$s.Tag) })
+        [void]$values.Children.Add($box)
+        $m.Visuais[[string]$it.Id] = @{ Tipo = 'cartao'; Valor = $value; Rodape = $foot; Linha = $line; Largura = $width; Altura = $height; EmAlerta = $false }
+    }
+    [System.Windows.Controls.Grid]::SetColumn($values, 1)
+    [void]$grid.Children.Add($values)
+    $strip.Child = $grid
+    return $strip
 }
 
 function New-UTUiSensorCard {

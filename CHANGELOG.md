@@ -3,6 +3,14 @@
 Todas as mudanças relevantes do Upgrade Tweaks ficam registradas aqui.
 O formato segue o [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) e o projeto usa [versionamento semântico](https://semver.org/lang/pt-BR/).
 
+## [Não lançado]
+
+### Adicionado
+- Layout **Upgrade** no Monitor: uso e temperatura do processador (ponto mais quente, núcleos/CCDs e, no Intel, o núcleo mais quente) da placa de vídeo (núcleo, hotspot quando a placa informa e a memória da GPU) e da memória RAM (uso, GB em uso e a temperatura de cada pente), cada componente numa faixa só, com todos os valores na mesma linha.
+
+### Mudado
+- Nomes das temperaturas do processador: "Ponto mais quente da CPU" no lugar de "Tctl/Tdie", "Núcleos (CCD1)", "Núcleo mais quente" e "Processador (pacote)".
+
 ## [0.3.0] - 2026-10-22
 
 ### Adicionado
