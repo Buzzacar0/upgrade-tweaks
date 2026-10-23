@@ -3,6 +3,11 @@
 Todas as mudanças relevantes do Upgrade Tweaks ficam registradas aqui.
 O formato segue o [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) e o projeto usa [versionamento semântico](https://semver.org/lang/pt-BR/).
 
+## [Não lançado]
+
+### Corrigido
+- Monitor: no PowerShell 7 as faixas do layout Upgrade (e os grupos do layout Completo) saíam em ordem alfabética em vez da ordem do layout.
+
 ## [0.3.1] - 2026-10-23
 
 ### Adicionado

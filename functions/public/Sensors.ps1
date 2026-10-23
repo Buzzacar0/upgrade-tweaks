@@ -390,7 +390,7 @@ function Export-UTSensorReport {
         $lines.Add('')
     }
     $rows = @(Get-UTSensorSnapshot)
-    foreach ($g in ($rows | Group-Object Hardware)) {
+    foreach ($g in @(Group-UTInOrder -Itens $rows -Chave { param($r) $r.Hardware })) {
         $lines.Add("== $($g.Name)")
         foreach ($r in $g.Group) { $lines.Add(('  {0,-34} {1,14} {2,14} {3,14}' -f $r.Sensor, $r.Atual, $r.Minimo, $r.Maximo)) }
         $lines.Add('')

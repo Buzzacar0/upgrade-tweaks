@@ -154,7 +154,22 @@ function Import-UTMonitorLayout {
 #endregion
 
 #region Layouts and the per-core summary
-function Test-UTMonitorRule {
+function Group-UTInOrder {
+    <#
+    .SYNOPSIS
+        Groups like Group-Object (Name, Group) keeping the groups in the order they first appear.
+        PowerShell 7 sorts the groups of Group-Object by name, Windows PowerShell 5.1 does not.
+    #>
+    [CmdletBinding()]
+    param([Parameter(Mandatory)][AllowEmptyCollection()][object[]]$Itens, [Parameter(Mandatory)][scriptblock]$Chave)
+    $groups = [ordered]@{}
+    foreach ($i in $Itens) {
+        $k = [string](& $Chave $i)
+        if (-not $groups.Contains($k)) { $groups[$k] = New-Object System.Collections.Generic.List[object] }
+        $groups[$k].Add($i)
+    }
+    foreach ($k in @($groups.Keys)) { [pscustomobject]@{ Name = $k; Group = $groups[$k].ToArray() } }
+}function Test-UTMonitorRule {
     # $true when the row matches a layout/alert rule (hardware type, device, sensor type, name).
     param([Parameter(Mandatory)][psobject]$Linha, [Parameter(Mandatory)][System.Collections.IDictionary]$Regra)
     if ($Regra.Contains('hardware') -and [string]$Linha.HardwareTipo -notmatch [string]$Regra.hardware) { return $false }
@@ -294,7 +309,7 @@ function Select-UTMonitorRow {
         }
         'Completo' {
             # Grouped by device in the order the devices appear, sensors by kind inside each.
-            foreach ($g in @($rows | Group-Object Hardware)) { foreach ($r in @($g.Group | Sort-Object Ordem)) { & $add $r } }
+            foreach ($g in @(Group-UTInOrder -Itens $rows -Chave { param($r) $r.Hardware })) { foreach ($r in @($g.Group | Sort-Object Ordem)) { & $add $r } }
         }
         default {
             foreach ($rule in @(Get-UTMonitorLayoutRule -Layout $Config.Layout)) {

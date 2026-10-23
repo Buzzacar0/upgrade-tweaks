@@ -326,7 +326,7 @@ function Show-UTUiMonitorView {
     # Upgrade layout: one strip per kind of component (processor, video card, memory), every value
     # on the same line; the other layouts group by device.
     $strips = ($cards -and $m.Config.Layout -eq 'Upgrade')
-    foreach ($g in @($items | Where-Object { -not $_.Favorito } | Group-Object { if ($strips) { $_.Linha.Grupo } else { $_.Linha.Hardware } })) { $sections.Add(@{ Titulo = [string]$g.Name; Itens = @($g.Group) }) }
+    foreach ($g in @(Group-UTInOrder -Itens @($items | Where-Object { -not $_.Favorito }) -Chave { param($it) if ($strips) { $it.Linha.Grupo } else { $it.Linha.Hardware } })) { $sections.Add(@{ Titulo = [string]$g.Name; Itens = @($g.Group) }) }
     $spark = ($items.Count -le 60)
     foreach ($s in $sections) {
         if ($strips) {
