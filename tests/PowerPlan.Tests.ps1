@@ -389,3 +389,41 @@ Describe 'powercfg real deste PC (só leitura)' {
         (Get-UTPowerSettingValue -Esquema $active -Subgrupo $proc -Configuracao '00000000-1111-2222-3333-444444444444').Existe | Should -BeFalse
     }
 }
+
+Describe 'Tela e suspensão em Nunca ao trocar de plano' {
+    BeforeEach {
+        Reset-UTTestEnvironment
+        Mock Get-UTPowerSettingValue { [pscustomobject]@{ Existe = $true; AC = 600; DC = 300 } }
+        Mock Set-UTPowerSettingValue { }
+        Mock Test-UTPowerScheme { $true }
+    }
+
+    It 'desktop: Nunca na tomada e na bateria; o desfazer volta os tempos de antes' {
+        Set-UTPlanNoSleep -Guid 'aaaa' -TweakId 'UT_Teste' -Contexto ([pscustomobject]@{ EhNotebook = $false }) -Confirm:$false
+        Should -Invoke Set-UTPowerSettingValue -Times 2 -Exactly -ParameterFilter { $Esquema -eq 'aaaa' -and $AC -eq 0 -and $DC -eq 0 }
+        Should -Invoke Set-UTPowerSettingValue -Times 1 -ParameterFilter { $Configuracao -eq '3c0bc021-c8a8-4e07-a973-6b14cbcb2b7e' }
+        Should -Invoke Set-UTPowerSettingValue -Times 1 -ParameterFilter { $Configuracao -eq '29f6c1db-86da-48c5-9fdb-f2b67b1f44da' }
+        Restore-UTPlanNoSleep -Guid 'aaaa' -TweakId 'UT_Teste' -Confirm:$false
+        Should -Invoke Set-UTPowerSettingValue -Times 2 -Exactly -ParameterFilter { $AC -eq 600 -and $DC -eq 300 }
+    }
+
+    It 'notebook: só na tomada; a bateria continua economizando' {
+        Set-UTPlanNoSleep -Guid 'aaaa' -Contexto ([pscustomobject]@{ EhNotebook = $true }) -Confirm:$false
+        Should -Invoke Set-UTPowerSettingValue -Times 2 -Exactly -ParameterFilter { $AC -eq 0 -and $null -eq $DC }
+    }
+
+    It 'já em Nunca: não mexe' {
+        Mock Get-UTPowerSettingValue { [pscustomobject]@{ Existe = $true; AC = 0; DC = 0 } }
+        Set-UTPlanNoSleep -Guid 'aaaa' -Contexto ([pscustomobject]@{ EhNotebook = $false }) -Confirm:$false
+        Should -Invoke Set-UTPowerSettingValue -Times 0 -Exactly
+    }
+
+    It 'o seletor de planos da aba Energia também deixa em Nunca' {
+        Mock Assert-UTAdmin { }
+        Mock Invoke-UTPowerCfg { }
+        Mock Get-UTSystemContext { [pscustomobject]@{ EhNotebook = $false } }
+        Set-UTActivePowerScheme -Guid 'BBBB' -Confirm:$false
+        Should -Invoke Set-UTPowerSettingValue -Times 2 -Exactly -ParameterFilter { $Esquema -eq 'bbbb' -and $AC -eq 0 }
+        Should -Invoke Invoke-UTPowerCfg -ParameterFilter { $Argumentos[0] -eq '/setactive' -and $Argumentos[1] -eq 'bbbb' }
+    }
+}

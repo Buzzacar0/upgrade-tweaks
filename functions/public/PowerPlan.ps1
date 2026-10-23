@@ -81,6 +81,7 @@ function Invoke-UTMaxPerformanceCore {
         [void](Save-UTOriginalItem -Chave 'energia|planoAnteriorMaximo' -Dados ([ordered]@{ guid = $active.Guid; nome = $active.Nome }) -TweakId $TweakId)
     }
     [void](Save-UTOriginalItem -Chave 'energia|planoMaximo' -Dados ([ordered]@{ guid = $guid; criado = $created; alternativo = $fallback }) -TweakId $TweakId)
+    Set-UTPlanNoSleep -Guid $guid -TweakId $TweakId -Contexto $Contexto -Confirm:$false
     [void](Invoke-UTPowerCfg -Argumentos @('/setactive', $guid))
     $name = (@(Get-UTPowerSchemeList | Where-Object { $_.Guid -eq $guid }) | Select-Object -First 1).Nome
     Write-UTLog -Level Sucesso -TweakId $TweakId -Message "Plano '$name' ativo."
@@ -101,6 +102,7 @@ function Undo-UTMaxPerformanceCore {
     if ($previous -is [System.Collections.IDictionary] -and $previous.guid -and (Test-UTPowerScheme -Guid $previous.guid)) { $target = [string]$previous.guid }
     [void](Invoke-UTPowerCfg -Argumentos @('/setactive', $target))
     $plan = Pop-UTOriginalItem -Chave 'energia|planoMaximo' -TweakId $TweakId
+    if ($plan -is [System.Collections.IDictionary] -and $plan.guid) { Restore-UTPlanNoSleep -Guid ([string]$plan.guid) -TweakId $TweakId -Confirm:$false }
     if ($plan -is [System.Collections.IDictionary] -and $plan.criado -and $plan.guid -and $plan.guid -ne $target -and (Test-UTPowerScheme -Guid $plan.guid)) {
         [void](Invoke-UTPowerCfg -Argumentos @('/delete', [string]$plan.guid))
     }
@@ -152,6 +154,7 @@ function Get-UTMaxPerformancePlannedAction {
         $lines.Add('Se esta edição do Windows não permitir, ativa o Alto Desempenho')
     }
     $active = (@($schemes | Where-Object Ativo) | Select-Object -First 1)
+    $lines.Add('Desligar a tela e suspender: Nunca (na tomada; em desktop também na bateria)')
     if ($active) { $lines.Add("Hoje está ativo: $($active.Nome)") }
     return $lines.ToArray()
 }
@@ -296,6 +299,45 @@ function Get-UTActivePlanSettingAction {
 }
 #endregion
 
+#region Never turn off the display or sleep
+function Set-UTPlanNoSleep {
+    <#
+    .SYNOPSIS
+        "Desligar a tela" and "Suspender" set to Never on a plan, every time the program switches
+        plans. With -TweakId the values before are kept for the undo. On a notebook only the
+        plugged-in values change (on battery Windows keeps saving power).
+    #>
+    [CmdletBinding(SupportsShouldProcess)]
+    param([Parameter(Mandatory)][string]$Guid, [string]$TweakId, [psobject]$Contexto)
+    if ($null -eq $Contexto) { $Contexto = Get-UTSystemContext }
+    foreach ($i in @((Get-UTConfig -Name 'powerplan').nuncaSuspender.itens)) {
+        $current = Get-UTPowerSettingValue -Esquema $Guid -Subgrupo $i.subgrupo -Configuracao $i.configuracao
+        if (-not $current.Existe) { continue }
+        $dc = $(if ($Contexto.EhNotebook -eq $true) { $null } else { [long]$i.valor })
+        if ($current.AC -eq [long]$i.valor -and ($null -eq $dc -or $current.DC -eq $dc)) { continue }
+        if (-not $PSCmdlet.ShouldProcess("$Guid $($i.nome)", 'Nunca')) { continue }
+        if ($TweakId) {
+            [void](Save-UTOriginalItem -Chave "energia|nunca|$Guid|$($i.configuracao)" -Dados ([ordered]@{ guid = $Guid; subgrupo = $i.subgrupo; ac = $current.AC; dc = $current.DC }) -TweakId $TweakId)
+        }
+        Set-UTPowerSettingValue -Esquema $Guid -Subgrupo $i.subgrupo -Configuracao $i.configuracao -AC ([long]$i.valor) -DC $dc -Confirm:$false
+        Write-UTLog -Level Info -TweakId $TweakId -Message "$($i.nome): Nunca."
+    }
+}
+
+function Restore-UTPlanNoSleep {
+    # Undo of Set-UTPlanNoSleep: the display and sleep times the plan had before.
+    [CmdletBinding(SupportsShouldProcess)]
+    param([Parameter(Mandatory)][string]$Guid, [Parameter(Mandatory)][string]$TweakId)
+    foreach ($i in @((Get-UTConfig -Name 'powerplan').nuncaSuspender.itens)) {
+        $saved = Pop-UTOriginalItem -Chave "energia|nunca|$Guid|$($i.configuracao)" -TweakId $TweakId
+        if ($saved -isnot [System.Collections.IDictionary] -or -not (Test-UTPowerScheme -Guid $Guid)) { continue }
+        if ($PSCmdlet.ShouldProcess("$Guid $($i.nome)", 'Voltar ao valor anterior')) {
+            Set-UTPowerSettingValue -Esquema $Guid -Subgrupo $i.subgrupo -Configuracao $i.configuracao -AC ([long]$saved.ac) -DC ([long]$saved.dc) -Confirm:$false
+        }
+    }
+}
+#endregion
+
 #region Dual-CCD Ryzen X3D
 function Invoke-UTX3DBalancedCore {
     <#
@@ -313,6 +355,7 @@ function Invoke-UTX3DBalancedCore {
         [void](Save-UTOriginalItem -Chave 'energia|planoAnteriorX3D' -Dados ([ordered]@{ guid = $active.Guid; nome = $active.Nome }) -TweakId $TweakId)
         [void](Invoke-UTPowerCfg -Argumentos @('/setactive', $cfg.equilibrado))
     }
+    Set-UTPlanNoSleep -Guid $cfg.equilibrado -TweakId $TweakId -Confirm:$false
     foreach ($check in @(Get-UTX3DDualCheck)) {
         if (-not $check.Ok) { Write-UTLog -Level Aviso -TweakId $TweakId -Message $check.Mensagem }
     }
@@ -321,6 +364,7 @@ function Invoke-UTX3DBalancedCore {
 function Undo-UTX3DBalancedCore {
     [CmdletBinding()]
     param([Parameter(Mandatory)][string]$TweakId)
+    Restore-UTPlanNoSleep -Guid (Get-UTConfig -Name 'powerplan').equilibrado -TweakId $TweakId -Confirm:$false
     $previous = Pop-UTOriginalItem -Chave 'energia|planoAnteriorX3D' -TweakId $TweakId
     if ($previous -is [System.Collections.IDictionary] -and $previous.guid -and (Test-UTPowerScheme -Guid $previous.guid)) {
         [void](Invoke-UTPowerCfg -Argumentos @('/setactive', [string]$previous.guid))
@@ -405,6 +449,7 @@ function Set-UTActivePowerScheme {
     Assert-UTAdmin
     if (-not (Test-UTPowerScheme -Guid $Guid)) { throw "O plano $Guid não existe neste PC." }
     if (-not $PSCmdlet.ShouldProcess($Guid, 'Ativar plano de energia')) { return }
+    Set-UTPlanNoSleep -Guid $Guid.ToLowerInvariant() -Confirm:$false
     [void](Invoke-UTPowerCfg -Argumentos @('/setactive', $Guid.ToLowerInvariant()))
     Write-UTLog -Level Sucesso -Message "Plano de energia $Guid ativado."
 }

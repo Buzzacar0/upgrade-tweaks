@@ -42,10 +42,11 @@ function Get-UTOverlayDefault {
         'Competitivo' = New-UTOverlayProfile -Valores @{ Posicao = 'SuperiorCentro'; Horizontal = $true; Fundo = 0.35; Itens = @('fps', 'lows', 'frametime') }
         'Completo'    = New-UTOverlayProfile -Valores @{ Itens = @(Get-UTOverlayItem) }
     }
+    # No game is tied to a profile out of the box: the default profile is what shows until the
+    # person picks a game in the list.
     $games = [ordered]@{}
-    foreach ($g in 'cod.exe', 'cod25-cod.exe', 'cod26-cod.exe', 'sp26-cod.exe') { $games[$g] = 'Competitivo' }
     return [ordered]@{
-        Versao = 1; PerfilAtual = 'Padrão'; Perfis = $profiles; Jogos = $games
+        Versao = 2; PerfilAtual = 'Padrão'; Perfis = $profiles; Jogos = $games
         Atalhos = [ordered]@{ Mostrar = 'Ctrl+Shift+F10'; ProximoPerfil = 'Ctrl+Shift+F11'; Benchmark = 'Ctrl+Shift+F12' }
         SoEmJogo = $true; Rtss = $false; IniciarComWindows = $false; ModoPartida = $true; JanelaLowsSegundos = 30; IntervaloMs = 250
     }
@@ -101,7 +102,7 @@ function ConvertTo-UTOverlayConfig {
     param([AllowNull()][object]$Config)
     $def = Get-UTOverlayDefault
     if ($Config -isnot [System.Collections.IDictionary]) { return $def }
-    $out = [ordered]@{ Versao = 1; PerfilAtual = $def.PerfilAtual; Perfis = [ordered]@{}; Jogos = [ordered]@{}; Atalhos = [ordered]@{} }
+    $out = [ordered]@{ Versao = 2; PerfilAtual = $def.PerfilAtual; Perfis = [ordered]@{}; Jogos = [ordered]@{}; Atalhos = [ordered]@{} }
     if ($Config['Perfis'] -is [System.Collections.IDictionary] -and $Config['Perfis'].Count -gt 0) {
         foreach ($k in @($Config['Perfis'].Keys)) {
             $name = ([string]$k).Trim()
@@ -112,10 +113,16 @@ function ConvertTo-UTOverlayConfig {
     $first = @($out.Perfis.Keys)[0]
     $out.PerfilAtual = $(if ($out.Perfis.Contains([string]$Config['PerfilAtual'])) { [string]$Config['PerfilAtual'] } else { $first })
     $games = $(if ($Config.Contains('Jogos')) { $Config['Jogos'] } else { $def.Jogos })
+    # Version 1 tied Call of Duty to the Competitivo profile by itself, so choosing another
+    # default profile seemed to do nothing in the game. That automatic tie is dropped once.
+    $oldDefault = @('cod.exe', 'cod25-cod.exe', 'cod26-cod.exe', 'sp26-cod.exe')
+    $version = 0
+    if ("$($Config['Versao'])" -match '^\d+$') { $version = [int]$Config['Versao'] }
     if ($games -is [System.Collections.IDictionary]) {
         foreach ($k in @($games.Keys)) {
             $exe = ([string]$k).Trim().ToLowerInvariant()
             if ($exe -notmatch '^[^\\/:*?"<>|]+\.exe$') { continue }
+            if ($version -lt 2 -and $oldDefault -contains $exe -and [string]$games[$k] -eq 'Competitivo') { continue }
             $out.Jogos[$exe] = $(if ($out.Perfis.Contains([string]$games[$k])) { [string]$games[$k] } else { $first })
         }
     }
@@ -323,6 +330,52 @@ function Find-UTOverlaySensor {
     $ram = & $first { $_.HardwareTipo -eq 'Memory' -and $_.TipoOriginal -eq 'Data' -and $_.NomeOriginal -eq 'Memory Used' -and $_.HardwareNome -match '^(Total|Generic|Physical) Memory$' }
     if ($ram) { $ids.Ram = $ram.Id }
     return $ids
+}
+#endregion
+
+#region Running apps (to pick a game)
+function ConvertTo-UTCleanTitle {
+    # Window titles of some games (Call of Duty) come full of invisible characters.
+    param([AllowEmptyString()][string]$Texto)
+    return (($Texto -replace '[\u200B-\u200F\u202A-\u202E\u2060-\u206F\uFEFF]', '') -replace '\s+', ' ').Trim()
+}
+
+function Get-UTOverlayGameLabel {
+    # Friendly name of a game .exe that is not running now (the ones the program knows).
+    param([Parameter(Mandatory)][string]$Exe)
+    $known = @{ 'cod.exe' = 'Call of Duty®'; 'cod25-cod.exe' = 'Call of Duty®'; 'cod26-cod.exe' = 'Call of Duty®'; 'sp26-cod.exe' = 'Call of Duty® (campanha)' }
+    $e = $Exe.ToLowerInvariant()
+    if ($known.ContainsKey($e)) { return $known[$e] }
+    return $null
+}
+
+function Get-UTRunningApp {
+    <#
+    .SYNOPSIS
+        Programs open now with a window, by the name the Task Manager shows (the description of
+        the .exe, or the window title) and the .exe the overlay matches. Windows' own shell
+        programs and this program are left out.
+    #>
+    [CmdletBinding()]
+    param()
+    $skip = @('applicationframehost', 'textinputhost', 'systemsettings', 'explorer', 'shellexperiencehost', 'startmenuexperiencehost', 'searchhost', 'lockapp', 'powershell', 'pwsh', 'conhost', 'windowsterminal', 'taskmgr')
+    $seen = @{}
+    $apps = foreach ($p in @(Get-Process -ErrorAction SilentlyContinue)) {
+        if ($p.MainWindowHandle -eq [IntPtr]::Zero) { continue }
+        $name = [string]$p.ProcessName
+        if ($skip -contains $name.ToLowerInvariant() -or $p.Id -eq $PID) { continue }
+        $exe = "$($name.ToLowerInvariant()).exe"
+        if ($seen.ContainsKey($exe)) { continue }
+        $seen[$exe] = $true
+        $desc = ''
+        try { if ($p.Path) { $desc = [string][Diagnostics.FileVersionInfo]::GetVersionInfo($p.Path).FileDescription } } catch { $desc = '' }
+        $label = ConvertTo-UTCleanTitle $desc
+        if (-not $label) { $label = ConvertTo-UTCleanTitle ([string]$p.MainWindowTitle) }
+        if (-not $label) { $label = $name }
+        [pscustomobject]@{ Nome = $label; Exe = $exe; Id = $p.Id; Texto = "$label ($exe)" }
+    }
+    # Games the program knows (Call of Duty) first.
+    return @($apps | Sort-Object @{ Expression = { -not (Get-UTOverlayGameLabel -Exe $_.Exe) } }, Nome)
 }
 #endregion
 

@@ -495,6 +495,8 @@ function Start-UTMatchMode {
             if ($max) { [void](Invoke-UTPowerCfg -Argumentos @('/setactive', $max)) }
             else { [void](Invoke-UTTweak -Id 'UT_Power_DesempenhoMaximo') }
         }
+        # Never turn off the display nor sleep in the middle of a match.
+        try { Set-UTPlanNoSleep -Guid (Get-UTActivePowerScheme).Guid -Contexto $Contexto -Confirm:$false } catch { Write-UTLog -Level Aviso -Message 'Não foi possível deixar a tela e a suspensão em Nunca.' -Detalhe $_.Exception.Message }
     }
     if ($LimparMemoriaEspera) {
         try { Clear-UTStandbyList } catch { Write-UTLog -Level Aviso -Message $_.Exception.Message }

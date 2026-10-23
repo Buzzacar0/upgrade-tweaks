@@ -538,7 +538,7 @@ function New-UTUiPageOverlay {
     Initialize-UTOverlayNative
     $ui = Get-UTUi
     $cfg = Get-UTOverlayConfig
-    $e = @{ Config = $cfg; Perfil = [string]$cfg.PerfilAtual; Previa = $null; PreviaHost = $null; Editor = $null; Timer = $null; Salvar = $null; Fase = 0.0; Grafico = (New-Object 'System.Collections.Generic.List[double]') }
+    $e = @{ Abertos = $null; Config = $cfg; Perfil = [string]$cfg.PerfilAtual; Previa = $null; PreviaHost = $null; Editor = $null; Timer = $null; Salvar = $null; Fase = 0.0; Grafico = (New-Object 'System.Collections.Generic.List[double]') }
     $ui.OverlayEditor = $e
     $page = New-UTUiStack -Itens @((New-UTUiPageHeader -Titulo 'Overlay' -Descricao 'FPS, 1% e 0,1% low, frametime e sensores por cima do jogo. Os quadros vêm do PresentMon oficial da Intel, que lê os eventos do Windows (ETW): nada é injetado no jogo.'))
 
@@ -755,9 +755,9 @@ function Show-UTUiOverlayEditor {
 
     $controls = New-UTUiStack -Itens @(
         (New-UTUiGroup -RecuoSeparador 16 -Linhas @(
-                (New-UTUiRow -Titulo 'Perfil' -Subtitulo 'Cada jogo pode usar um perfil (lista abaixo)' -Direita $profileBox)
+                (New-UTUiRow -Titulo 'Perfil' -Subtitulo 'Escolha qual perfil editar' -Direita $profileBox)
                 (New-UTUiRowBox $profileTools)
-                (New-UTUiRow -Titulo 'Perfil padrão' -Subtitulo 'Usado nos jogos sem perfil próprio' -Direita $active)
+                (New-UTUiRow -Titulo 'Perfil padrão' -Subtitulo 'Vale em todos os jogos, menos os da lista Perfil automático por jogo' -Direita $active)
                 (New-UTUiRow -Titulo 'Posição' -Direita $pos)
                 (New-UTUiRow -Titulo 'Monitor' -Direita $mon)
                 (New-UTUiRow -Titulo 'Layout' -Direita $layout)
@@ -873,6 +873,7 @@ function Show-UTUiOverlayGameList {
     param()
     $e = (Get-UTUi).OverlayEditor
     $cfg = $e.Config
+    if ($null -eq $e.Abertos) { $e.Abertos = @(Get-UTRunningApp) }
     $rows = New-Object System.Collections.Generic.List[object]
     foreach ($g in @($cfg.Jogos.Keys)) {
         $cb = New-Object System.Windows.Controls.ComboBox
@@ -882,26 +883,47 @@ function Show-UTUiOverlayGameList {
         $cb.Tag = [string]$g
         $cb.Add_SelectionChanged({ param($s, $ev) $null = $ev; $ed = (Get-UTUi).OverlayEditor; $ed.Config.Jogos[[string]$s.Tag] = [string]$s.SelectedItem; Save-UTUiOverlayConfig })
         $del = New-UTUiButton 'Remover' -Estilo Link -Margem '12,0,0,0' -Dados ([string]$g) -AoClicar { param($b, $d) $null = $b; $ed = (Get-UTUi).OverlayEditor; $ed.Config.Jogos.Remove($d); Save-UTUiOverlayConfig -Agora; Show-UTUiOverlayGameList }
-        $rows.Add((New-UTUiRow -Titulo ([string]$g) -Icone 'E7FC' -IconeCor 'IconGreen' -Direita (New-UTUiStack -Horizontal -Itens @($cb, $del))))
+        $running = (@($e.Abertos | Where-Object { $null -ne $_ -and $_.Exe -eq [string]$g }) | Select-Object -First 1)
+        $label = $(if ($running) { $running.Nome } else { Get-UTOverlayGameLabel -Exe ([string]$g) })
+        $title = $(if ($label) { $label } else { [string]$g })
+        $sub = $(if ($label) { [string]$g } else { '' })
+        if ($running) { $sub = $(if ($sub) { "$sub, aberto agora" } else { 'aberto agora' }) }
+        $rows.Add((New-UTUiRow -Titulo $title -Subtitulo $sub -Icone 'E7FC' -IconeCor 'IconGreen' -Direita (New-UTUiStack -Horizontal -Itens @($cb, $del))))
     }
-    $exe = New-Object System.Windows.Controls.TextBox
-    $exe.Width = 200; $exe.Tag = 'jogo.exe'
+    # Pick from the programs open now: no typing the .exe (nor the ® of "Call of Duty®").
+    $exe = New-Object System.Windows.Controls.ComboBox
+    $exe.Width = 300
+    $exe.ToolTip = 'Abra o jogo antes; ele aparece aqui com o mesmo nome do Gerenciador de Tarefas'
+    foreach ($a in @($e.Abertos | Where-Object { -not $cfg.Jogos.Contains($_.Exe) })) {
+        $item = New-Object System.Windows.Controls.ComboBoxItem
+        $item.Content = $a.Texto
+        $item.Tag = $a.Exe
+        [void]$exe.Items.Add($item)
+    }
+    if ($exe.Items.Count -eq 0) {
+        $none = New-Object System.Windows.Controls.ComboBoxItem
+        $none.Content = 'Nenhum outro programa aberto'
+        $none.IsEnabled = $false
+        [void]$exe.Items.Add($none)
+    }
+    $exe.SelectedIndex = 0
+    $refresh = New-UTUiButton 'Atualizar lista' -Estilo Link -Margem '12,0,0,0' -AoClicar { param($b, $d) $null = $b, $d; (Get-UTUi).OverlayEditor.Abertos = @(Get-UTRunningApp); Show-UTUiOverlayGameList }
     $prof = New-Object System.Windows.Controls.ComboBox
     $prof.Width = 170
     foreach ($n in @($cfg.Perfis.Keys)) { [void]$prof.Items.Add($n) }
     $prof.SelectedIndex = 0
     $add = New-UTUiButton 'Adicionar' -Margem '12,0,0,0' -Dados @{ Exe = $exe; Perfil = $prof } -AoClicar {
         param($b, $d) $null = $b
-        $name = $d.Exe.Text.Trim().ToLowerInvariant()
-        if ($name -and -not $name.EndsWith('.exe')) { $name += '.exe' }
-        if ($name -notmatch '^[^\\/:*?"<>|]+\.exe$') { Show-UTUiStatus 'Digite o nome do executável do jogo, como cod.exe.'; return }
+        $sel = $d.Exe.SelectedItem
+        if ($null -eq $sel -or -not $sel.Tag) { Show-UTUiStatus 'Abra o jogo, clique em "Atualizar lista" e escolha ele na lista.'; return }
+        $name = [string]$sel.Tag
         $ed = (Get-UTUi).OverlayEditor
         $ed.Config.Jogos[$name] = [string]$d.Perfil.SelectedItem
         Save-UTUiOverlayConfig -Agora
         Show-UTUiOverlayGameList
     }
-    $rows.Add((New-UTUiRowBox (New-UTUiStack -Horizontal -Itens @($exe, (New-UTUiText '  usa  ' -Cor MutedBrush), $prof, $add))))
-    $e.Jogos.Content = New-UTUiGroup -Titulo 'Perfil automático por jogo' -Linhas $rows.ToArray() -RecuoSeparador 16 -Rodape 'Quando um destes jogos está em primeiro plano, o overlay troca para o perfil escolhido. Os outros usam o perfil padrão.'
+    $rows.Add((New-UTUiRowBox (New-UTUiWrap -Itens @((New-UTUiStack -Horizontal -Itens @($exe, (New-UTUiText '  usa  ' -Cor MutedBrush), $prof, $add)), $refresh))))
+    $e.Jogos.Content = New-UTUiGroup -Titulo 'Perfil automático por jogo' -Linhas $rows.ToArray() -RecuoSeparador 16 -Rodape 'Escolha o jogo na lista dos programas abertos (com o mesmo nome do Gerenciador de Tarefas). Quando ele estiver em primeiro plano, o overlay troca para o perfil escolhido; os outros usam o perfil padrão.'
 }
 
 function Update-UTUiOverlayPreview {

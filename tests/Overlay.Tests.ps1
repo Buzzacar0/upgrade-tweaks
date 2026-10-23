@@ -116,10 +116,10 @@ Describe 'PresentMon: FPS, 1% low e 0,1% low' {
 Describe 'Overlay: configuração e lógica' {
     BeforeEach { Reset-UTTestEnvironment }
 
-    It 'padrão com três perfis e os jogos de Call of Duty no Competitivo; salva e lê de volta' {
+    It 'padrão com três perfis e nenhum jogo amarrado a um perfil; salva e lê de volta' {
         $c = Get-UTOverlayConfig
         @($c.Perfis.Keys) | Should -Be @('Padrão', 'Competitivo', 'Completo')
-        $c.Jogos['cod.exe'] | Should -Be 'Competitivo'
+        $c.Jogos.Count | Should -Be 0
         $c.Atalhos.Mostrar | Should -Be 'Ctrl+Shift+F10'
         $c.Perfis['Padrão'].Posicao = 'InferiorDireita'
         $c.Rtss = $true
@@ -156,8 +156,18 @@ Describe 'Overlay: configuração e lógica' {
         (ConvertTo-UTOverlayConfig -Config @{ Perfis = @{} }).Perfis.Count | Should -Be 3
     }
 
+    It 'configuração da versão 1: some o vínculo automático do CoD ao Competitivo, os escolhidos ficam' {
+        $old = ConvertTo-UTOverlayConfig -Config @{ Versao = 1; Jogos = @{ 'cod.exe' = 'Competitivo'; 'valorant.exe' = 'Completo' } }
+        @($old.Jogos.Keys) | Should -Be @('valorant.exe')
+        $old.Versao | Should -Be 2
+        $new = ConvertTo-UTOverlayConfig -Config @{ Versao = 2; Jogos = @{ 'cod.exe' = 'Competitivo' } }
+        $new.Jogos['cod.exe'] | Should -Be 'Competitivo'
+    }
+
     It 'perfil automático pelo jogo em primeiro plano' {
         $c = Get-UTOverlayConfig
+        Resolve-UTOverlayProfile -Config $c -Processo 'cod.exe' | Should -Be 'Padrão'
+        $c.Jogos['cod.exe'] = 'Competitivo'
         Resolve-UTOverlayProfile -Config $c -Processo 'cod.exe' | Should -Be 'Competitivo'
         Resolve-UTOverlayProfile -Config $c -Processo 'COD' | Should -Be 'Competitivo'
         Resolve-UTOverlayProfile -Config $c -Processo 'notepad.exe' | Should -Be 'Padrão'
@@ -324,5 +334,21 @@ Describe 'Overlay: visual e aba' {
         (Get-UTOverlayConfig).Perfis['Padrão'].Posicao | Should -Be 'InferiorDireita'
         Move-UTUiOverlayItem -Item 'gpu' -Direcao -10
         $e.Config.Perfis['Padrão'].Itens[0] | Should -Be 'gpu'
+    }
+}
+
+Describe 'Overlay: escolher o jogo na lista dos programas abertos' {
+    It 'mostra o nome do Gerenciador de Tarefas e o .exe; tira caracteres invisíveis e o shell do Windows' {
+        $cod = [pscustomobject]@{ ProcessName = 'cod'; Id = 19200; MainWindowHandle = [IntPtr]5; MainWindowTitle = "C$([char]0x200B)a$([char]0x200B)l$([char]0x200B)l of Duty$([char]0xAE)$([char]0x200B)$([char]0x200B)"; Path = $null }
+        $brave = [pscustomobject]@{ ProcessName = 'brave'; Id = 9896; MainWindowHandle = [IntPtr]6; MainWindowTitle = 'WhatsApp - Brave'; Path = $null }
+        $explorer = [pscustomobject]@{ ProcessName = 'explorer'; Id = 14196; MainWindowHandle = [IntPtr]7; MainWindowTitle = 'Power Options'; Path = $null }
+        $hidden = [pscustomobject]@{ ProcessName = 'svc'; Id = 1; MainWindowHandle = [IntPtr]::Zero; MainWindowTitle = ''; Path = $null }
+        Mock Get-Process { @($cod, $brave, $explorer, $hidden, $brave) }
+        $apps = @(Get-UTRunningApp)
+        @($apps | ForEach-Object Exe) | Should -Be @('cod.exe', 'brave.exe')
+        ($apps | Where-Object Exe -eq 'cod.exe').Nome | Should -Be "Call of Duty$([char]0xAE)"
+        ($apps | Where-Object Exe -eq 'cod.exe').Texto | Should -Be "Call of Duty$([char]0xAE) (cod.exe)"
+        Get-UTOverlayGameLabel -Exe 'COD.exe' | Should -Be "Call of Duty$([char]0xAE)"
+        Get-UTOverlayGameLabel -Exe 'notepad.exe' | Should -BeNullOrEmpty
     }
 }

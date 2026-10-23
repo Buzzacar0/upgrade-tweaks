@@ -58,6 +58,13 @@
       ]
     }
   ],
+  "nuncaSuspender": {
+    "nome": "Desligar a tela e suspender: Nunca",
+    "itens": [
+      { "nome": "Desligar a tela", "subgrupo": "7516b95f-f776-4464-8c53-06167f40cc99", "configuracao": "3c0bc021-c8a8-4e07-a973-6b14cbcb2b7e", "valor": 0 },
+      { "nome": "Suspender", "subgrupo": "238c9fa8-0aad-41ed-83f4-97be242c8f20", "configuracao": "29f6c1db-86da-48c5-9fdb-f2b67b1f44da", "valor": 0 }
+    ]
+  },
   "idleDisable": {
     "nome": "Desativar o estado ocioso do processador (IDLEDISABLE)",
     "subgrupo": "54533251-82be-4824-96c1-47b60b740d00",
